@@ -922,75 +922,85 @@ em {
   background: var(--card-accent);
 }
 
-/* viz: tarot */
-.tarot {
-  position: absolute;
-  width: 26%;
-  aspect-ratio: 2 / 3.4;
-  border-radius: 10px;
-  background: #1a1428;
-  border: 1px solid var(--card-accent);
-  outline: 1px solid var(--card-accent);
-  outline-offset: -8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  color: var(--card-accent);
-  box-shadow: 0 40px 70px -30px rgba(0, 0, 0, 0.6);
-}
-.tarot span {
-  font-size: clamp(32px, 4vw, 60px);
-  line-height: 1;
-}
-.tarot b {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 14px;
-  letter-spacing: 0.2em;
-}
-.tarot.t1 {
-  transform: translate(-62%, -4%) rotate(-10deg);
-}
-.tarot.t2 {
-  transform: translate(-18%, 4%) rotate(4deg);
-}
-.booking {
-  position: absolute;
-  right: 9%;
-  top: 50%;
-  translate: 0 -50%;
-  width: 36%;
+/* viz: booking */
+.browser {
+  width: 74%;
   background: #f4efe6;
-  color: #2b2140;
+  color: #1e2b2e;
   border-radius: 12px;
-  padding: 18px;
+  overflow: hidden;
+  box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.7);
+}
+.browser__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #e4ddd0;
+}
+.browser__bar i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(30, 43, 46, 0.25);
+}
+.browser__bar span {
+  margin-left: 12px;
+  font-size: 10px;
+  text-transform: none;
+  opacity: 0.6;
+}
+.browser__body {
+  padding: clamp(16px, 2vw, 28px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+}
+.browser__step {
+  font-size: 10px;
+  opacity: 0.6;
+}
+.slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   text-transform: none;
-  box-shadow: 0 40px 70px -30px rgba(0, 0, 0, 0.6);
+  font-size: 12px;
 }
-.booking p {
-  font-family: var(--serif);
-  font-size: clamp(16px, 1.6vw, 22px);
-  letter-spacing: -0.02em;
-  margin-bottom: 4px;
+.slots li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(30, 43, 46, 0.18);
+  border-radius: 8px;
 }
-.booking i {
-  height: 28px;
-  border: 1px solid rgba(43, 33, 64, 0.25);
-  border-radius: 6px;
+.slots li.on {
+  border-color: #1e2b2e;
+  background: color-mix(in srgb, var(--card-accent) 30%, transparent);
 }
-.booking span {
-  margin-top: 4px;
-  background: #2b2140;
+.browser__cta {
+  align-self: flex-end;
+  background: #1e2b2e;
   color: var(--card-accent);
-  padding: 9px 12px;
+  padding: 9px 16px;
   border-radius: 99px;
-  text-align: center;
   font-size: 11px;
+}
+.toast {
+  position: absolute;
+  right: 8%;
+  bottom: 22%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card-accent);
+  color: #1e2b2e;
+  padding: 10px 16px;
+  border-radius: 99px;
+  font-size: 11px;
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+  transform: rotate(-3deg);
 }
 
 /* ---------- experience ---------- */
@@ -1205,19 +1215,20 @@ em {
     width: 100%;
     justify-content: space-between;
   }
-  .tarot b {
+  .browser {
+    width: 86%;
+  }
+  .browser__body {
+    gap: 8px;
+  }
+  .slots li {
+    padding: 6px 10px;
     font-size: 10px;
   }
-  .booking {
-    padding: 12px;
-    gap: 7px;
-  }
-  .booking i {
-    height: 18px;
-  }
-  .booking span {
-    font-size: 9px;
-    padding: 6px 8px;
+  .browser__bar,
+  .browser__step,
+  .toast {
+    display: none;
   }
 }
 
