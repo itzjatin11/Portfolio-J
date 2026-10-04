@@ -14,7 +14,7 @@ Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pag
 ## Editing
 
 - **Content** is plain HTML in `index.html`: projects, about text and toolbox.
-- **Email**: set `data-email="you@example.com"` on the `.contact__mail` link. The button then switches from GitHub to a `mailto:` link.
+- **Contact form** posts to Formspree (`action` on the form in `index.html`) without leaving the page.
 - **Motion** is in `src/main.js`:
   - `data-speed` sets vertical parallax (below 1 is slower than the scroll).
   - `data-drift` sets horizontal drift on big type.

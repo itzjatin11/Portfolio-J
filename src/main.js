@@ -25,12 +25,31 @@ const tick = () => (clock.textContent = fmt.format(new Date()));
 tick();
 setInterval(tick, 15_000);
 
-// Email: set data-email on the contact button to switch it from GitHub to mailto.
-const mail = $('[data-email]');
-if (mail.dataset.email) {
-  mail.href = `mailto:${mail.dataset.email}`;
-  $('[data-email-label]', mail).textContent = mail.dataset.email;
-}
+// Contact form: post to Formspree without leaving the page.
+const form = $('[data-form]');
+const note = $('.form__note', form);
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const button = $('button', form);
+  button.disabled = true;
+  note.classList.remove('is-error');
+  note.textContent = 'Sending…';
+  try {
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    form.reset();
+    note.textContent = "Thanks — I'll get back to you within a day.";
+  } catch {
+    note.classList.add('is-error');
+    note.textContent = 'That didn’t send. Email me directly instead.';
+  } finally {
+    button.disabled = false;
+  }
+});
 
 // Split the about statement into words for the scroll-linked reveal.
 const statement = $('[data-words]');
@@ -172,8 +191,36 @@ function initMotion() {
     return () => $$('.card__shade').forEach((el) => el.remove());
   });
 
+  /* ---------- counters ---------- */
+  $$('[data-count]').forEach((el) => {
+    const n = { v: 0 };
+    el.textContent = '0';
+    gsap.to(n, {
+      v: +el.dataset.count,
+      duration: 1.8,
+      delay: 0.9,
+      ease: 'power3.out',
+      onUpdate: () => (el.textContent = Math.round(n.v)),
+    });
+  });
+
+  /* ---------- testimonials drift at different rates ---------- */
+  gsap.matchMedia().add('(min-width: 901px)', () => {
+    $$('[data-lift]').forEach((el) => {
+      gsap.fromTo(
+        el,
+        { y: 40 * +el.dataset.lift },
+        {
+          y: -40 * +el.dataset.lift,
+          ease: 'none',
+          scrollTrigger: { trigger: '.quotes', start: 'top bottom', end: 'bottom top', scrub: true },
+        },
+      );
+    });
+  });
+
   /* ---------- reveal labels / small elements ---------- */
-  $$('.label, .caps__col, .index__list li, .contact__title, .contact__mail').forEach((el) => {
+  $$('.label, .caps__col, .index__list li, .exp__row, .contact__title, .contact__mail, .form').forEach((el) => {
     gsap.from(el, {
       y: 40,
       opacity: 0,
