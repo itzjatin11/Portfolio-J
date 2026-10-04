@@ -18,11 +18,21 @@
     <meta name="theme-color" content="#ECE8DF" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
+    <script>
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+        document.documentElement.classList.add('js-motion');
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#top">Skip to content</a>
     <div class="grain" aria-hidden="true"></div>
-    <div class="cursor" aria-hidden="true"><span></span></div>
+    <div class="cursor" aria-hidden="true"><span></span><b class="mono">View</b></div>
+    <div class="loader" aria-hidden="true">
+      <p class="loader__name"><span>Jatin</span> <em>Singh</em></p>
+      <p class="loader__count mono"><span data-loader-count>0</span></p>
+      <p class="loader__role mono">Full-stack developer — Auckland</p>
+    </div>
+    <div class="progress" aria-hidden="true"><span></span></div>
 
     <header class="nav">
       <a href="#top" class="nav__mark" aria-label="Back to top">JST<sup>®</sup></a>
@@ -32,19 +42,34 @@
         <a href="#experience" class="hide-sm">Experience</a>
         <a href="#contact">Contact</a>
       </nav>
-      <p class="nav__time"><span class="dot"></span> Auckland <span data-clock>--:--</span></p>
+      <div class="nav__right">
+        <p class="nav__time">Auckland <span data-clock>--:--</span></p>
+        <a href="#contact" class="nav__hire" data-roll>Hire me</a>
+      </div>
     </header>
 
     <main id="top">
       <!-- ============ HERO ============ -->
       <section class="hero" data-hero>
-        <div class="hero__glyph" data-speed="0.55" aria-hidden="true">J</div>
+        <div class="hero__glyph" data-speed="0.55" data-depth="0.6" aria-hidden="true">J</div>
+        <div class="floaters" aria-hidden="true">
+          <span class="fl mono" style="--x: 56%; --y: 26%" data-speed="0.2" data-depth="1.6">C# / .NET</span>
+          <span class="fl fl--ink mono" style="--x: 82%; --y: 36%" data-speed="0.05" data-depth="2.4">Kotlin</span>
+          <span class="fl mono" style="--x: 38%; --y: 16%" data-speed="0.4" data-depth="1">SQL Server</span>
+          <span class="fl fl--accent mono" style="--x: 70%; --y: 14%" data-speed="0.3" data-depth="2">Azure AZ-900</span>
+          <span class="fl mono" style="--x: 64%; --y: 44%" data-speed="0.15" data-depth="1.3">Node.js</span>
+        </div>
 
-        <p class="hero__eyebrow mono reveal-up">
-          <span>(01)</span> Full-stack developer — Auckland, NZ
-        </p>
+        <div class="hero__top">
+          <p class="hero__eyebrow mono reveal-up">
+            <span>(01)</span> Full-stack developer — Auckland, NZ
+          </p>
+          <a href="#contact" class="badge mono reveal-up"
+            ><span class="dot"></span> Available for full-time &amp; freelance work</a
+          >
+        </div>
 
-        <h1 class="hero__title" aria-label="Jatin Singh Taadiyal">
+        <h1 class="hero__title" aria-label="Jatin Singh Taadiyal" data-chars>
           <span class="line" data-drift="-1"><span class="line__inner">Jatin</span></span>
           <span class="line line--indent" data-drift="1"
             ><span class="line__inner"><em>Singh</em> Taadiyal</span></span
@@ -129,7 +154,7 @@
       <section class="work" id="work">
         <header class="work__head">
           <p class="label mono"><span>(03)</span> Selected work</p>
-          <h2 class="work__title">
+          <h2 class="work__title" data-split>
             <span data-drift="-0.6">Things</span> <em data-drift="0.6">I've built</em>
           </h2>
         </header>
@@ -149,11 +174,11 @@
                 <li>ASP.NET Core MVC</li><li>C#</li><li>SQL Server</li><li>EF Core</li
                 ><li>NLP API</li><li>EPPlus</li>
               </ul>
-              <a class="card__link" href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener"
+              <a class="card__link" data-roll href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener"
                 >View source <span>↗</span></a
               >
             </div>
-            <div class="card__visual" data-parallax-wrap>
+            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
               <div class="viz viz--cv" data-parallax-img>
                 <div class="sheet s1"><b></b><i></i><i></i><i class="hl"></i><i></i><i class="short"></i></div>
                 <div class="sheet s2"><b></b><i></i><i class="hl"></i><i></i><i class="short"></i></div>
@@ -185,14 +210,14 @@
                 ><li>Bootstrap</li>
               </ul>
               <a
-                class="card__link"
+                class="card__link" data-roll
                 href="https://github.com/itzjatin11/Spectacular--Web-App"
                 target="_blank"
                 rel="noopener"
                 >View source <span>↗</span></a
               >
             </div>
-            <div class="card__visual" data-parallax-wrap>
+            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
               <div class="viz viz--spec" data-parallax-img>
                 <svg viewBox="0 0 320 140" class="glasses" aria-hidden="true">
                   <circle cx="90" cy="70" r="46" />
@@ -220,14 +245,14 @@
                 ><li>SQL Server</li>
               </ul>
               <a
-                class="card__link"
+                class="card__link" data-roll
                 href="https://github.com/itzjatin11/To-Do-Mobile_App"
                 target="_blank"
                 rel="noopener"
                 >View source <span>↗</span></a
               >
             </div>
-            <div class="card__visual" data-parallax-wrap>
+            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
               <div class="viz viz--todo" data-parallax-img>
                 <div class="phone">
                   <p class="mono phone__date">Mon 06</p>
@@ -256,11 +281,11 @@
               <ul class="tags mono">
                 <li>HTML</li><li>CSS</li><li>JavaScript</li><li>Formspree</li><li>Responsive UI</li>
               </ul>
-              <a class="card__link" href="https://soulscriptbykai.com/" target="_blank" rel="noopener"
+              <a class="card__link" data-roll href="https://soulscriptbykai.com/" target="_blank" rel="noopener"
                 >Visit live site <span>↗</span></a
               >
             </div>
-            <div class="card__visual" data-parallax-wrap>
+            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
               <div class="viz viz--booking" data-parallax-img>
                 <div class="browser">
                   <div class="browser__bar"><i></i><i></i><i></i><span class="mono">soulscriptbykai.com</span></div>
@@ -293,14 +318,14 @@
                 <li>Python</li><li>Tkinter</li><li>MySQL</li><li>Pillow</li>
               </ul>
               <a
-                class="card__link"
+                class="card__link" data-roll
                 href="https://github.com/itzjatin11/Femina-Salon-Management-System"
                 target="_blank"
                 rel="noopener"
                 >View source <span>↗</span></a
               >
             </div>
-            <div class="card__visual" data-parallax-wrap>
+            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
               <div class="viz viz--receipt" data-parallax-img>
                 <div class="receipt mono">
                   <p class="receipt__head">FEMINA — RECEIPT</p>
@@ -350,9 +375,9 @@
       <!-- ============ EXPERIENCE ============ -->
       <section class="exp" id="experience">
         <p class="label mono"><span>(05)</span> Experience</p>
-        <h2 class="section-title"><span data-drift="-0.5">How I</span> <em data-drift="0.5">got here</em></h2>
+        <h2 class="section-title" data-split><span data-drift="-0.5">How I</span> <em data-drift="0.5">got here</em></h2>
 
-        <ol class="exp__list">
+        <ol class="exp__list" data-exp><span class="exp__line" aria-hidden="true"></span>
           <li class="exp__row">
             <p class="exp__when mono">Jun 2026 — Present</p>
             <div class="exp__what">
@@ -490,13 +515,21 @@
         </div>
       </section>
 
+      <!-- ============ HIRE BAND ============ -->
+      <a href="#contact" class="hire" data-cursor aria-label="Get in touch">
+        <span class="hire__track" data-hire-track aria-hidden="true">
+          <span>Let's work together</span><i>✳</i><span class="o">Let's work together</span><i>✳</i>
+          <span>Let's work together</span><i>✳</i><span class="o">Let's work together</span><i>✳</i>
+        </span>
+      </a>
+
       <!-- ============ CONTACT ============ -->
       <section class="contact" id="contact">
         <div class="contact__bg" data-speed="0.7" aria-hidden="true">Hello</div>
         <p class="label mono"><span>(08)</span> Contact</p>
         <div class="contact__grid">
           <div>
-            <h2 class="contact__title">
+            <h2 class="contact__title" data-split>
               Have something<br />
               <em>worth building?</em>
             </h2>
