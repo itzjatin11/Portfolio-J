@@ -14,14 +14,14 @@ const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matc
 /* ---------- small static bits ---------- */
 $('[data-year]').textContent = new Date().getFullYear();
 
-const clock = $('[data-clock]');
+const clocks = $$('[data-clock]');
 const fmt = new Intl.DateTimeFormat('en-NZ', {
   timeZone: 'Pacific/Auckland',
   hour: '2-digit',
   minute: '2-digit',
   hour12: false,
 });
-const tick = () => (clock.textContent = fmt.format(new Date()));
+const tick = () => clocks.forEach((c) => (c.textContent = fmt.format(new Date())));
 tick();
 setInterval(tick, 15_000);
 
@@ -226,6 +226,22 @@ function initMotion() {
         scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
       },
     );
+  });
+
+  /* ---------- glance panel: seal turns with scroll, rows slide in ---------- */
+  gsap.to('[data-seal]', {
+    rotation: 360,
+    ease: 'none',
+    transformOrigin: '50% 50%',
+    scrollTrigger: { trigger: '.about', start: 'top bottom', end: 'bottom top', scrub: 0.5 },
+  });
+  gsap.from('.glance__list > div', {
+    x: 30,
+    opacity: 0,
+    duration: 0.9,
+    ease: 'expo.out',
+    stagger: 0.07,
+    scrollTrigger: { trigger: '.glance', start: 'top 80%', once: true },
   });
 
   /* ---------- word-by-word statement ---------- */
