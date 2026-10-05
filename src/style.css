@@ -531,69 +531,111 @@ button {
   }
 }
 
-/* ---------- work rows ---------- */
+/* ---------- work: app windows ---------- */
 .work {
   padding: clamp(96px, 14vh, 160px) var(--gutter);
 }
-.rows {
-  border-top: 1px solid var(--line);
+.wins {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
-.row > a {
-  position: relative;
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto auto;
-  gap: 24px;
-  align-items: center;
-  padding: clamp(14px, 1.6vw, 22px) 0;
-  border-bottom: 1px solid var(--line);
+.win {
+  width: min(920px, 100%);
+  margin-inline: auto;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.6);
 }
-.row > a::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+.win__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: none;
+}
+.win__bar i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.win__bar i:first-child {
   background: var(--accent);
-  transform: scaleY(0);
-  transform-origin: 50% 100%;
-  transition: transform 0.5s var(--ease);
-  z-index: -1;
 }
-.row > a {
-  z-index: 0;
+.win__bar span:first-of-type {
+  margin-left: 10px;
+  color: var(--fg);
 }
-.row__idx {
+.win__pid {
+  margin-left: auto;
+}
+.win__body {
+  padding: clamp(22px, 3vw, 44px);
+  display: grid;
+  gap: 16px;
+}
+.win__meta {
+  color: var(--accent);
+}
+.win__name {
+  font-size: clamp(48px, 7vw, 112px);
+}
+.win__desc {
+  max-width: 56ch;
   color: var(--muted);
+  font-size: 14px;
 }
-.row__name {
-  font-size: clamp(40px, 6.4vw, 104px);
-  transition: transform 0.5s var(--ease);
+.win__flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  font-size: 11px;
 }
-.row__meta,
-.row__year {
+.win__flow span {
+  position: relative;
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  border-radius: 4px;
+  color: var(--fg);
+  background: var(--bg);
+}
+.win__flow span + span::before {
+  content: '→';
+  position: absolute;
+  left: -18px;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--accent);
+}
+.win__flow span:nth-child(2) {
+  border-color: var(--accent);
+}
+.win__stack {
   color: var(--muted);
-  white-space: nowrap;
+  font-size: 10.5px;
 }
-@media (hover: hover) {
-  .row > a:hover::before {
-    transform: scaleY(1);
-    transform-origin: 50% 0;
-  }
-  .row > a:hover,
-  .row > a:hover .row__idx,
-  .row > a:hover .row__meta,
-  .row > a:hover .row__year {
-    color: #050505;
-  }
-  .row > a:hover .row__name {
-    transform: translateX(16px);
-  }
+.win__link {
+  justify-self: start;
+  background: var(--accent);
+  color: #050505;
+  padding: 10px 16px;
+  font-weight: 700;
+  transition: background 0.3s, color 0.3s;
 }
-.row__peek {
-  display: none;
+.win__link:hover {
+  background: var(--fg);
+  color: var(--bg);
 }
 .more {
   display: inline-block;
-  margin-top: 24px;
+  margin-top: 28px;
   color: var(--muted);
   transition: color 0.3s;
 }
@@ -601,70 +643,245 @@ button {
   color: var(--accent);
 }
 
-/* floating preview that follows the pointer over work rows */
-.peek-float {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 30;
-  width: 340px;
-  padding: 18px;
-  background: var(--fg);
-  color: var(--bg);
-  pointer-events: none;
-  opacity: 0;
-  transform: scale(0.85);
-  transition: opacity 0.25s, transform 0.35s var(--ease);
-  font-size: 13px;
-  line-height: 1.5;
-}
-.peek-float.is-on {
-  opacity: 1;
-  transform: scale(1);
-}
-.peek-float .flow {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed currentColor;
-  color: var(--accent);
-  font-size: 11px;
-}
-
 /* ---------- experience ---------- */
 .exp {
   padding: clamp(64px, 10vh, 120px) var(--gutter) clamp(96px, 14vh, 160px);
+  overflow-x: clip;
 }
-.timeline {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(20px, 2.4vw, 36px);
-  counter-reset: t;
+.work,
+.hello {
+  overflow-x: clip;
 }
-.timeline li {
-  border-top: 2px solid var(--fg);
-  padding-top: 16px;
+.gitcmd {
+  color: var(--accent);
+  margin-bottom: 28px;
+  text-transform: none;
+}
+.gitwrap {
+  position: relative;
+  padding-left: 40px;
+}
+.gitlog__rail {
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--line);
+}
+.gitlog__rail span {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+}
+.gitlog {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(36px, 5vw, 64px);
 }
-.timeline li:first-child {
-  border-top-color: var(--accent);
+.commit {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+  gap: 6px clamp(24px, 4vw, 64px);
+  align-items: baseline;
 }
-.timeline .mono {
+.commit__dot {
+  position: absolute;
+  left: -40px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--bg);
+  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s;
+}
+.commit.is-on .commit__dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(255, 77, 46, 0.18);
+}
+.commit__head {
+  grid-column: 1 / -1;
   color: var(--muted);
+  text-transform: none;
 }
-.timeline h3 {
-  font-size: clamp(30px, 2.8vw, 44px);
+.commit__sha {
+  color: var(--accent);
+}
+.commit__ref {
+  color: var(--cool);
+}
+.commit__when {
+  margin-left: 8px;
+}
+.commit__msg {
+  font-weight: 400;
+}
+.commit__type {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 6px;
+  text-transform: none;
+}
+.commit__msg .display {
+  font-size: clamp(32px, 3.6vw, 56px);
   line-height: 0.92;
+  opacity: 0.35;
+  transition: opacity 0.5s;
 }
-.timeline__org {
+.commit.is-on .commit__msg .display {
+  opacity: 1;
+}
+.commit__org {
+  grid-column: 1;
   color: var(--accent);
   font-size: 13px;
 }
-.timeline__desc {
+.commit__desc {
+  grid-column: 2;
+  grid-row: 2 / span 2;
   color: var(--muted);
+  font-size: 13.5px;
+  max-width: 48ch;
+}
+
+/* ---------- terminal (contact) ---------- */
+.term {
+  grid-column: 2;
+  color: var(--fg);
+  text-transform: none;
   font-size: 13px;
 }
+.term__ps {
+  color: var(--cool);
+}
+
+/* ---------- motherboard background (fixed, multi-depth) ---------- */
+.mobo {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.mobo__layer {
+  position: absolute;
+  inset: 0 0 -200% 0;
+  background-color: var(--fg);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  will-change: transform;
+}
+.mobo__layer--1 {
+  opacity: 0.035;
+}
+.mobo__layer--2 {
+  opacity: 0.06;
+}
+.mobo__layer--3 {
+  opacity: 0.09;
+  background-color: var(--accent);
+}
+
+/* ---------- pinned desktop modes (motion only) ---------- */
+.bus__trace,
+.bus__label {
+  display: none;
+}
+@media (min-width: 1101px) {
+  .js-motion .skills {
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 80px 40px;
+  }
+  .js-motion .skills .sec-head {
+    margin-bottom: 40px;
+  }
+  .js-motion .bus {
+    position: relative;
+    padding-top: 40px;
+  }
+  .js-motion .bus__trace {
+    display: block;
+    position: absolute;
+    top: 14px;
+    left: 0;
+    right: calc(-1 * var(--gutter));
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 10px, transparent 10px 16px);
+  }
+  .js-motion .bus__pulse {
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 140px;
+    height: 8px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, transparent, var(--accent), #fff);
+    filter: blur(0.5px);
+  }
+  .js-motion .bus__label {
+    display: block;
+    position: absolute;
+    top: -8px;
+    right: 0;
+    color: var(--muted);
+  }
+  .js-motion .cards {
+    display: flex;
+    width: max-content;
+    gap: 18px;
+    background: none;
+    border: 0;
+    perspective: 1400px;
+  }
+  .js-motion .skill {
+    width: clamp(300px, 26vw, 380px);
+    min-height: 360px;
+    border: 1px solid var(--line);
+    transform-origin: 0 50%;
+  }
+
+  .js-motion .work {
+    height: 100svh;
+    padding-block: 72px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .js-motion .work .sec-head {
+    margin-bottom: 0;
+  }
+  .js-motion .work .more {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 28px;
+    margin: 0;
+    z-index: 5;
+  }
+  .js-motion .wins {
+    position: relative;
+    flex: 1;
+    display: block;
+    perspective: 1200px;
+    perspective-origin: 50% 40%;
+  }
+  .js-motion .win {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    translate: 0 -50%;
+    will-change: transform, opacity;
+  }
+}
+
 .quotes {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -838,16 +1055,6 @@ button {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .timeline {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 40px;
-  }
-  .row > a {
-    grid-template-columns: 40px minmax(0, 1fr) auto;
-  }
-  .row__meta {
-    display: none;
-  }
 }
 @media (max-width: 760px) {
   .nav {
@@ -887,26 +1094,22 @@ button {
   .skill {
     min-height: 0;
   }
-  .row > a {
-    grid-template-columns: 28px minmax(0, 1fr) auto;
-    gap: 12px;
+  .commit {
+    grid-template-columns: 1fr;
   }
-  .row__peek {
-    display: block;
-    padding: 0 0 18px 40px;
-    border-bottom: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 13px;
+  .commit__desc {
+    grid-column: 1;
+    grid-row: auto;
   }
-  .row > a {
-    border-bottom: 0;
+  .gitwrap {
+    padding-left: 32px;
   }
-  .row__peek .flow {
-    margin-top: 8px;
-    color: var(--accent);
-    font-size: 10.5px;
+  .commit__dot {
+    left: -32px;
   }
-  .timeline,
+  .term {
+    grid-column: 1;
+  }
   .quotes {
     grid-template-columns: 1fr;
   }

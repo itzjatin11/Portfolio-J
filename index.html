@@ -29,6 +29,11 @@
   </head>
   <body>
     <a class="skip-link" href="#hello">Skip to content</a>
+    <div class="mobo" aria-hidden="true">
+      <div class="mobo__layer mobo__layer--1" data-mobo="0.08"></div>
+      <div class="mobo__layer mobo__layer--2" data-mobo="0.2"></div>
+      <div class="mobo__layer mobo__layer--3" data-mobo="0.38"></div>
+    </div>
 
     <!-- ============ NAV ============ -->
     <header class="nav mono">
@@ -120,8 +125,11 @@
           <h2 class="display" data-split>Skills / Experience</h2>
         </header>
 
-        <div class="cards">
-          <article class="skill" data-tilt>
+        <div class="bus" data-bus>
+          <div class="bus__trace" aria-hidden="true"><span class="bus__pulse" data-bus-pulse></span></div>
+          <p class="bus__label mono" aria-hidden="true">0x00 · data bus · <span data-bus-count>01</span>/08</p>
+        <div class="cards" data-cards>
+          <article class="skill">
             <header><h3 class="display">C# / .NET</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
             <p>
               My main language. ASP.NET Core MVC and Web API with EF Core — CV Analyzer, SpecTacular
@@ -130,7 +138,7 @@
             </p>
             <p class="skill__tags mono">ASP.NET Core · Web API · EF Core · Razor</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">SQL &amp; Data</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
             <p>
               SQL Server mostly, plus MySQL, MongoDB and Firestore. I design the schema before the
@@ -138,7 +146,7 @@
             </p>
             <p class="skill__tags mono">SQL Server · MySQL · MongoDB · Firestore</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">Python</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
             <p>
               Where I started building real tools: Tkinter desktop apps, a backup script that never
@@ -146,7 +154,7 @@
             </p>
             <p class="skill__tags mono">Tkinter · scripting · APIs</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">Node.js &amp; APIs</h3><p class="skill__since"><b class="display">1</b><span class="mono">yr · internship 2025</span></p></header>
             <p>
               REST APIs, WebRTC signalling and cloud storage for a video streaming app at Source
@@ -154,7 +162,7 @@
             </p>
             <p class="skill__tags mono">Node.js · REST · WebRTC</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">Kotlin &amp; Android</h3><p class="skill__since"><b class="display">1</b><span class="mono">yr · since 2025</span></p></header>
             <p>
               MVVM, Retrofit and a task app that syncs through its own .NET API instead of living
@@ -162,7 +170,7 @@
             </p>
             <p class="skill__tags mono">Kotlin · MVVM · Retrofit</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">Cloud</h3><p class="skill__since"><b class="display">AZ-900</b><span class="mono">certified 2025</span></p></header>
             <p>
               Microsoft Certified in Azure Fundamentals — core services, pricing, governance and
@@ -170,7 +178,7 @@
             </p>
             <p class="skill__tags mono">Azure · SharePoint · Purview</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">Automation</h3><p class="skill__since"><b class="display">M365</b><span class="mono">used daily at work</span></p></header>
             <p>
               Power Automate, Power Query and VBA. Turning a 40-minute manual task into a single
@@ -178,7 +186,7 @@
             </p>
             <p class="skill__tags mono">Power Automate · Power Query (M) · VBA</p>
           </article>
-          <article class="skill" data-tilt>
+          <article class="skill">
             <header><h3 class="display">Analysis</h3><p class="skill__since"><b class="display">Now</b><span class="mono">current role · 2026</span></p></header>
             <p>
               Requirements, process mapping and stakeholder work. It's made me a better developer:
@@ -186,6 +194,7 @@
             </p>
             <p class="skill__tags mono">Requirements · Process mapping · Data</p>
           </article>
+        </div>
         </div>
       </section>
 
@@ -196,68 +205,63 @@
           <h2 class="display" data-split>Selected work</h2>
         </header>
 
-        <ol class="rows" data-rows>
-          <li class="row">
-            <a href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener">
-              <span class="row__idx mono">01</span>
-              <span class="row__name display">CV Analyzer</span>
-              <span class="row__meta mono">ASP.NET Core · NLP API · SQL Server</span>
-              <span class="row__year mono">2025 ↗</span>
-            </a>
-            <div class="row__peek" data-peek>
-              <p>Parses batches of résumés into structured records, groups candidates by overlapping skills and exports to Excel.</p>
-              <p class="flow mono">Upload → MVC → Affinda → SQL Server → Excel</p>
+        <div class="wins" data-wins>
+          <article class="win" data-win>
+            <header class="win__bar mono"><i></i><i></i><i></i><span>cv-analyzer.exe</span><span class="win__pid">pid 01</span></header>
+            <div class="win__body">
+              <p class="win__meta mono">01 / 05 · 2025</p>
+              <h3 class="win__name display">CV Analyzer</h3>
+              <p class="win__desc">Parses batches of résumés into structured records, groups candidates by overlapping skills and exports to Excel.</p>
+              <p class="win__flow mono"><span>Upload</span><span>MVC</span><span>Affinda</span><span>SQL Server</span><span>Excel</span></p>
+              <p class="win__stack mono">ASP.NET Core · NLP API · SQL Server</p>
+              <a class="win__link mono" href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener">View source ↗</a>
             </div>
-          </li>
-          <li class="row">
-            <a href="https://github.com/itzjatin11/To-Do-Mobile_App" target="_blank" rel="noopener">
-              <span class="row__idx mono">02</span>
-              <span class="row__name display">Tasks for Android</span>
-              <span class="row__meta mono">Kotlin · Retrofit · .NET 8 API</span>
-              <span class="row__year mono">2025 ↗</span>
-            </a>
-            <div class="row__peek" data-peek>
-              <p>A Kotlin task manager that syncs through its own Web API and SQL Server instead of living only on the device.</p>
-              <p class="flow mono">Kotlin/MVVM → Retrofit → Web API → SQL Server</p>
+          </article>
+          <article class="win" data-win>
+            <header class="win__bar mono"><i></i><i></i><i></i><span>tasks.apk</span><span class="win__pid">pid 02</span></header>
+            <div class="win__body">
+              <p class="win__meta mono">02 / 05 · 2025</p>
+              <h3 class="win__name display">Tasks for Android</h3>
+              <p class="win__desc">A Kotlin task manager that syncs through its own Web API and SQL Server instead of living only on the device.</p>
+              <p class="win__flow mono"><span>Kotlin/MVVM</span><span>Retrofit</span><span>Web API</span><span>SQL Server</span></p>
+              <p class="win__stack mono">Kotlin · Retrofit · .NET 8 API</p>
+              <a class="win__link mono" href="https://github.com/itzjatin11/To-Do-Mobile_App" target="_blank" rel="noopener">View source ↗</a>
             </div>
-          </li>
-          <li class="row">
-            <a href="https://github.com/itzjatin11/Spectacular--Web-App" target="_blank" rel="noopener">
-              <span class="row__idx mono">03</span>
-              <span class="row__name display">SpecTacular</span>
-              <span class="row__meta mono">ASP.NET Core MVC · EF Core</span>
-              <span class="row__year mono">2025 ↗</span>
-            </a>
-            <div class="row__peek" data-peek>
-              <p>Eyewear store with a customer cart and an admin dashboard for users, products and image uploads behind role-based login.</p>
-              <p class="flow mono">Razor → Controllers → Services → EF Core</p>
+          </article>
+          <article class="win" data-win>
+            <header class="win__bar mono"><i></i><i></i><i></i><span>spectacular.dll</span><span class="win__pid">pid 03</span></header>
+            <div class="win__body">
+              <p class="win__meta mono">03 / 05 · 2025</p>
+              <h3 class="win__name display">SpecTacular</h3>
+              <p class="win__desc">Eyewear store with a customer cart and an admin dashboard for users, products and image uploads behind role-based login.</p>
+              <p class="win__flow mono"><span>Razor</span><span>Controllers</span><span>Services</span><span>EF Core</span></p>
+              <p class="win__stack mono">ASP.NET Core MVC · EF Core</p>
+              <a class="win__link mono" href="https://github.com/itzjatin11/Spectacular--Web-App" target="_blank" rel="noopener">View source ↗</a>
             </div>
-          </li>
-          <li class="row">
-            <a href="https://soulscriptbykai.com/" target="_blank" rel="noopener">
-              <span class="row__idx mono">04</span>
-              <span class="row__name display">SoulScriptByKai</span>
-              <span class="row__meta mono">Client site · HTML/CSS/JS · Formspree</span>
-              <span class="row__year mono">Live ↗</span>
-            </a>
-            <div class="row__peek" data-peek>
-              <p>Production website and booking flow for a self-employed client. Enquiries post straight to Formspree — no booking subscription.</p>
-              <p class="flow mono">Static site → Booking modal → Formspree → Inbox</p>
+          </article>
+          <article class="win" data-win>
+            <header class="win__bar mono"><i></i><i></i><i></i><span>soulscriptbykai.com</span><span class="win__pid">pid 04</span></header>
+            <div class="win__body">
+              <p class="win__meta mono">04 / 05 · Live</p>
+              <h3 class="win__name display">SoulScriptByKai</h3>
+              <p class="win__desc">Production website and booking flow for a self-employed client. Enquiries post straight to Formspree — no booking subscription.</p>
+              <p class="win__flow mono"><span>Static site</span><span>Booking modal</span><span>Formspree</span><span>Inbox</span></p>
+              <p class="win__stack mono">Client site · HTML/CSS/JS · Formspree</p>
+              <a class="win__link mono" href="https://soulscriptbykai.com/" target="_blank" rel="noopener">Visit live site ↗</a>
             </div>
-          </li>
-          <li class="row">
-            <a href="https://github.com/itzjatin11/Femina-Salon-Management-System" target="_blank" rel="noopener">
-              <span class="row__idx mono">05</span>
-              <span class="row__name display">Femina Salon</span>
-              <span class="row__meta mono">Python · Tkinter · MySQL</span>
-              <span class="row__year mono">2024 ↗</span>
-            </a>
-            <div class="row__peek" data-peek>
-              <p>Salon point-of-sale with customer records and membership tiers that apply 10/15/20% off through to payment and receipt.</p>
-              <p class="flow mono">Tkinter UI → Billing rules → MySQL → Receipt</p>
+          </article>
+          <article class="win" data-win>
+            <header class="win__bar mono"><i></i><i></i><i></i><span>femina_pos.py</span><span class="win__pid">pid 05</span></header>
+            <div class="win__body">
+              <p class="win__meta mono">05 / 05 · 2024</p>
+              <h3 class="win__name display">Femina Salon</h3>
+              <p class="win__desc">Salon point-of-sale with customer records and membership tiers that apply 10/15/20% off through to payment and receipt.</p>
+              <p class="win__flow mono"><span>Tkinter UI</span><span>Billing rules</span><span>MySQL</span><span>Receipt</span></p>
+              <p class="win__stack mono">Python · Tkinter · MySQL</p>
+              <a class="win__link mono" href="https://github.com/itzjatin11/Femina-Salon-Management-System" target="_blank" rel="noopener">View source ↗</a>
             </div>
-          </li>
-        </ol>
+          </article>
+        </div>
         <a class="more mono" href="https://github.com/itzjatin11" target="_blank" rel="noopener">More on GitHub ↗</a>
       </section>
 
@@ -267,32 +271,47 @@
           <p class="mono sec-head__idx">03</p>
           <h2 class="display" data-split>Experience</h2>
         </header>
-        <ol class="timeline">
-          <li>
-            <p class="mono">Jun 2026 — now</p>
-            <h3 class="display">Business Analyst</h3>
-            <p class="timeline__org">Authentic Security</p>
-            <p class="timeline__desc">Process improvement end to end: requirements, stakeholder workshops, process mapping and data analysis.</p>
+        <p class="gitcmd mono" aria-hidden="true">$ git log --career --graph</p>
+        <div class="gitwrap" data-gitlog>
+        <span class="gitlog__rail" aria-hidden="true"><span data-git-fill></span></span>
+        <ol class="gitlog">
+          <li class="commit" data-commit>
+            <span class="commit__dot" aria-hidden="true"></span>
+            <p class="commit__head mono"><span class="commit__sha">a3f9c21</span> <span class="commit__ref">(HEAD -> main)</span> <span class="commit__when">Jun 2026 — now</span></p>
+            <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Business Analyst</span></h3>
+            <p class="commit__org">Authentic Security</p>
+            <p class="commit__desc">Process improvement end to end: requirements, stakeholder workshops, process mapping and data analysis.</p>
           </li>
-          <li>
-            <p class="mono">Mar — Jun 2026</p>
-            <h3 class="display">Cash Processing Officer</h3>
-            <p class="timeline__org">Authentic Security</p>
-            <p class="timeline__desc">High-volume reconciliation at 100% accuracy; supported internal tooling and SharePoint.</p>
+          <li class="commit" data-commit>
+            <span class="commit__dot" aria-hidden="true"></span>
+            <p class="commit__head mono"><span class="commit__sha">7be0d14</span> <span class="commit__when">Mar — Jun 2026</span></p>
+            <h3 class="commit__msg"><span class="commit__type mono">chore:</span> <span class="display">Cash Processing Officer</span></h3>
+            <p class="commit__org">Authentic Security</p>
+            <p class="commit__desc">High-volume reconciliation at 100% accuracy; supported internal tooling and SharePoint.</p>
           </li>
-          <li>
-            <p class="mono">Oct — Dec 2025</p>
-            <h3 class="display">Backend Developer Intern</h3>
-            <p class="timeline__org">Source Infinity</p>
-            <p class="timeline__desc">REST APIs in Node.js and Python, WebRTC and cloud storage for a video streaming app.</p>
+          <li class="commit" data-commit>
+            <span class="commit__dot" aria-hidden="true"></span>
+            <p class="commit__head mono"><span class="commit__sha">51c8e9a</span> <span class="commit__when">Oct — Dec 2025</span></p>
+            <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Backend Developer Intern</span></h3>
+            <p class="commit__org">Source Infinity</p>
+            <p class="commit__desc">REST APIs in Node.js and Python, WebRTC and cloud storage for a video streaming app.</p>
           </li>
-          <li>
-            <p class="mono">2023 — 2025</p>
-            <h3 class="display">BIT, Software Development</h3>
-            <p class="timeline__org">Auckland Institute of Studies</p>
-            <p class="timeline__desc">GPA 8.2 / 9 · Academic Excellence Award · Azure Fundamentals (AZ-900).</p>
+          <li class="commit" data-commit>
+            <span class="commit__dot" aria-hidden="true"></span>
+            <p class="commit__head mono"><span class="commit__sha">0d2f7b3</span> <span class="commit__ref">(tag: az-900)</span> <span class="commit__when">2025</span></p>
+            <h3 class="commit__msg"><span class="commit__type mono">cert:</span> <span class="display">Azure Fundamentals</span></h3>
+            <p class="commit__org">Microsoft</p>
+            <p class="commit__desc">Core Azure services, pricing, governance and security.</p>
+          </li>
+          <li class="commit" data-commit>
+            <span class="commit__dot" aria-hidden="true"></span>
+            <p class="commit__head mono"><span class="commit__sha">e41a6c0</span> <span class="commit__when">2023 — 2025</span></p>
+            <h3 class="commit__msg"><span class="commit__type mono">build:</span> <span class="display">BIT, Software Development</span></h3>
+            <p class="commit__org">Auckland Institute of Studies</p>
+            <p class="commit__desc">GPA 8.2 / 9 · Academic Excellence Award. Web, mobile and desktop systems in C#/.NET, Kotlin, SQL Server and Java.</p>
           </li>
         </ol>
+        </div>
 
         <div class="quotes">
           <blockquote>
@@ -317,6 +336,9 @@
         </div>
         <div class="contact__body">
           <p class="mono sec-head__idx">04</p>
+          <div class="term mono" aria-hidden="true">
+            <p><span class="term__ps">guest@jst-26:~$</span> <span data-type="mail --to jatin">mail --to jatin</span><i class="cursor-blink">▍</i></p>
+          </div>
           <p class="contact__lede">
             Questions about a project, something on .NET, or just want to say hello — email is the
             quickest way to reach me.
@@ -346,8 +368,6 @@
       <p>Three.js · GSAP · Lenis · Vite</p>
       <a href="#top">Back to top ↑</a>
     </footer>
-
-    <div class="peek-float" aria-hidden="true" data-peek-float></div>
 
     <script type="module" src="/src/main.js"></script>
   </body>

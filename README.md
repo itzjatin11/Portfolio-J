@@ -19,6 +19,13 @@ Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pag
   - Its overlays (HUD, boot log, titles) are driven by one scrubbed GSAP timeline in `src/main.js`.
   - three.js is lazy-loaded.
   - The render loop pauses when the hero is off screen or the tab is hidden.
+- **After the hero** the inside-the-computer theme continues:
+  - a fixed motherboard background with three trace layers moving at different speeds
+  - skills as a pinned horizontal data bus
+  - projects as app windows flying out of the depth
+  - experience as a git log graph that draws as you scroll
+  - a self-typing terminal prompt in the contact section
+  - Pinning only applies on wide screens; narrow ones get simple reveals.
 - **Motion** is in `src/main.js`:
   - letter-by-letter titles
   - the scroll-lit intro paragraph

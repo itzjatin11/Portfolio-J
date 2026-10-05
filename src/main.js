@@ -194,7 +194,19 @@ function initMotion() {
     scrollTrigger: { trigger: '[data-reveal-chars]', start: 'top 80%', end: 'bottom 50%', scrub: true },
   });
 
-  /* ---------- skills: ghost word drifts, cards deal in ---------- */
+  /* ---------- motherboard background: three trace layers at different depths ---------- */
+  $$('[data-mobo]').forEach((layer, i) => {
+    const url = URL.createObjectURL(new Blob([traceTile(i)], { type: 'image/svg+xml' }));
+    layer.style.maskImage = layer.style.webkitMaskImage = `url(${url})`;
+    const size = [520, 380, 300][i];
+    layer.style.maskSize = layer.style.webkitMaskSize = `${size}px ${size}px`;
+    gsap.to(layer, {
+      y: () => -(document.documentElement.scrollHeight - innerHeight) * +layer.dataset.mobo,
+      ease: 'none',
+      scrollTrigger: { start: 0, end: 'max', scrub: true, invalidateOnRefresh: true },
+    });
+  });
+
   gsap.fromTo(
     '[data-ghost]',
     { xPercent: 0 },
@@ -204,31 +216,144 @@ function initMotion() {
       scrollTrigger: { trigger: '.skills', start: 'top bottom', end: 'bottom top', scrub: true },
     },
   );
-  gsap.from('.skill', {
-    y: 60,
-    opacity: 0,
-    duration: 1,
-    ease: 'expo.out',
-    stagger: { each: 0.06, grid: 'auto', from: 'start' },
-    scrollTrigger: { trigger: '.cards', start: 'top 80%', once: true },
+
+  const mm = gsap.matchMedia();
+
+  /* ---------- skills: pinned data bus on desktop, cards socket in sideways ---------- */
+  mm.add('(min-width: 1101px)', () => {
+    const track = $('[data-cards]');
+    const cards = $$('.skill', track);
+    const distance = () => track.scrollWidth - ($('[data-bus]').clientWidth) + 40;
+    const countEl = $('[data-bus-count]');
+    const bus = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: '.skills',
+        start: 'top top',
+        end: () => `+=${distance() + innerHeight * 0.4}`,
+        pin: true,
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+        onUpdate: (self) =>
+          (countEl.textContent = String(Math.min(8, 1 + Math.floor(self.progress * 8))).padStart(2, '0')),
+      },
+    });
+    bus
+      .to(track, { x: () => -distance(), duration: 1 }, 0)
+      .fromTo('[data-bus-pulse]', { x: 0 }, { x: () => innerWidth - 140, duration: 0.25, repeat: 3 }, 0);
+    // each card swings into its socket as it reaches the viewport
+    cards.forEach((card) => {
+      gsap.fromTo(
+        card,
+        { rotationY: -55, opacity: 0.2, z: -200 },
+        {
+          rotationY: 0,
+          opacity: 1,
+          z: 0,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: card,
+            containerAnimation: bus,
+            start: 'left 100%',
+            end: 'left 55%',
+            scrub: true,
+          },
+        },
+      );
+    });
+  });
+  mm.add('(max-width: 1100px)', () => {
+    gsap.from('.skill', {
+      y: 50,
+      opacity: 0,
+      duration: 0.9,
+      ease: 'expo.out',
+      stagger: 0.06,
+      scrollTrigger: { trigger: '[data-cards]', start: 'top 85%', once: true },
+    });
   });
 
-  /* ---------- work rows + experience reveal ---------- */
-  gsap.from('.row', {
-    y: 40,
-    opacity: 0,
-    duration: 0.9,
-    ease: 'expo.out',
-    stagger: 0.07,
-    scrollTrigger: { trigger: '[data-rows]', start: 'top 80%', once: true },
+  /* ---------- work: app windows fly out of the depth toward you ---------- */
+  mm.add('(min-width: 1101px)', () => {
+    const wins = $$('[data-win]');
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: '.work',
+        start: 'top top',
+        end: () => `+=${innerHeight * wins.length * 0.9}`,
+        pin: true,
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+      },
+    });
+    wins.forEach((w, i) => {
+      gsap.set(w, { z: -1600, opacity: 0, rotationX: 8, zIndex: wins.length - i });
+      tl.to(w, { z: 0, opacity: 1, rotationX: 0, duration: 1, ease: 'power2.out' }, i * 1.2);
+      if (i < wins.length - 1) {
+        tl.to(w, { z: 700, opacity: 0, duration: 0.8, ease: 'power2.in' }, i * 1.2 + 1.2);
+      }
+    });
   });
-  gsap.from('.timeline li, .quotes blockquote', {
+  mm.add('(max-width: 1100px)', () => {
+    $$('[data-win]').forEach((w) =>
+      gsap.from(w, {
+        y: 60,
+        opacity: 0,
+        duration: 0.9,
+        ease: 'expo.out',
+        scrollTrigger: { trigger: w, start: 'top 88%', once: true },
+      }),
+    );
+  });
+
+  /* ---------- experience: git graph draws as you scroll ---------- */
+  gsap.to('[data-git-fill]', {
+    scaleY: 1,
+    ease: 'none',
+    scrollTrigger: { trigger: '[data-gitlog]', start: 'top 60%', end: 'bottom 60%', scrub: true },
+  });
+  $$('[data-commit]').forEach((c) => {
+    ScrollTrigger.create({
+      trigger: c,
+      start: 'top 62%',
+      onEnter: () => c.classList.add('is-on'),
+      onLeaveBack: () => c.classList.remove('is-on'),
+    });
+    gsap.from(c, {
+      x: 40,
+      opacity: 0,
+      duration: 0.9,
+      ease: 'expo.out',
+      scrollTrigger: { trigger: c, start: 'top 90%', once: true },
+    });
+  });
+  gsap.from('.quotes blockquote', {
     y: 40,
     opacity: 0,
     duration: 0.9,
     ease: 'expo.out',
-    stagger: 0.07,
-    scrollTrigger: { trigger: '.timeline', start: 'top 80%', once: true },
+    stagger: 0.08,
+    scrollTrigger: { trigger: '.quotes', start: 'top 85%', once: true },
+  });
+
+  /* ---------- contact: terminal command types itself ---------- */
+  const typed = $('[data-type]');
+  const command = typed.dataset.type;
+  typed.textContent = '';
+  ScrollTrigger.create({
+    trigger: '.contact',
+    start: 'top 60%',
+    once: true,
+    onEnter: () => {
+      const state = { n: 0 };
+      gsap.to(state, {
+        n: command.length,
+        duration: command.length * 0.06,
+        ease: 'none',
+        onUpdate: () => (typed.textContent = command.slice(0, Math.round(state.n))),
+      });
+    },
   });
 
   /* ---------- contact: giant line moves with scroll ---------- */
@@ -248,42 +373,44 @@ function initMotion() {
       journey?.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1);
     });
 
-    // skill cards tilt toward the pointer
-    $$('[data-tilt]').forEach((card) => {
-      const rx = gsap.quickTo(card, 'rotationX', { duration: 0.6, ease: 'power3' });
-      const ry = gsap.quickTo(card, 'rotationY', { duration: 0.6, ease: 'power3' });
-      gsap.set(card, { transformPerspective: 900 });
-      card.addEventListener('pointermove', (e) => {
-        const r = card.getBoundingClientRect();
-        ry(((e.clientX - r.left) / r.width - 0.5) * 10);
-        rx(-((e.clientY - r.top) / r.height - 0.5) * 10);
-      });
-      card.addEventListener('pointerleave', () => {
-        rx(0);
-        ry(0);
-      });
-    });
-
-    // floating preview that follows the pointer over work rows (wide screens;
-    // narrow layouts show the same text inline)
-    const wide = window.matchMedia('(min-width: 761px)');
-    const float = $('[data-peek-float]');
-    const fx = gsap.quickTo(float, 'x', { duration: 0.5, ease: 'power3' });
-    const fy = gsap.quickTo(float, 'y', { duration: 0.5, ease: 'power3' });
-    $$('.row').forEach((row) => {
-      const a = $('a', row);
-      a.addEventListener('pointerenter', () => {
-        if (!wide.matches) return;
-        float.innerHTML = $('[data-peek]', row).innerHTML;
-        float.classList.add('is-on');
-      });
-      a.addEventListener('pointerleave', () => float.classList.remove('is-on'));
-      a.addEventListener('pointermove', (e) => {
-        fx(Math.min(e.clientX + 24, innerWidth - 360));
-        fy(e.clientY + 24);
-      });
-    });
   }
 
   document.fonts?.ready.then(() => ScrollTrigger.refresh());
+}
+
+/* One tile of procedural PCB traces (used as a CSS mask, so it takes the theme colour). */
+function traceTile(seed) {
+  const size = 240;
+  let r = seed * 9301 + 49297;
+  const rnd = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
+  const paths = [];
+  const vias = [];
+  const n = [7, 9, 11][seed];
+  for (let i = 0; i < n; i++) {
+    let x = Math.round(rnd() * 12) * 20;
+    let y = Math.round(rnd() * 12) * 20;
+    let d = `M${x} ${y}`;
+    let dir = rnd() < 0.5 ? [1, 0] : [0, 1];
+    for (let s = 0; s < 3; s++) {
+      const len = (2 + Math.round(rnd() * 4)) * 20;
+      x += dir[0] * len;
+      y += dir[1] * len;
+      d += ` L${x} ${y}`;
+      // 45° jog
+      const j = (rnd() < 0.5 ? -1 : 1) * 20;
+      x += dir[1] ? j : 20;
+      y += dir[0] ? j : 20;
+      d += ` L${x} ${y}`;
+      dir = [dir[1], dir[0]];
+    }
+    paths.push(d);
+    vias.push([x, y]);
+  }
+  const w = [1, 1.5, 2][seed];
+  // draw each path at 9 offsets so the tile wraps seamlessly
+  const offs = [-size, 0, size];
+  const all = offs
+    .flatMap((ox) => offs.map((oy) => `<g transform="translate(${ox} ${oy})">${paths.map((d) => `<path d="${d}"/>`).join('')}${vias.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${w * 2.4}"/>`).join('')}</g>`))
+    .join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><g fill="none" stroke="#000" stroke-width="${w}" stroke-linejoin="round">${all}</g></svg>`;
 }
