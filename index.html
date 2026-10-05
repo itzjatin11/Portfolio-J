@@ -3,19 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Jatin Singh — Full-Stack Developer, Auckland NZ</title>
+    <title>Jatin Singh Taadiyal — Full-Stack Developer</title>
     <meta
       name="description"
-      content="Jatin Singh is a full-stack developer in Auckland, NZ building fast, reliable web products — from client sites to automation tooling. Available for freelance and full-time work."
+      content="Jatin Singh Taadiyal is a full-stack developer in Auckland, NZ building web apps, backends and automation with C#/.NET, Node and SQL."
     />
-    <meta property="og:title" content="Jatin Singh — Full-Stack Developer" />
+    <meta property="og:title" content="Jatin Singh Taadiyal — Full-Stack Developer" />
     <meta
       property="og:description"
-      content="I build web products that work, ship fast, and don't fall over. Auckland, NZ."
+      content="Web apps, backends and automation with C#/.NET, Node and SQL. Auckland, NZ."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://jatindeveloper.in/" />
-    <meta name="theme-color" content="#ECE8DF" />
+    <meta name="theme-color" content="#0E0F11" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <script>
@@ -24,591 +24,330 @@
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#top">Skip to content</a>
-    <div class="grain" aria-hidden="true"></div>
-    <div class="cursor" aria-hidden="true"><span></span><b class="mono">View</b></div>
-    <div class="loader" aria-hidden="true">
-      <p class="loader__name"><span>Jatin</span> <em>Singh</em></p>
-      <p class="loader__count mono"><span data-loader-count>0</span></p>
-      <p class="loader__role mono">Full-stack developer — Auckland</p>
-    </div>
-    <div class="progress" aria-hidden="true"><span></span></div>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <div class="bg" aria-hidden="true"><div class="bg__grid" data-grid></div></div>
+    <div class="spot" aria-hidden="true"></div>
 
-    <header class="nav">
-      <a href="#top" class="nav__mark" aria-label="Back to top">JST<sup>®</sup></a>
-      <nav class="nav__links" aria-label="Primary">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-        <a href="#experience" class="hide-sm">Experience</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <div class="nav__right">
-        <p class="nav__time">Auckland <span data-clock>--:--</span></p>
-        <a href="#contact" class="nav__hire" data-roll>Hire me</a>
-      </div>
-    </header>
-
-    <main id="top">
-      <!-- ============ HERO ============ -->
-      <section class="hero" data-hero>
-        <div class="hero__glyph" data-speed="0.55" data-depth="0.6" aria-hidden="true">J</div>
-        <div class="floaters" aria-hidden="true">
-          <span class="fl mono" style="--x: 56%; --y: 26%" data-speed="0.2" data-depth="1.6">C# / .NET</span>
-          <span class="fl fl--ink mono" style="--x: 82%; --y: 36%" data-speed="0.05" data-depth="2.4">Kotlin</span>
-          <span class="fl mono" style="--x: 38%; --y: 16%" data-speed="0.4" data-depth="1">SQL Server</span>
-          <span class="fl fl--accent mono" style="--x: 70%; --y: 14%" data-speed="0.3" data-depth="2">Azure AZ-900</span>
-          <span class="fl mono" style="--x: 64%; --y: 44%" data-speed="0.15" data-depth="1.3">Node.js</span>
-        </div>
-
-        <div class="hero__top">
-          <p class="hero__eyebrow mono reveal-up">
-            <span>(01)</span> Full-stack developer — Auckland, NZ
-          </p>
-          <a href="#contact" class="badge mono reveal-up"
-            ><span class="dot"></span> Available for full-time &amp; freelance work</a
-          >
-        </div>
-
-        <h1 class="hero__title" aria-label="Jatin Singh Taadiyal" data-chars>
-          <span class="line" data-drift="-1"><span class="line__inner">Jatin</span></span>
-          <span class="line line--indent" data-drift="1"
-            ><span class="line__inner"><em>Singh</em> Taadiyal</span></span
-          >
-        </h1>
-
-        <div class="hero__foot">
-          <p class="hero__intro reveal-up">
-            I build software that ships — clean UI, dependable backends, and automation that
-            actually saves people time.
-          </p>
-          <dl class="hero__stats reveal-up">
-            <div><dt class="mono">Years coding</dt><dd data-count="3">3</dd></div>
-            <div><dt class="mono">Projects shipped</dt><dd data-count="10">10</dd></div>
-            <div><dt class="mono">Certifications</dt><dd data-count="8">8</dd></div>
-          </dl>
-          <a href="#work" class="hero__scroll mono reveal-up">
-            <span>Scroll</span>
-            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-              <path d="M12 4v16m0 0-6-6m6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.5" />
-            </svg>
-          </a>
-        </div>
-      </section>
-
-      <!-- ============ MARQUEE ============ -->
-      <div class="marquee" aria-hidden="true">
-        <div class="marquee__track" data-marquee>
-          <span>C# / .NET</span><i>✳</i><span>Node.js</span><i>✳</i><span>Kotlin</span><i>✳</i>
-          <span>Python</span><i>✳</i><span>SQL Server</span><i>✳</i><span>Azure</span><i>✳</i
-          ><span>Power Automate</span><i>✳</i><span>SharePoint</span><i>✳</i>
-        </div>
-      </div>
-
-      <!-- ============ ABOUT ============ -->
-      <section class="about" id="about">
-        <p class="label mono"><span>(02)</span> About</p>
-        <div class="about__top">
-          <p class="about__statement" data-words>
-            I think in systems before I think in syntax. Before writing a line of code I want to know
-            what the actual problem is, who hits it, and what "done" looks like for them. That's why
-            the things I build tend to stick — a booking flow that doesn't lose a single lead, a macro
-            that turns a 40-minute task into one click.
+    <div class="shell" id="top">
+      <!-- ============ SIDEBAR ============ -->
+      <header class="side">
+        <div class="side__top">
+          <p class="side__path mono intro">~/jatin <span class="caret"></span></p>
+          <h1 class="side__name intro">
+            <a href="#top" data-scramble="Jatin Singh Taadiyal">Jatin Singh Taadiyal</a>
+          </h1>
+          <p class="side__role intro">Full-stack developer</p>
+          <p class="side__lede intro">
+            I build dependable web apps, backends and the automation that sits between them —
+            mostly in C#/.NET, Node and SQL.
           </p>
 
-          <aside class="glance" aria-label="At a glance">
-            <svg class="glance__seal" viewBox="0 0 120 120" aria-hidden="true" data-seal>
-              <defs><path id="seal-path" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" /></defs>
-              <circle class="seal__bg" cx="60" cy="60" r="58" />
-              <text><textPath href="#seal-path" textLength="286" lengthAdjust="spacing">Open to work · Auckland NZ · Open to work · Auckland NZ ·</textPath></text>
-              <circle class="seal__dot" cx="60" cy="60" r="6" />
-            </svg>
-            <p class="glance__title mono">At a glance</p>
-            <dl class="glance__list">
-              <div><dt class="mono">Role</dt><dd>Business Analyst, Authentic Security</dd></div>
-              <div><dt class="mono">Focus</dt><dd>Full-stack .NET, Node &amp; automation</dd></div>
-              <div><dt class="mono">Degree</dt><dd>BIT Software Dev — GPA 8.2 / 9</dd></div>
-              <div><dt class="mono">Award</dt><dd>Academic Excellence</dd></div>
-              <div><dt class="mono">Certified</dt><dd>Azure Fundamentals (AZ-900)</dd></div>
-              <div><dt class="mono">Local time</dt><dd><span data-clock>--:--</span> NZT</dd></div>
-            </dl>
-            <a
-              class="glance__cv"
-              href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
-              target="_blank"
-              rel="noopener"
-              data-roll
-              >View résumé</a
-            >
-          </aside>
+          <nav class="side__nav intro" aria-label="Sections">
+            <a href="#about" data-nav="about"><span class="side__bar"></span>About</a>
+            <a href="#experience" data-nav="experience"><span class="side__bar"></span>Experience</a>
+            <a href="#projects" data-nav="projects"><span class="side__bar"></span>Projects</a>
+            <a href="#stack" data-nav="stack"><span class="side__bar"></span>Stack</a>
+            <a href="#contact" data-nav="contact"><span class="side__bar"></span>Contact</a>
+          </nav>
         </div>
 
-        <div class="about__grid">
-          <figure class="about__figure">
-            <div class="about__frame" data-parallax-wrap>
-              <div class="about__figure-inner" data-parallax-img>
-                <span class="about__figure-type">Scope<br /><em>first,</em><br />build<br />second.</span>
-              </div>
-            </div>
-            <figcaption class="mono">Fig. 1 — Working principle</figcaption>
-          </figure>
+        <div class="side__foot intro">
+          <ul class="socials" aria-label="Links">
+            <li>
+              <a href="https://github.com/itzjatin11" target="_blank" rel="noopener" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.linkedin.com/in/jatinsinghtaadiyal/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg>
+              </a>
+            </li>
+            <li>
+              <a href="mailto:jatintaadiyal@gmail.com" aria-label="Email">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m3 6 9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+              </a>
+            </li>
+          </ul>
+          <p class="side__meta mono">Auckland, NZ · <span data-clock>--:--</span></p>
+        </div>
+      </header>
 
-          <div class="about__cols">
-            <div>
-              <h3 class="mono">Currently</h3>
-              <p>
-                Business Analyst at Authentic Security in Auckland — bridging business process and
-                technical delivery. BIT (Software Development) graduate, GPA 8.2/9.
-              </p>
-            </div>
-            <div>
-              <h3 class="mono">What I build</h3>
-              <p>
-                Full-stack web apps, client-facing sites and internal automation — C#/.NET, Node and
-                the Microsoft 365 stack.
-              </p>
-            </div>
-            <div>
-              <h3 class="mono">How I work</h3>
-              <p>
-                I'd rather ship a smaller version that's solid than a big one that breaks in week
-                two. Software has to work under real conditions, not just in a screenshot.
-              </p>
-            </div>
+      <!-- ============ CONTENT ============ -->
+      <main class="main" id="content">
+        <!-- About -->
+        <section class="sec" id="about" data-section>
+          <h2 class="sec__title mono"><span>01</span> About</h2>
+          <div class="prose reveal">
+            <p>
+              I'm a developer in Auckland who likes the unglamorous parts of software: clean data
+              models, predictable APIs, and automation that removes busywork. I'd rather ship a
+              smaller thing that holds up than a bigger one that breaks in week two.
+            </p>
+            <p>
+              Right now I'm a <strong>Business Analyst at Authentic Security</strong>, working on
+              process improvement — requirements, process mapping and data analysis. It sharpens the
+              question that comes before any code: what problem are we solving, and for whom?
+            </p>
+            <p>
+              Before that I built backend services for a video streaming app at
+              <strong>Source Infinity</strong>, and finished a BIT in Software Development at the
+              Auckland Institute of Studies with an Academic Excellence Award.
+            </p>
           </div>
-        </div>
-      </section>
 
-      <!-- ============ WORK ============ -->
-      <section class="work" id="work">
-        <header class="work__head">
-          <p class="label mono"><span>(03)</span> Selected work</p>
-          <h2 class="work__title" data-split>
-            <span data-drift="-0.6">Things</span> <em data-drift="0.6">I've built</em>
-          </h2>
-        </header>
+          <dl class="facts reveal">
+            <div><dt class="mono">GPA</dt><dd>8.2<span>/9</span></dd></div>
+            <div><dt class="mono">Certifications</dt><dd>8</dd></div>
+            <div><dt class="mono">Projects shipped</dt><dd>10+</dd></div>
+          </dl>
+        </section>
 
-        <div class="stack">
-          <!-- Project 1 -->
-          <article class="card" data-card style="--card-bg: #D8D2C4; --card-accent: #D9481C">
-            <div class="card__meta">
-              <p class="mono card__index">01 / 05 — Full-stack · Flagship</p>
-              <h3 class="card__name">CV Analyzer</h3>
-              <p class="card__desc">
-                Upload a stack of résumés and get structure back. Extracts names, skills and
-                experience through an NLP parsing API, groups candidates by overlapping skills, and
-                exports everything to Excel through an admin dashboard.
-              </p>
-              <ul class="tags mono">
-                <li>ASP.NET Core MVC</li><li>C#</li><li>SQL Server</li><li>EF Core</li
-                ><li>NLP API</li><li>EPPlus</li>
-              </ul>
-              <a class="card__link" data-roll href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener"
-                >View source <span>↗</span></a
-              >
-            </div>
-            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
-              <div class="viz viz--cv" data-parallax-img>
-                <div class="sheet s1"><b></b><i></i><i></i><i class="hl"></i><i></i><i class="short"></i></div>
-                <div class="sheet s2"><b></b><i></i><i class="hl"></i><i></i><i class="short"></i></div>
-                <div class="sheet s3"><b></b><i class="hl"></i><i></i><i></i><i></i><i class="short"></i></div>
-                <div class="clusters">
-                  <span style="--x: 18%; --y: 30%; --s: 1.2"></span>
-                  <span style="--x: 26%; --y: 42%"></span>
-                  <span style="--x: 14%; --y: 48%; --s: .8"></span>
-                  <span class="b" style="--x: 64%; --y: 62%"></span>
-                  <span class="b" style="--x: 72%; --y: 72%; --s: 1.3"></span>
-                  <span class="b" style="--x: 58%; --y: 76%; --s: .7"></span>
-                </div>
+        <!-- Experience -->
+        <section class="sec" id="experience" data-section>
+          <h2 class="sec__title mono"><span>02</span> Experience</h2>
+          <ol class="log">
+            <li class="log__item reveal">
+              <p class="log__when mono">Jun 2026 — Now</p>
+              <div class="log__body">
+                <h3>Business Analyst <span>· Authentic Security</span></h3>
+                <p>
+                  End-to-end process improvement: requirements gathering, stakeholder workshops,
+                  process mapping and data analysis to find and remove operational friction.
+                </p>
+                <ul class="chips mono"><li>Business analysis</li><li>Process mapping</li><li>Data analysis</li></ul>
               </div>
+            </li>
+            <li class="log__item reveal">
+              <p class="log__when mono">Mar — Jun 2026</p>
+              <div class="log__body">
+                <h3>Cash Processing Officer <span>· Authentic Security</span></h3>
+                <p>
+                  Reconciled high-volume cash transactions at 100% accuracy and supported internal
+                  tooling and SharePoint operations.
+                </p>
+                <ul class="chips mono"><li>SharePoint</li><li>Reconciliation</li><li>Operations</li></ul>
+              </div>
+            </li>
+            <li class="log__item reveal">
+              <p class="log__when mono">Oct — Dec 2025</p>
+              <div class="log__body">
+                <h3>Backend Developer Intern <span>· Source Infinity</span></h3>
+                <p>
+                  Built and integrated backend services for a video streaming app: REST APIs in
+                  Node.js and Python, WebRTC signalling and cloud storage.
+                </p>
+                <ul class="chips mono"><li>Node.js</li><li>Python</li><li>REST</li><li>WebRTC</li></ul>
+              </div>
+            </li>
+            <li class="log__item reveal">
+              <p class="log__when mono">2023 — 2025</p>
+              <div class="log__body">
+                <h3>BIT, Software Development <span>· Auckland Institute of Studies</span></h3>
+                <p>
+                  GPA 8.2 / 9 and an Academic Excellence Award. Web, mobile and desktop systems in
+                  C#/.NET, Kotlin, SQL Server and Java. Azure Fundamentals (AZ-900) certified in 2025.
+                </p>
+                <ul class="chips mono"><li>C# / .NET</li><li>Kotlin</li><li>SQL Server</li><li>Azure</li></ul>
+              </div>
+            </li>
+          </ol>
+          <a
+            class="textlink mono reveal"
+            href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
+            target="_blank"
+            rel="noopener"
+            >Full résumé <span>↗</span></a
+          >
+        </section>
+
+        <!-- Projects -->
+        <section class="sec" id="projects" data-section>
+          <h2 class="sec__title mono"><span>03</span> Projects</h2>
+
+          <article class="proj reveal">
+            <header class="proj__head">
+              <h3><a href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener">CV Analyzer <span>↗</span></a></h3>
+              <p class="proj__kind mono">web app · 2025</p>
+            </header>
+            <p class="proj__desc">
+              Parses batches of résumés into structured candidate records, groups candidates by
+              overlapping skills, and exports reports to Excel.
+            </p>
+            <div class="flow" data-flow>
+              <span class="node">Upload<small>PDF / DOCX</small></span><i class="edge"></i>
+              <span class="node node--key">ASP.NET Core MVC<small>controllers</small></span><i class="edge"></i>
+              <span class="node">Affinda API<small>NLP parsing</small></span><i class="edge"></i>
+              <span class="node">SQL Server<small>EF Core</small></span><i class="edge"></i>
+              <span class="node">Excel<small>EPPlus</small></span>
             </div>
           </article>
 
-          <!-- Project 2 -->
-          <article class="card" data-card style="--card-bg: #1F2A24; --card-ink: #ECE8DF; --card-accent: #C8D94A">
-            <div class="card__meta">
-              <p class="mono card__index">02 / 05 — E-commerce</p>
-              <h3 class="card__name">SpecTacular</h3>
-              <p class="card__desc">
-                An eyewear store built from scratch, not a template. Customers browse and manage a
-                cart; admins handle users, products and image uploads behind role-based login. Clean
-                three-tier structure throughout.
-              </p>
-              <ul class="tags mono">
-                <li>ASP.NET Core MVC</li><li>C#</li><li>Entity Framework</li><li>SQL Server</li
-                ><li>Bootstrap</li>
-              </ul>
-              <a
-                class="card__link" data-roll
-                href="https://github.com/itzjatin11/Spectacular--Web-App"
-                target="_blank"
-                rel="noopener"
-                >View source <span>↗</span></a
-              >
-            </div>
-            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
-              <div class="viz viz--spec" data-parallax-img>
-                <svg viewBox="0 0 320 140" class="glasses" aria-hidden="true">
-                  <circle cx="90" cy="70" r="46" />
-                  <circle cx="230" cy="70" r="46" />
-                  <path d="M136 64q24-18 48 0M44 58 8 44M276 58l36-14" />
-                </svg>
-                <div class="tag-price mono">NZ$ 189.00</div>
-                <div class="cart mono">Cart <b>2</b></div>
-              </div>
+          <article class="proj reveal">
+            <header class="proj__head">
+              <h3><a href="https://github.com/itzjatin11/To-Do-Mobile_App" target="_blank" rel="noopener">Tasks for Android <span>↗</span></a></h3>
+              <p class="proj__kind mono">mobile + api · 2025</p>
+            </header>
+            <p class="proj__desc">
+              A Kotlin task manager that syncs through its own .NET 8 Web API rather than living
+              only on the device.
+            </p>
+            <div class="flow" data-flow>
+              <span class="node">Kotlin app<small>MVVM</small></span><i class="edge"></i>
+              <span class="node">Retrofit<small>HTTP client</small></span><i class="edge"></i>
+              <span class="node node--key">ASP.NET Core Web API<small>.NET 8</small></span><i class="edge"></i>
+              <span class="node">SQL Server<small>EF Core</small></span>
             </div>
           </article>
 
-          <!-- Project 3 -->
-          <article class="card" data-card style="--card-bg: #E9E2D0; --card-accent: #2F5BD9">
-            <div class="card__meta">
-              <p class="mono card__index">03 / 05 — Mobile</p>
-              <h3 class="card__name">Tasks, Android</h3>
-              <p class="card__desc">
-                A Kotlin task manager with real cloud sync — not a local-only app. MVVM on the
-                device, Retrofit in the data layer, and its own ASP.NET Core Web API and SQL Server
-                behind it.
-              </p>
-              <ul class="tags mono">
-                <li>Kotlin</li><li>Android</li><li>MVVM</li><li>Retrofit</li><li>ASP.NET Web API</li
-                ><li>SQL Server</li>
-              </ul>
-              <a
-                class="card__link" data-roll
-                href="https://github.com/itzjatin11/To-Do-Mobile_App"
-                target="_blank"
-                rel="noopener"
-                >View source <span>↗</span></a
-              >
-            </div>
-            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
-              <div class="viz viz--todo" data-parallax-img>
-                <div class="phone">
-                  <p class="mono phone__date">Mon 06</p>
-                  <ul>
-                    <li class="done"><span></span>Submit API docs</li>
-                    <li class="done"><span></span>Fix Retrofit timeout</li>
-                    <li><span></span>Write sync tests</li>
-                    <li><span></span>Groceries</li>
-                  </ul>
-                </div>
-              </div>
+          <article class="proj reveal">
+            <header class="proj__head">
+              <h3><a href="https://github.com/itzjatin11/Spectacular--Web-App" target="_blank" rel="noopener">SpecTacular <span>↗</span></a></h3>
+              <p class="proj__kind mono">e-commerce · 2025</p>
+            </header>
+            <p class="proj__desc">
+              Eyewear store with a cart for customers and an admin dashboard for users, products and
+              image uploads behind role-based login.
+            </p>
+            <div class="flow" data-flow>
+              <span class="node">Razor views<small>Bootstrap</small></span><i class="edge"></i>
+              <span class="node node--key">MVC controllers<small>role auth</small></span><i class="edge"></i>
+              <span class="node">Services<small>business logic</small></span><i class="edge"></i>
+              <span class="node">SQL Server<small>EF Core</small></span>
             </div>
           </article>
 
-          <!-- Project 4 -->
-          <article class="card" data-card style="--card-bg: #1E2B2E; --card-ink: #ECE8DF; --card-accent: #F0B46B">
-            <div class="card__meta">
-              <p class="mono card__index">04 / 05 — Client work · Live</p>
-              <h3 class="card__name card__name--long">SoulScriptByKai</h3>
-              <p class="card__desc">
-                A live website and booking system for a self-employed practitioner in New Zealand.
-                Four priced services, a guided booking flow, and a custom booking modal that posts
-                straight to Formspree, so the client takes paid enquiries without a booking-platform
-                subscription.
-              </p>
-              <ul class="tags mono">
-                <li>HTML</li><li>CSS</li><li>JavaScript</li><li>Formspree</li><li>Responsive UI</li>
-              </ul>
-              <a class="card__link" data-roll href="https://soulscriptbykai.com/" target="_blank" rel="noopener"
-                >Visit live site <span>↗</span></a
-              >
-            </div>
-            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
-              <div class="viz viz--booking" data-parallax-img>
-                <div class="browser">
-                  <div class="browser__bar"><i></i><i></i><i></i><span class="mono">soulscriptbykai.com</span></div>
-                  <div class="browser__body">
-                    <p class="browser__step mono">Step 1 of 3 — Choose a session</p>
-                    <ul class="slots mono">
-                      <li><span>Clarity session</span><span>40 min · $65</span></li>
-                      <li class="on"><span>Life path session</span><span>60 min · $85</span></li>
-                      <li><span>Relationship session</span><span>45 min · $75</span></li>
-                    </ul>
-                    <span class="browser__cta mono">Continue →</span>
-                  </div>
-                </div>
-                <div class="toast mono"><b>✓</b> Booking request sent</div>
-              </div>
+          <article class="proj reveal">
+            <header class="proj__head">
+              <h3><a href="https://soulscriptbykai.com/" target="_blank" rel="noopener">SoulScriptByKai <span>↗</span></a></h3>
+              <p class="proj__kind mono">client site · live</p>
+            </header>
+            <p class="proj__desc">
+              Production website and booking flow for a self-employed client. Enquiries post
+              straight to Formspree, so there's no booking-platform subscription to pay for.
+            </p>
+            <div class="flow" data-flow>
+              <span class="node">Static site<small>HTML / CSS / JS</small></span><i class="edge"></i>
+              <span class="node node--key">Booking modal<small>validation</small></span><i class="edge"></i>
+              <span class="node">Formspree<small>form backend</small></span><i class="edge"></i>
+              <span class="node">Client inbox<small>email</small></span>
             </div>
           </article>
 
-          <!-- Project 5 -->
-          <article class="card" data-card style="--card-bg: #2A1E1A; --card-ink: #ECE8DF; --card-accent: #E8A87C">
-            <div class="card__meta">
-              <p class="mono card__index">05 / 05 — Desktop</p>
-              <h3 class="card__name">Femina Salon</h3>
-              <p class="card__desc">
-                A desktop system that replaced a salon's pen-and-paper workflow: services, products,
-                customer records and tiered memberships at 10, 15 or 20 percent off — through to
-                payment and a saved receipt.
-              </p>
-              <ul class="tags mono">
-                <li>Python</li><li>Tkinter</li><li>MySQL</li><li>Pillow</li>
-              </ul>
-              <a
-                class="card__link" data-roll
-                href="https://github.com/itzjatin11/Femina-Salon-Management-System"
-                target="_blank"
-                rel="noopener"
-                >View source <span>↗</span></a
-              >
-            </div>
-            <div class="card__visual" data-parallax-wrap data-tilt data-cursor>
-              <div class="viz viz--receipt" data-parallax-img>
-                <div class="receipt mono">
-                  <p class="receipt__head">FEMINA — RECEIPT</p>
-                  <p><span>Haircut</span><span>45.00</span></p>
-                  <p><span>Hair colour</span><span>120.00</span></p>
-                  <p><span>Facial</span><span>60.00</span></p>
-                  <p class="rule"><span>Gold member</span><span>−15%</span></p>
-                  <p class="total"><span>Total</span><span>191.25</span></p>
-                </div>
-              </div>
+          <article class="proj reveal">
+            <header class="proj__head">
+              <h3><a href="https://github.com/itzjatin11/Femina-Salon-Management-System" target="_blank" rel="noopener">Femina Salon <span>↗</span></a></h3>
+              <p class="proj__kind mono">desktop · 2024</p>
+            </header>
+            <p class="proj__desc">
+              Point-of-sale for a salon: services, products, customer records and membership tiers
+              that apply 10/15/20% discounts through to payment and a saved receipt.
+            </p>
+            <div class="flow" data-flow>
+              <span class="node">Tkinter UI<small>Python</small></span><i class="edge"></i>
+              <span class="node node--key">Billing logic<small>tiers · discounts</small></span><i class="edge"></i>
+              <span class="node">MySQL<small>customers</small></span><i class="edge"></i>
+              <span class="node">Receipt<small>file export</small></span>
             </div>
           </article>
-        </div>
 
-        <!-- Smaller things -->
-        <div class="index">
-          <p class="label mono"><span>(04)</span> Smaller things</p>
-          <ul class="index__list">
+          <ul class="minor reveal">
             <li>
               <a href="https://github.com/itzjatin11/Automatic-Backup" target="_blank" rel="noopener">
-                <span class="index__name">Automatic Backup</span>
-                <span class="index__desc">Dated folder backups that never copy the same file twice</span>
-                <span class="index__stack mono">Python · File I/O</span>
-                <span class="index__arrow">↗</span>
+                <span>Automatic Backup</span><span class="mono">python · dated, de-duplicated folder backups</span><b>↗</b>
               </a>
             </li>
             <li>
               <a href="https://github.com/itzjatin11/image-finder" target="_blank" rel="noopener">
-                <span class="index__name">Image Finder</span>
-                <span class="index__desc">Photo records in MS Access, searchable by name and birthdate</span>
-                <span class="index__stack mono">Python · Tkinter · PyODBC</span>
-                <span class="index__arrow">↗</span>
+                <span>Image Finder</span><span class="mono">python · photo records in MS Access</span><b>↗</b>
               </a>
             </li>
             <li>
               <a href="https://github.com/itzjatin11" target="_blank" rel="noopener">
-                <span class="index__name">Everything else</span>
-                <span class="index__desc">Experiments, coursework and works in progress</span>
-                <span class="index__stack mono">github.com/itzjatin11</span>
-                <span class="index__arrow">↗</span>
+                <span>Everything else</span><span class="mono">github.com/itzjatin11</span><b>↗</b>
               </a>
             </li>
           </ul>
-        </div>
-      </section>
+        </section>
 
-      <!-- ============ EXPERIENCE ============ -->
-      <section class="exp" id="experience">
-        <p class="label mono"><span>(05)</span> Experience</p>
-        <h2 class="section-title" data-split><span data-drift="-0.5">How I</span> <em data-drift="0.5">got here</em></h2>
-
-        <ol class="exp__list" data-exp><span class="exp__line" aria-hidden="true"></span>
-          <li class="exp__row">
-            <p class="exp__when mono">Jun 2026 — Present</p>
-            <div class="exp__what">
-              <h3>Business Analyst</h3>
-              <p class="exp__org">Authentic Security</p>
-            </div>
-            <div class="exp__detail">
-              <p>
-                Working on an end-to-end process improvement initiative: requirements gathering,
-                stakeholder engagement, process mapping and data analysis to find and fix
-                operational inefficiencies.
-              </p>
-              <ul class="tags mono"><li>Business analysis</li><li>Process mapping</li><li>Stakeholders</li></ul>
-            </div>
-          </li>
-          <li class="exp__row">
-            <p class="exp__when mono">Mar 2026 — Jun 2026</p>
-            <div class="exp__what">
-              <h3>Cash Processing Officer</h3>
-              <p class="exp__org">Authentic Security</p>
-            </div>
-            <div class="exp__detail">
-              <p>
-                Processed and reconciled high-volume cash transactions at 100% accuracy, and
-                supported internal tools and SharePoint operations while moving into the BA role.
-              </p>
-              <ul class="tags mono"><li>SharePoint</li><li>Data accuracy</li><li>Operations</li></ul>
-            </div>
-          </li>
-          <li class="exp__row">
-            <p class="exp__when mono">Oct 2025 — Dec 2025</p>
-            <div class="exp__what">
-              <h3>Backend Developer Intern</h3>
-              <p class="exp__org">Source Infinity</p>
-            </div>
-            <div class="exp__detail">
-              <p>
-                Built and integrated backend services for a video streaming app in Node.js and
-                Python — REST APIs, WebRTC and cloud storage.
-              </p>
-              <ul class="tags mono"><li>Node.js</li><li>Python</li><li>REST APIs</li><li>WebRTC</li></ul>
-            </div>
-          </li>
-          <li class="exp__row">
-            <p class="exp__when mono">2025</p>
-            <div class="exp__what">
-              <h3>Azure Fundamentals (AZ-900)</h3>
-              <p class="exp__org">Microsoft Certified</p>
-            </div>
-            <div class="exp__detail">
-              <p>
-                Core Azure services, pricing, governance and security — one of eight certifications
-                so far.
-              </p>
-              <ul class="tags mono"><li>Microsoft Azure</li><li>Cloud</li></ul>
-            </div>
-          </li>
-          <li class="exp__row">
-            <p class="exp__when mono">Jan 2023 — Dec 2025</p>
-            <div class="exp__what">
-              <h3>BIT, Software Development</h3>
-              <p class="exp__org">Auckland Institute of Studies</p>
-            </div>
-            <div class="exp__detail">
-              <p>
-                GPA 8.2 / 9.0 and an Academic Excellence Award. Built web, mobile and desktop
-                systems across C#/.NET, Kotlin, SQL Server and Java.
-              </p>
-              <ul class="tags mono"><li>C# / .NET</li><li>Kotlin</li><li>SQL Server</li><li>Java</li></ul>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      <!-- ============ TESTIMONIALS ============ -->
-      <section class="quotes">
-        <p class="label mono"><span>(06)</span> Kind words</p>
-        <div class="quotes__grid">
-          <figure class="quote" data-lift="0">
-            <blockquote>
-              “A creative problem-solver who thinks critically about every project. His attention to
-              detail and innovative mindset make him stand out among his peers.”
-            </blockquote>
-            <figcaption><b>Ashwini</b><span class="mono">Professor &amp; mentor</span></figcaption>
+        <!-- Stack -->
+        <section class="sec" id="stack" data-section>
+          <h2 class="sec__title mono"><span>04</span> Stack</h2>
+          <figure class="code reveal">
+            <figcaption class="code__bar mono"><i></i><i></i><i></i><span>stack.ts</span></figcaption>
+            <pre><code><span class="k">export const</span> <span class="v">stack</span> = {
+  <span class="p">languages</span>:  [<span class="s">"C#"</span>, <span class="s">"JavaScript"</span>, <span class="s">"Python"</span>, <span class="s">"Kotlin"</span>, <span class="s">"SQL"</span>, <span class="s">"Java"</span>],
+  <span class="p">backend</span>:    [<span class="s">"ASP.NET Core MVC"</span>, <span class="s">"Web API"</span>, <span class="s">"EF Core"</span>, <span class="s">"Node.js"</span>],
+  <span class="p">frontend</span>:   [<span class="s">"HTML/CSS"</span>, <span class="s">"Razor"</span>, <span class="s">"Responsive UI"</span>, <span class="s">"Figma"</span>],
+  <span class="p">data</span>:       [<span class="s">"SQL Server"</span>, <span class="s">"MySQL"</span>, <span class="s">"MongoDB"</span>, <span class="s">"Firestore"</span>],
+  <span class="p">cloud</span>:      [<span class="s">"Azure (AZ-900)"</span>, <span class="s">"SharePoint"</span>, <span class="s">"Purview"</span>],
+  <span class="p">automation</span>: [<span class="s">"Power Automate"</span>, <span class="s">"Power Query (M)"</span>, <span class="s">"VBA"</span>],
+  <span class="p">tools</span>:      [<span class="s">"Git"</span>, <span class="s">"Visual Studio"</span>, <span class="s">"Android Studio"</span>],
+} <span class="k">as const</span>;</code></pre>
           </figure>
-          <figure class="quote" data-lift="1">
-            <blockquote>
-              “Remarkable teamwork and collaboration skills. He works seamlessly with others while
-              contributing unique insights and leadership when needed.”
-            </blockquote>
-            <figcaption><b>Havea</b><span class="mono">Professor</span></figcaption>
-          </figure>
-          <figure class="quote" data-lift="2">
-            <blockquote>
-              “Always reliable and supportive. He approaches every challenge with patience and
-              positivity. It's been a pleasure working and learning alongside him.”
-            </blockquote>
-            <figcaption><b>Pobir</b><span class="mono">Co-founder, Rose N Petal</span></figcaption>
-          </figure>
-        </div>
-      </section>
 
-      <!-- ============ CAPABILITIES ============ -->
-      <section class="caps">
-        <p class="label mono"><span>(07)</span> Toolbox</p>
-        <div class="caps__grid">
-          <div class="caps__col">
-            <h3>Frontend</h3>
-            <ul>
-              <li>HTML / CSS / JavaScript</li><li>Razor &amp; Web Forms</li><li>Responsive UI</li
-              ><li>Figma</li>
-            </ul>
+          <div class="quotes">
+            <figure class="quote reveal">
+              <blockquote>“A creative problem-solver who thinks critically about every project.”</blockquote>
+              <figcaption class="mono">Ashwini · Professor</figcaption>
+            </figure>
+            <figure class="quote reveal">
+              <blockquote>“Remarkable teamwork — contributes unique insights and leadership when needed.”</blockquote>
+              <figcaption class="mono">Havea · Professor</figcaption>
+            </figure>
+            <figure class="quote reveal">
+              <blockquote>“Always reliable. Approaches every challenge with patience and positivity.”</blockquote>
+              <figcaption class="mono">Pobir · Co-founder, Rose N Petal</figcaption>
+            </figure>
           </div>
-          <div class="caps__col">
-            <h3>Backend</h3>
-            <ul>
-              <li>C# / .NET (MVC, Web API)</li><li>Node.js</li><li>Python</li><li>Kotlin</li
-              ><li>Java, C / C++</li><li>REST APIs</li>
-            </ul>
-          </div>
-          <div class="caps__col">
-            <h3>Data &amp; Cloud</h3>
-            <ul>
-              <li>SQL Server</li><li>MongoDB</li><li>MySQL &amp; MS Access</li><li>Azure (AZ-900)</li
-              ><li>SharePoint</li><li>Microsoft Purview</li>
-            </ul>
-          </div>
-          <div class="caps__col">
-            <h3>Workflow</h3>
-            <ul>
-              <li>Git &amp; GitHub</li><li>Power Automate</li><li>Power Query (M)</li><li>VBA macros</li
-              ><li>WordPress</li>
-            </ul>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- ============ HIRE BAND ============ -->
-      <a href="#contact" class="hire" data-cursor aria-label="Get in touch">
-        <span class="hire__track" data-hire-track aria-hidden="true">
-          <span>Let's work together</span><i>✳</i><span class="o">Let's work together</span><i>✳</i>
-          <span>Let's work together</span><i>✳</i><span class="o">Let's work together</span><i>✳</i>
-        </span>
-      </a>
-
-      <!-- ============ CONTACT ============ -->
-      <section class="contact" id="contact">
-        <div class="contact__bg" data-speed="0.7" aria-hidden="true">Hello</div>
-        <p class="label mono"><span>(08)</span> Contact</p>
-        <div class="contact__grid">
-          <div>
-            <h2 class="contact__title" data-split>
-              Have something<br />
-              <em>worth building?</em>
-            </h2>
+        <!-- Contact -->
+        <section class="sec sec--last" id="contact" data-section>
+          <h2 class="sec__title mono"><span>05</span> Contact</h2>
+          <div class="contact reveal">
             <p class="contact__lede">
-              A project, a role, or just talking shop — I reply to every message myself, usually
-              within 24 hours. Based in Auckland, open to remote and on-site work.
+              Want to talk shop, swap notes on .NET, or ask about something here? Email is the best
+              way to reach me.
             </p>
-            <a class="contact__mail" href="mailto:jatintaadiyal@gmail.com" data-magnetic>
-              <span>jatintaadiyal@gmail.com</span>
-              <span class="contact__arrow">→</span>
-            </a>
+            <a class="contact__mail" href="mailto:jatintaadiyal@gmail.com">jatintaadiyal@gmail.com</a>
             <ul class="contact__links mono">
               <li><a href="https://www.linkedin.com/in/jatinsinghtaadiyal/" target="_blank" rel="noopener">LinkedIn ↗</a></li>
               <li><a href="https://github.com/itzjatin11" target="_blank" rel="noopener">GitHub ↗</a></li>
-              <li><a href="tel:+64225154527">+64 22 515 4527</a></li>
               <li>
-                <a
-                  href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener"
-                  >Résumé ↗</a
-                >
+                <a href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing" target="_blank" rel="noopener">Résumé ↗</a>
               </li>
             </ul>
           </div>
 
-          <form class="form" action="https://formspree.io/f/maqzrnyb" method="POST" data-form>
-            <label class="form__row">
-              <span class="mono">Name</span>
-              <input type="text" name="name" required autocomplete="name" />
+          <form class="form reveal" action="https://formspree.io/f/maqzrnyb" method="POST" data-form>
+            <div class="form__grid">
+              <label class="field">
+                <span class="mono">name</span>
+                <input id="f-name" type="text" name="name" required autocomplete="name" />
+              </label>
+              <label class="field">
+                <span class="mono">email</span>
+                <input id="f-email" type="email" name="email" required autocomplete="email" />
+              </label>
+            </div>
+            <label class="field">
+              <span class="mono">message</span>
+              <textarea id="f-message" name="message" rows="4" required></textarea>
             </label>
-            <label class="form__row">
-              <span class="mono">Email</span>
-              <input type="email" name="email" required autocomplete="email" />
-            </label>
-            <label class="form__row">
-              <span class="mono">Message</span>
-              <textarea name="message" rows="4" required placeholder="What are you building?"></textarea>
-            </label>
-            <button type="submit" class="form__submit">Send message <span>→</span></button>
-            <p class="form__note mono" role="status" aria-live="polite"></p>
+            <div class="form__foot">
+              <button type="submit" class="btn">Send message</button>
+              <p class="form__note mono" role="status" aria-live="polite"></p>
+            </div>
           </form>
-        </div>
-      </section>
-    </main>
 
-    <footer class="footer mono">
-      <p>© <span data-year></span> Jatin Singh Taadiyal</p>
-      <p>Designed &amp; built from scratch</p>
-      <a href="#top">Back to top ↑</a>
-    </footer>
+          <footer class="foot mono">
+            <p>© <span data-year></span> Jatin Singh Taadiyal</p>
+            <p>Built with Vite, GSAP and Lenis · set in Geist</p>
+          </footer>
+        </section>
+      </main>
+    </div>
 
     <script type="module" src="/src/main.js"></script>
   </body>

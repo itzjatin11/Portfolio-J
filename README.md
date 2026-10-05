@@ -1,6 +1,6 @@
 # jatindeveloper.in
 
-Personal portfolio of Jatin Singh Taadiyal. It's a static site built with Vite, GSAP ScrollTrigger and Lenis smooth scrolling. The fonts (Fraunces, Inter Tight, JetBrains Mono) are self-hosted through Fontsource.
+Personal portfolio of Jatin Singh Taadiyal. It's a static site built with Vite, GSAP ScrollTrigger and Lenis smooth scrolling. Geist and Geist Mono are self-hosted through Fontsource.
 
 ```bash
 npm install
@@ -16,8 +16,8 @@ Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pag
 - **Content** is plain HTML in `index.html`: projects, about text and toolbox.
 - **Contact form** posts to Formspree (`action` on the form in `index.html`) without leaving the page.
 - **Motion** is in `src/main.js`:
-  - `data-speed` sets vertical parallax (below 1 is slower than the scroll).
-  - `data-drift` sets horizontal drift on big type.
-  - `data-parallax-wrap` / `data-parallax-img` add image-style parallax inside a frame.
-  - Project cards stack on desktop.
+  - the sidebar intro and the name decode effect
+  - fade-up reveals and section titles that decode as you reach them
+  - architecture diagrams whose arrows animate while they're on screen
+  - background grid parallax and a pointer spotlight (desktop only)
 - If the visitor has **reduced motion** turned on, smooth scroll and all animation are skipped.
