@@ -26,18 +26,19 @@ const tick = () => clocks.forEach((c) => (c.textContent = fmt.format(new Date())
 tick();
 setInterval(tick, 15_000);
 
-/* ---------- 3D hero ---------- */
+/* ---------- 3D fly-through hero ---------- */
 // three.js loads after the page is interactive, so text paints first.
-let blob = null;
+let journey = null;
 let heroActive = true;
-import('./blob.js')
-  .then(({ createBlob }) => {
-    blob = createBlob($('[data-gl]'), { reduced: reduceMotion });
-    blob.setTheme(root.dataset.theme === 'dark');
-    blob.setRunning(heroActive && !document.hidden);
+let heroProgress = 0;
+import('./journey.js')
+  .then(({ createJourney }) => {
+    journey = createJourney($('[data-gl]'), { reduced: reduceMotion });
+    journey.setProgress(heroProgress);
+    journey.setRunning(heroActive && !document.hidden);
   })
   .catch(() => {
-    // No WebGL: the hero still reads fine as type on a flat background.
+    // No WebGL: the hero still reads as type on a dark background.
   });
 
 /* ---------- theme toggle ---------- */
@@ -45,7 +46,6 @@ const themeLabel = $('.theme__label');
 function applyTheme(theme) {
   root.dataset.theme = theme;
   themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
-  blob?.setTheme(theme === 'dark');
   try {
     localStorage.setItem('theme', theme);
   } catch {}
@@ -121,52 +121,58 @@ function initMotion() {
   );
 
   /* ---------- hero intro ---------- */
-  const heroChars = $$('[data-chars]').map(splitChars);
-  const intro = gsap.timeline({ defaults: { ease: 'expo.out' }, delay: 0.15 });
-  heroChars.forEach((chars, i) =>
-    intro.from(chars, { yPercent: 110, duration: 1.3, stagger: 0.05 }, i * 0.12),
+  const titleChars = $$('[data-chars]').map(splitChars);
+  const intro = gsap.timeline({ defaults: { ease: 'expo.out' }, delay: 0.2 });
+  titleChars.forEach((chars, i) =>
+    intro.from(chars, { yPercent: 110, duration: 1.3, stagger: 0.04 }, i * 0.15),
   );
   intro
-    .to('[data-hero-sub]', { opacity: 1, duration: 1 }, 0.6)
-    .to('.hud > span', { opacity: 1, duration: 0.8, stagger: 0.08 }, 0.7)
-    .from('[data-gl]', { opacity: 0, scale: 1.08, duration: 2, ease: 'power2.out' }, 0);
+    .from('.stage__kicker', { opacity: 0, y: 10, duration: 0.8 }, 0.3)
+    .from('.hud__tl, .hud__tr, .hud__br', { opacity: 0, duration: 0.8, stagger: 0.1 }, 0.5)
+    .from('[data-gl]', { opacity: 0, duration: 1.6, ease: 'power2.out' }, 0);
 
-  /* ---------- hero parallax: lines split apart, sub drops, blob rises ---------- */
-  $$('[data-hero-line]').forEach((line) => {
-    gsap.to(line, {
-      xPercent: +line.dataset.heroLine * 18,
-      ease: 'none',
-      scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true },
-    });
-  });
-  gsap.to('[data-hero-sub]', {
-    y: 120,
-    opacity: 0,
-    ease: 'none',
-    scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: '60% top', scrub: true },
-  });
-  ScrollTrigger.create({
-    trigger: '[data-hero]',
-    start: 'top top',
-    end: 'bottom top',
-    onUpdate: (self) => blob?.setProgress(self.progress),
-    onToggle: (self) => {
-      heroActive = self.isActive;
-      blob?.setRunning(self.isActive);
+  /* ---------- fly-through: one scrubbed timeline drives the overlays ---------- */
+  const layerEl = $('[data-layer]');
+  const depthEl = $('[data-depth]');
+  const layers = [
+    [0.25, 'PCB'],
+    [0.42, 'Package'],
+    [0.52, 'Die'],
+    [0.76, 'L1 cache'],
+    [1.01, 'Core'],
+  ];
+  const fly = gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: '[data-journey]',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        heroProgress = p;
+        journey?.setProgress(p);
+        layerEl.textContent = layers.find(([t]) => p < t)[1];
+        depthEl.textContent = String(Math.round(p * 1600)).padStart(4, '0');
+      },
+      onToggle: (self) => {
+        heroActive = self.isActive || window.scrollY < 10;
+        journey?.setRunning(heroActive && !document.hidden);
+      },
     },
   });
-  document.addEventListener('visibilitychange', () => {
-    const heroVisible = window.scrollY < window.innerHeight;
-    blob?.setRunning(!document.hidden && heroVisible);
-  });
-
-  // HUD readout: real scroll progress
-  const prog = $('[data-progress]');
-  ScrollTrigger.create({
-    start: 0,
-    end: 'max',
-    onUpdate: (self) => (prog.textContent = String(Math.round(self.progress * 100)).padStart(3, '0')),
-  });
+  fly
+    .to('[data-bar]', { scaleX: 1, duration: 1 }, 0)
+    .to('[data-boot] li', { opacity: 1, duration: 0.02, stagger: 0.035 }, 0.02)
+    .to('[data-stage="a"]', { scale: 1.5, opacity: 0, duration: 0.12, ease: 'power2.in' }, 0.28)
+    .to('[data-flash]', { opacity: 0.85, duration: 0.03, ease: 'power2.in' }, 0.43)
+    .to('[data-flash]', { opacity: 0, duration: 0.07, ease: 'power2.out' }, 0.46)
+    .to('[data-boot]', { opacity: 0, duration: 0.08 }, 0.5)
+    .fromTo('[data-stage="b"]', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.1 }, 0.62)
+    .to('[data-stage="b"]', { opacity: 0, scale: 1.25, duration: 0.08 }, 0.88);
+  document.addEventListener('visibilitychange', () =>
+    journey?.setRunning(heroActive && !document.hidden),
+  );
 
   /* ---------- section titles rise letter by letter ---------- */
   $$('[data-split]').forEach((el) => {
@@ -239,7 +245,7 @@ function initMotion() {
   /* ---------- pointer-driven pieces (desktop) ---------- */
   if (finePointer) {
     window.addEventListener('pointermove', (e) => {
-      blob?.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1);
+      journey?.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1);
     });
 
     // skill cards tilt toward the pointer

@@ -48,24 +48,50 @@
     </header>
 
     <main id="top">
-      <!-- ============ HERO ============ -->
-      <section class="hero" data-hero>
-        <canvas class="hero__gl" data-gl aria-hidden="true"></canvas>
+      <!-- ============ JOURNEY (hero) ============ -->
+      <section class="journey" data-journey>
+        <div class="journey__stick">
+          <canvas class="journey__gl" data-gl aria-hidden="true"></canvas>
+          <div class="journey__vignette" aria-hidden="true"></div>
+          <div class="journey__flash" data-flash aria-hidden="true"></div>
 
-        <div class="hud mono" aria-hidden="true">
-          <span class="hud__tl">[ full-stack developer ]</span>
-          <span class="hud__tr">progress <span data-progress>000</span>%</span>
-          <span class="hud__bl">36.8485° S<br />174.7633° E</span>
-          <span class="hud__br">scroll <span class="hud__arrow">↓</span></span>
+          <div class="hud mono" aria-hidden="true">
+            <div class="hud__tl">
+              <p class="hud__k">layer</p>
+              <p class="hud__v" data-layer>PCB</p>
+            </div>
+            <div class="hud__tr">
+              <p class="hud__k">depth</p>
+              <p class="hud__v"><span data-depth>0000</span> <span class="unit">µm</span></p>
+            </div>
+            <ol class="boot" data-boot>
+              <li>&gt; power on <span>ok</span></li>
+              <li>&gt; load profile jatin_singh_taadiyal</li>
+              <li>&gt; mount /stack/csharp-dotnet <span>ok</span></li>
+              <li>&gt; mount /stack/sql-server <span>ok</span></li>
+              <li>&gt; mount /stack/node <span>ok</span></li>
+              <li>&gt; locale en-NZ · auckland</li>
+              <li>&gt; entering core<i class="cursor-blink">_</i></li>
+            </ol>
+            <div class="hud__br">
+              <p class="hud__k">scroll to enter</p>
+              <div class="hud__bar"><span data-bar></span></div>
+            </div>
+          </div>
+
+          <div class="stage stage--a" data-stage="a">
+            <p class="mono stage__kicker">// full-stack developer · auckland nz</p>
+            <h1 class="stage__title" aria-label="Jatin Singh Taadiyal">
+              <span class="stage__line" data-chars>Jatin Singh</span>
+              <span class="stage__line stage__line--small" data-chars>Taadiyal</span>
+            </h1>
+          </div>
+
+          <div class="stage stage--b" data-stage="b" aria-hidden="true">
+            <p class="stage__big">Software<br />that holds up.</p>
+            <p class="mono stage__meta">C#/.NET · Node · SQL · automation</p>
+          </div>
         </div>
-
-        <h1 class="hero__title" aria-label="Jatin Singh">
-          <span class="hero__line" data-hero-line="-1"><span data-chars>Jatin</span></span>
-          <span class="hero__line hero__line--outline" data-hero-line="1"><span data-chars>Singh</span></span>
-        </h1>
-        <p class="hero__sub mono" data-hero-sub>
-          Software that holds up — C#/.NET · Node · SQL · Auckland
-        </p>
       </section>
 
       <!-- ============ HELLO ============ -->
@@ -96,7 +122,7 @@
 
         <div class="cards">
           <article class="skill" data-tilt>
-            <header><h3 class="display">C# / .NET</h3><p class="skill__since display">'23</p></header>
+            <header><h3 class="display">C# / .NET</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
             <p>
               My main language. ASP.NET Core MVC and Web API with EF Core — CV Analyzer, SpecTacular
               and the API behind my Android app all run on it. Strict types catch my mistakes before
@@ -105,7 +131,7 @@
             <p class="skill__tags mono">ASP.NET Core · Web API · EF Core · Razor</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">SQL &amp; Data</h3><p class="skill__since display">'23</p></header>
+            <header><h3 class="display">SQL &amp; Data</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
             <p>
               SQL Server mostly, plus MySQL, MongoDB and Firestore. I design the schema before the
               screens — most bugs I've chased started as a data-model shortcut.
@@ -113,7 +139,7 @@
             <p class="skill__tags mono">SQL Server · MySQL · MongoDB · Firestore</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">Python</h3><p class="skill__since display">'23</p></header>
+            <header><h3 class="display">Python</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
             <p>
               Where I started building real tools: Tkinter desktop apps, a backup script that never
               copies a file twice, and backend services during my internship.
@@ -121,7 +147,7 @@
             <p class="skill__tags mono">Tkinter · scripting · APIs</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">Node.js &amp; APIs</h3><p class="skill__since display">'25</p></header>
+            <header><h3 class="display">Node.js &amp; APIs</h3><p class="skill__since"><b class="display">1</b><span class="mono">yr · internship 2025</span></p></header>
             <p>
               REST APIs, WebRTC signalling and cloud storage for a video streaming app at Source
               Infinity. Designing clean contracts between services is the part I enjoy most.
@@ -129,7 +155,7 @@
             <p class="skill__tags mono">Node.js · REST · WebRTC</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">Kotlin &amp; Android</h3><p class="skill__since display">'25</p></header>
+            <header><h3 class="display">Kotlin &amp; Android</h3><p class="skill__since"><b class="display">1</b><span class="mono">yr · since 2025</span></p></header>
             <p>
               MVVM, Retrofit and a task app that syncs through its own .NET API instead of living
               only on the phone.
@@ -137,7 +163,7 @@
             <p class="skill__tags mono">Kotlin · MVVM · Retrofit</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">Cloud</h3><p class="skill__since display">AZ-900</p></header>
+            <header><h3 class="display">Cloud</h3><p class="skill__since"><b class="display">AZ-900</b><span class="mono">certified 2025</span></p></header>
             <p>
               Microsoft Certified in Azure Fundamentals — core services, pricing, governance and
               security — plus SharePoint and Purview day to day.
@@ -145,7 +171,7 @@
             <p class="skill__tags mono">Azure · SharePoint · Purview</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">Automation</h3><p class="skill__since display">M365</p></header>
+            <header><h3 class="display">Automation</h3><p class="skill__since"><b class="display">M365</b><span class="mono">used daily at work</span></p></header>
             <p>
               Power Automate, Power Query and VBA. Turning a 40-minute manual task into a single
               click is my favourite kind of win.
@@ -153,7 +179,7 @@
             <p class="skill__tags mono">Power Automate · Power Query (M) · VBA</p>
           </article>
           <article class="skill" data-tilt>
-            <header><h3 class="display">Analysis</h3><p class="skill__since display">'26</p></header>
+            <header><h3 class="display">Analysis</h3><p class="skill__since"><b class="display">Now</b><span class="mono">current role · 2026</span></p></header>
             <p>
               Requirements, process mapping and stakeholder work. It's made me a better developer:
               I ask what "done" means before I open the editor.
