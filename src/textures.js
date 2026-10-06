@@ -125,7 +125,6 @@ export function boardTexture(traces, size) {
   g.strokeStyle = ch(0, 0, 80);
   g.lineWidth = Math.max(1, s * 0.035);
   g.setLineDash([s * 0.3, s * 0.2]);
-  g.strokeRect(X(-18.8), X(8.3), 11.7 * s, 3.4 * s); // M.2 slot
   g.strokeRect(X(8.0), X(-10.6), 1.0 * s, 21.2 * s); // DIMM A1
   g.strokeRect(X(9.5), X(-10.6), 1.0 * s, 21.2 * s); // DIMM A2
   g.strokeRect(X(-3.6), X(-3.6), 7.2 * s, 7.2 * s); // CPU
@@ -134,7 +133,7 @@ export function boardTexture(traces, size) {
   g.fillStyle = ch(0, 0, 200);
   g.font = `600 ${Math.round(s * 0.5)}px monospace`;
   [
-    ['M2_1  NVMe · PCIe ×4', -18.6, 13.4],
+    ['M2_1', -18.6, 12.4],
     ['DIMM_A1', 7.6, -11.2],
     ['DIMM_A2', 9.6, 11.6],
     ['CPU1  JST-26', -3.5, -4.0],
@@ -165,7 +164,8 @@ export function boardTexture(traces, size) {
 }
 
 export function lidTexture() {
-  const [c, g] = canvas(512, 512);
+  const [c, g] = canvas(1024, 1024);
+  g.scale(2, 2);
   g.strokeStyle = ch(90, 0, 0);
   g.lineWidth = 3;
   g.strokeRect(18, 18, 476, 476);

@@ -1077,6 +1077,10 @@ main,
 
 /* ---------- desktop: pinned frames ---------- */
 @media (min-width: 1024px) {
+  /* the About text arrives while the hero's last frames are still on screen */
+  .js-motion .about {
+    margin-top: -30vh;
+  }
   .js-motion .skills {
     height: 100vh;
     padding-block: 0;
@@ -1121,8 +1125,8 @@ main,
     flex: 1;
     display: block;
     margin-top: 3vh;
-    perspective: 1200px;
-    perspective-origin: 30% 40%;
+    perspective: 1600px;
+    perspective-origin: min(20vw, 300px) 35%;
   }
   .js-motion .win {
     position: absolute;
@@ -1168,8 +1172,8 @@ main,
     grid-template-columns: 1fr;
   }
   .station {
-    padding-top: 40vh;
-    padding-bottom: 12vh;
+    padding-top: 20vh;
+    padding-bottom: 4vh;
   }
   .legend,
   .skills__top .legend {
@@ -1228,7 +1232,10 @@ main,
     height: 90px;
   }
   .hero {
-    height: 140vh;
+    height: 125vh;
+  }
+  .foot {
+    min-height: 28vh;
   }
   .hero__stick {
     padding-top: 110px;
@@ -1262,7 +1269,10 @@ main,
     grid-template-columns: 1fr;
   }
   .js-motion .hero__tagline {
-    font-size: 12vw;
+    font-size: 14vw;
+    white-space: normal;
+    width: 92vw;
+    top: 26%;
   }
   .boot {
     bottom: 22px;

@@ -539,7 +539,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   placePulses(0);
 
   /* ---------------- data in flight: packet, 16 sparks, the 64-byte line ---------------- */
-  const packetMat = new SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false });
+  const packetMat = new SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending, fog: false });
   const packet = new Sprite(packetMat);
   packet.scale.setScalar(0.9);
   scene.add(packet);
@@ -669,7 +669,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   // Station poses, each as a function of that station's local progress L (0..1).
   const ST = [
     () => [[1.5, 21, 25], [0.5, 0, -1]],
-    (L) => [[lerp(-10.4, -10.8, L), lerp(3.3, 3.0, L), lerp(15.0, 14.6, L)], [-13.8, 0.35, 10.2]],
+    (L) => [[lerp(-6.8, -7.3, L), lerp(5.4, 5.0, L), lerp(16.4, 16.0, L)], [-12.6, 0.2, 10.3]],
     (L) => {
       const z = lerp(8.6, 1.6, L);
       return [[-0.2, 4.6, z], [-5.0, 0, z - 0.3]];
@@ -696,8 +696,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       {
         a: 0, b: 1, w: 'board',
         path: camPath(
-          [[1.5, 21, 25], [1.6, 12, 14.5], [2.6, 4.4, 5.4], [-2.5, 4.6, 9.8], [-8.4, 3.6, 14.2], at(1, 0)[0]],
-          [[0.5, 0, -1], [0.2, 0, -0.4], [0, 0.3, 0], [-6, 0.3, 6.5], [-12, 0.3, 9.6], at(1, 0)[1]],
+          [[1.5, 21, 25], [1.6, 12, 14.5], [2.6, 4.4, 5.4], [-1.5, 5.2, 11.5], [-5.4, 5.6, 16.0], at(1, 0)[0]],
+          [[0.5, 0, -1], [0.2, 0, -0.4], [0, 0.3, 0], [-6, 0.3, 7], [-11.4, 0.3, 9.8], at(1, 0)[1]],
         ),
       },
     ],
@@ -706,7 +706,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       {
         a: 0, b: 1, w: 'board',
         path: camPath(
-          [at(1, 1)[0], [-12.8, 1.2, 12.5], [-10.4, 0.8, 11.9], [-7.4, 0.85, 11.4], [-4.4, 2.0, 10.2], at(2, 0)[0]],
+          [at(1, 1)[0], [-11.6, 1.6, 13.4], [-10.4, 0.8, 11.9], [-7.4, 0.85, 11.4], [-4.4, 2.0, 10.2], at(2, 0)[0]],
           [at(1, 1)[1], [-12.2, 0.3, 10.1], [-8.4, 0.25, 10.0], [-6.0, 0.1, 9.4], [-5.0, 0, 8.6], at(2, 0)[1]],
         ),
       },
@@ -769,8 +769,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   ];
   // Fog closure (1 = screen is pure --bg) around each place swap.
   function fogClose(k, p) {
-    if (k === 3) return Math.max(sstep(0.5, 0.615, p) * (p < 0.62 ? 1 : 0), p >= 0.62 ? 1 - sstep(0.62, 0.76, p) : 0);
-    if (k === 4) return Math.max(sstep(0.47, 0.575, p) * (p < 0.58 ? 1 : 0), p >= 0.58 ? 1 - sstep(0.58, 0.7, p) : 0);
+    if (k === 3) return Math.max(sstep(0.53, 0.615, p) * (p < 0.62 ? 1 : 0), p >= 0.62 ? 1 - sstep(0.62, 0.7, p) : 0);
+    if (k === 4) return Math.max(sstep(0.5, 0.575, p) * (p < 0.58 ? 1 : 0), p >= 0.58 ? 1 - sstep(0.58, 0.65, p) : 0);
     if (k === 5) return Math.max(sstep(0.04, 0.215, p) * (p < 0.22 ? 1 : 0), p >= 0.22 ? 1 - sstep(0.22, 0.42, p) : 0);
     return 0;
   }
@@ -880,7 +880,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     TG.l1.pos.set(1.0, DIE_Y + 0.2, -5.9);
     TG.l2.pos.set(-0.6, DIE_Y + 0.2, -4.0);
     TG.l3.pos.set(-1.2, DIE_Y + 0.2, 0.2);
-    TG.r0.pos.set(5.3, DIE_Y + 0.12, -8.36);
+    TG.r0.pos.set(4.4, DIE_Y + 0.14, -8.36);
     TG.alu.pos.set(4.9, DIE_Y + 0.25, -12.4);
     TG.gate.pos.set(0, FIN_Y + 1.5, -4.2);
     TG.lat.pos.set(-1.7, FIN_Y + 3.2, 1.0);
@@ -1103,7 +1103,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
         place(D.bytes, i, [lerp(1.8, 1.5 + i * 0.5, f), 0.12, lerp(-5.9, -8.36, f)], [1, 1, 1]);
       }
       D.bytes.instanceMatrix.needsUpdate = true;
-      D.r0Mat.uniforms.uEmitAmt.value = inS4 ? 0.2 + 0.6 * sstep(0.22, 0.32, p) : 0;
+      D.r0Mat.uniforms.uEmitAmt.value = inS4 ? 0.15 + 0.35 * sstep(0.22, 0.32, p) : 0;
       D.r0.visible = inS4 || k >= 5;
       const alu = inS4 ? bump(p, 0.26, 0.3, 0.42, 0.48) * (0.6 + 0.4 * Math.sin((p - 0.26) * 120)) : 0;
       D.aluMat.uniforms.uEmitAmt.value = clamp(alu, 0, 1) * 0.85;
@@ -1125,7 +1125,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       const T5 = k === 4 ? p : k >= 5 ? 1 : 0;
       const outro = k === 5 && p > 0 ? 1 - sstep(0.0, 0.2, p) : 1;
       const gateOn = sstep(0.7, 0.8, T5);
-      F.litMat.uniforms.uEmitAmt.value = clamp(gateOn * 0.75 + S.gatePulse * 0.25, 0, 1);
+      F.litMat.uniforms.uEmitAmt.value = clamp(gateOn * 0.45 + S.gatePulse * 0.4, 0, 1);
       const lat = sstep(0.74, 1, T5);
       const fade = lerp(1, 0.28, sstep(0.8, 1, T5));
       F.finMat.uniforms.uOpacity.value = fade;
@@ -1178,7 +1178,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     camera.far = Math.max(60, dist * 40);
 
     // subject to the right (desktop) / top (mobile) once the text panel is in play
-    const H0 = 0.14; // hero: chip a little right of centre, clear of the name
+    const H0 = 0.24; // hero: chip a little right of centre, clear of the name
     const shift = T < 0.4 ? H0 : T < 0.92 ? lerp(H0, 1, ease((T - 0.4) / 0.52)) : T > 5.3 ? lerp(1, H0, ease(clamp((T - 5.3) / 0.6, 0, 1))) : 1;
     view.shift = shift;
     if (mobile) camera.setViewOffset(view.w, view.h, 0, view.h * 0.2 * shift, view.w, view.h);
@@ -1217,7 +1217,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
         else {
           const x = (tmp.x * 0.5 + 0.5) * vw;
           const y = (-tmp.y * 0.5 + 0.5) * vh;
-          if (x < 8 || x > vw - 8 || y < 60 || y > vh - 20) a = 0;
+          if (x < 8 || x > vw - 8 || y < 60 || y > (mobile ? vh * 0.46 : vh - 20)) a = 0;
           t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
         }
       }

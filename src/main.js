@@ -184,6 +184,7 @@ const els = {
   tagline: $('[data-tagline]'),
   cue: $('.hero__cue'),
   bootLast: $('[data-boot-last]'),
+  boot: $('[data-boot]'),
   scrim: $('[data-scrim]'),
   topfade: $('[data-topfade]'),
   about: $('[data-words]'),
@@ -232,7 +233,8 @@ function update(y = window.scrollY) {
     els.tagline.style.opacity = tag.toFixed(3);
     els.tagline.style.transform = `translate3d(-50%, -50%, 0) scale(${(0.92 + 0.08 * tag + sstep(0.54, 0.64, T) * 0.1).toFixed(3)})`;
     els.cue.style.opacity = (1 - sstep(0.01, 0.06, T)).toFixed(3);
-    els.bootLast.classList.toggle('is-on', T > 0.88);
+    els.bootLast.classList.toggle('is-on', T > 0.46);
+    els.boot.style.opacity = (1 - sstep(0.6, 0.7, T)).toFixed(3);
   }
   // scrim behind the text panel; the scene stays clear in the hero and the closing shot
   const scrim = T < 0.3 ? 0.65 : T < 0.62 ? 0.65 - 0.45 * sstep(0.3, 0.4, T) + 0.8 * sstep(0.5, 0.62, T) : T > 5.25 ? 1 - 0.75 * sstep(5.25, 5.7, T) : 1;
@@ -458,7 +460,7 @@ mm.add({ desk: DESK, mob: '(max-width: 1023.98px)' }, (ctx) => {
 
   // seams (desk ≈ 60–80 vh, mobile ≈ 35 vh)
   M.seams = [
-    ScrollTrigger.create({ trigger: '#about', start: 0, end: desk ? 'top 30%' : 'top 40%' }),
+    ScrollTrigger.create({ trigger: '#about', start: 0, end: desk ? 'top 25%' : 'top 40%' }),
     desk ? seam('#skills', 'top 85%', 'top 25%') : seam('#skills', 'top 70%', 'top 35%'),
     desk ? seam('#work', 'top 100%', 'top 30%') : seam('#work', 'top 70%', 'top 35%'),
     desk ? seam('#experience', 'top 100%', 'top 30%') : seam('#experience', 'top 70%', 'top 35%'),
