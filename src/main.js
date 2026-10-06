@@ -204,7 +204,7 @@ const progress = (st, y) => (st ? clamp01((y - st.start) / Math.max(1, st.end - 
 
 const skillsState = { cardW: 1, gap: 18, shift: 0, cards: [] };
 const workState = { wins: [], current: -1 };
-const HOLD = 0.55;
+const HOLD = 1.4;
 function workPlan(L) {
   // holds and transitions: [hold0][t01][hold1][t12]…[hold4]
   const n = workState.wins.length || 5;
