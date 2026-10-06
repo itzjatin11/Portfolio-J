@@ -29,31 +29,19 @@ setInterval(tick, 15_000);
 /* ---------- 3D fly-through hero ---------- */
 // three.js loads after the page is interactive, so text paints first.
 let journey = null;
-let heroActive = true;
 let heroProgress = 0;
+let cruiseProgress = 0;
 import('./journey.js')
   .then(({ createJourney }) => {
     journey = createJourney($('[data-gl]'), { reduced: reduceMotion });
     journey.setProgress(heroProgress);
-    journey.setRunning(heroActive && !document.hidden);
+    journey.setCruise(cruiseProgress);
+    // the machine is the backdrop for the whole page, so it runs whenever the tab is visible
+    journey.setRunning(!document.hidden);
   })
   .catch(() => {
     // No WebGL: the hero still reads as type on a dark background.
   });
-
-/* ---------- theme toggle ---------- */
-const themeLabel = $('.theme__label');
-function applyTheme(theme) {
-  root.dataset.theme = theme;
-  themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
-  try {
-    localStorage.setItem('theme', theme);
-  } catch {}
-}
-applyTheme(root.dataset.theme || 'dark');
-$('[data-theme-toggle]').addEventListener('click', () =>
-  applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'),
-);
 
 /* ---------- contact form ---------- */
 const form = $('[data-form]');
@@ -108,6 +96,7 @@ function initMotion() {
   /* ---------- smooth scroll ---------- */
   const lenis = new Lenis({ lerp: 0.1 });
   lenis.on('scroll', ScrollTrigger.update);
+  lenis.on('scroll', ({ velocity }) => journey?.kick(velocity));
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
 
@@ -152,12 +141,8 @@ function initMotion() {
         const p = self.progress;
         heroProgress = p;
         journey?.setProgress(p);
-        layerEl.textContent = layers.find(([t]) => p < t)[1];
+        if (p < 1) setLayer(layers.find(([t]) => p < t)[1]);
         depthEl.textContent = String(Math.round(p * 1600)).padStart(4, '0');
-      },
-      onToggle: (self) => {
-        heroActive = self.isActive || window.scrollY < 10;
-        journey?.setRunning(heroActive && !document.hidden);
       },
     },
   });
@@ -170,19 +155,58 @@ function initMotion() {
     .to('[data-boot]', { opacity: 0, duration: 0.08 }, 0.5)
     .fromTo('[data-stage="b"]', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.1 }, 0.62)
     .to('[data-stage="b"]', { opacity: 0, scale: 1.25, duration: 0.08 }, 0.88);
-  document.addEventListener('visibilitychange', () =>
-    journey?.setRunning(heroActive && !document.hidden),
-  );
+  document.addEventListener('visibilitychange', () => journey?.setRunning(!document.hidden));
 
-  /* ---------- section titles rise letter by letter ---------- */
-  $$('[data-split]').forEach((el) => {
-    gsap.from(splitChars(el), {
-      yPercent: 110,
-      duration: 1,
-      ease: 'expo.out',
-      stagger: 0.025,
-      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+  /* ---------- after the hero: keep travelling through the machine ---------- */
+  function setLayer(name) {
+    if (layerEl.dataset.v === name) return;
+    layerEl.dataset.v = name;
+    scramble(layerEl, name);
+  }
+  ScrollTrigger.create({
+    trigger: '[data-journey]',
+    start: 'bottom bottom',
+    endTrigger: 'html',
+    end: 'bottom bottom',
+    // measured after the pinned sections below add their scroll length
+    refreshPriority: -1,
+    // stays on through the page end; only scrolling back into the hero clears it
+    onEnter: () => root.classList.add('is-cruise'),
+    onLeaveBack: () => root.classList.remove('is-cruise'),
+    onUpdate: (self) => {
+      cruiseProgress = self.progress;
+      journey?.setCruise(self.progress);
+      depthEl.textContent = String(1600 + Math.round(self.progress * 8400)).padStart(4, '0');
+    },
+  });
+  // dim the world behind readable sections
+  gsap.to('[data-scrim]', {
+    opacity: 1,
+    ease: 'none',
+    scrollTrigger: { trigger: '[data-journey]', start: 'bottom 120%', end: 'bottom 40%', scrub: true, refreshPriority: -1 },
+  });
+  $$('[data-layer-name]').forEach((sec) => {
+    ScrollTrigger.create({
+      trigger: sec,
+      start: 'top 50%',
+      end: 'bottom 50%',
+      refreshPriority: -1,
+      onToggle: (self) => self.isActive && setLayer(sec.dataset.layerName),
     });
+  });
+
+  /* ---------- section titles decode like data coming off the bus ---------- */
+  $$('[data-split]').forEach((el) => {
+    const text = el.textContent.trim();
+    el.setAttribute('aria-label', text);
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 85%',
+      once: true,
+      onEnter: () => scramble(el, text, 0, 1.1),
+    });
+    el.style.opacity = '0';
+    ScrollTrigger.create({ trigger: el, start: 'top 85%', once: true, onEnter: () => (el.style.opacity = '') });
   });
 
   /* ---------- hello paragraph lights up with scroll ---------- */
@@ -192,19 +216,6 @@ function initMotion() {
     stagger: 0.02,
     ease: 'none',
     scrollTrigger: { trigger: '[data-reveal-chars]', start: 'top 80%', end: 'bottom 50%', scrub: true },
-  });
-
-  /* ---------- motherboard background: three trace layers at different depths ---------- */
-  $$('[data-mobo]').forEach((layer, i) => {
-    const url = URL.createObjectURL(new Blob([traceTile(i)], { type: 'image/svg+xml' }));
-    layer.style.maskImage = layer.style.webkitMaskImage = `url(${url})`;
-    const size = [520, 380, 300][i];
-    layer.style.maskSize = layer.style.webkitMaskSize = `${size}px ${size}px`;
-    gsap.to(layer, {
-      y: () => -(document.documentElement.scrollHeight - innerHeight) * +layer.dataset.mobo,
-      ease: 'none',
-      scrollTrigger: { start: 0, end: 'max', scrub: true, invalidateOnRefresh: true },
-    });
   });
 
   gsap.fromTo(
@@ -378,39 +389,24 @@ function initMotion() {
   document.fonts?.ready.then(() => ScrollTrigger.refresh());
 }
 
-/* One tile of procedural PCB traces (used as a CSS mask, so it takes the theme colour). */
-function traceTile(seed) {
-  const size = 240;
-  let r = seed * 9301 + 49297;
-  const rnd = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
-  const paths = [];
-  const vias = [];
-  const n = [7, 9, 11][seed];
-  for (let i = 0; i < n; i++) {
-    let x = Math.round(rnd() * 12) * 20;
-    let y = Math.round(rnd() * 12) * 20;
-    let d = `M${x} ${y}`;
-    let dir = rnd() < 0.5 ? [1, 0] : [0, 1];
-    for (let s = 0; s < 3; s++) {
-      const len = (2 + Math.round(rnd() * 4)) * 20;
-      x += dir[0] * len;
-      y += dir[1] * len;
-      d += ` L${x} ${y}`;
-      // 45° jog
-      const j = (rnd() < 0.5 ? -1 : 1) * 20;
-      x += dir[1] ? j : 20;
-      y += dir[0] ? j : 20;
-      d += ` L${x} ${y}`;
-      dir = [dir[1], dir[0]];
-    }
-    paths.push(d);
-    vias.push([x, y]);
-  }
-  const w = [1, 1.5, 2][seed];
-  // draw each path at 9 offsets so the tile wraps seamlessly
-  const offs = [-size, 0, size];
-  const all = offs
-    .flatMap((ox) => offs.map((oy) => `<g transform="translate(${ox} ${oy})">${paths.map((d) => `<path d="${d}"/>`).join('')}${vias.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${w * 2.4}"/>`).join('')}</g>`))
-    .join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><g fill="none" stroke="#000" stroke-width="${w}" stroke-linejoin="round">${all}</g></svg>`;
+/* Text decode: characters cycle through glyphs and settle left to right. */
+function scramble(node, final, delay = 0, maxDur = 0.7) {
+  gsap.killTweensOf(node._sc || {});
+  const glyphs = '!<>-_\\/[]{}=+*^?#01';
+  const state = (node._sc = { p: 0 });
+  gsap.to(state, {
+    p: 1,
+    duration: Math.min(maxDur, 0.25 + final.length * 0.03),
+    delay,
+    ease: 'none',
+    onUpdate: () => {
+      const settled = Math.floor(state.p * final.length);
+      let out = final.slice(0, settled);
+      for (let i = settled; i < final.length; i++) {
+        out += final[i] === ' ' ? ' ' : glyphs[(Math.random() * glyphs.length) | 0];
+      }
+      node.textContent = out;
+    },
+    onComplete: () => (node.textContent = final),
+  });
 }

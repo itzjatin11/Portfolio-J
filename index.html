@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -19,21 +19,12 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <script>
-      try {
-        const t = localStorage.getItem('theme');
-        if (t) document.documentElement.dataset.theme = t;
-      } catch {}
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
         document.documentElement.classList.add('js-motion');
     </script>
   </head>
   <body>
     <a class="skip-link" href="#hello">Skip to content</a>
-    <div class="mobo" aria-hidden="true">
-      <div class="mobo__layer mobo__layer--1" data-mobo="0.08"></div>
-      <div class="mobo__layer mobo__layer--2" data-mobo="0.2"></div>
-      <div class="mobo__layer mobo__layer--3" data-mobo="0.38"></div>
-    </div>
 
     <!-- ============ NAV ============ -->
     <header class="nav mono">
@@ -46,29 +37,28 @@
       </nav>
       <div class="nav__right">
         <span class="nav__time">AKL <span data-clock>--:--</span></span>
-        <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">
-          <span class="theme__dot"></span><span class="theme__label">Dark</span>
-        </button>
       </div>
     </header>
+
+    <canvas class="journey__gl" data-gl aria-hidden="true"></canvas>
+    <div class="world-scrim" aria-hidden="true" data-scrim></div>
+    <div class="hud-g hud-g--l mono" aria-hidden="true">
+      <p class="hud__k">layer</p>
+      <p class="hud__v" data-layer>PCB</p>
+    </div>
+    <div class="hud-g hud-g--r mono" aria-hidden="true">
+      <p class="hud__k">depth</p>
+      <p class="hud__v"><span data-depth>0000</span> <span class="unit">µm</span></p>
+    </div>
 
     <main id="top">
       <!-- ============ JOURNEY (hero) ============ -->
       <section class="journey" data-journey>
         <div class="journey__stick">
-          <canvas class="journey__gl" data-gl aria-hidden="true"></canvas>
           <div class="journey__vignette" aria-hidden="true"></div>
           <div class="journey__flash" data-flash aria-hidden="true"></div>
 
           <div class="hud mono" aria-hidden="true">
-            <div class="hud__tl">
-              <p class="hud__k">layer</p>
-              <p class="hud__v" data-layer>PCB</p>
-            </div>
-            <div class="hud__tr">
-              <p class="hud__k">depth</p>
-              <p class="hud__v"><span data-depth>0000</span> <span class="unit">µm</span></p>
-            </div>
             <ol class="boot" data-boot>
               <li>&gt; power on <span>ok</span></li>
               <li>&gt; load profile jatin_singh_taadiyal</li>
@@ -100,7 +90,7 @@
       </section>
 
       <!-- ============ HELLO ============ -->
-      <section class="hello" id="hello">
+      <section class="hello" id="hello" data-layer-name="CORE · /home/jatin">
         <h2 class="hello__title display" data-split>Hi, I'm Jatin.</h2>
         <p class="hello__text" data-reveal-chars>
           I'm a full-stack developer who cares about the parts of software nobody sees: clean data
@@ -118,7 +108,7 @@
       </section>
 
       <!-- ============ SKILLS ============ -->
-      <section class="skills" id="skills">
+      <section class="skills" id="skills" data-layer-name="BUS · 0x00">
         <div class="skills__ghost display" aria-hidden="true" data-ghost>Skills / Skills / Skills /</div>
         <header class="sec-head">
           <p class="mono sec-head__idx">01</p>
@@ -199,7 +189,7 @@
       </section>
 
       <!-- ============ WORK ============ -->
-      <section class="work" id="work">
+      <section class="work" id="work" data-layer-name="PROC · 5 running">
         <header class="sec-head">
           <p class="mono sec-head__idx">02</p>
           <h2 class="display" data-split>Selected work</h2>
@@ -266,7 +256,7 @@
       </section>
 
       <!-- ============ EXPERIENCE ============ -->
-      <section class="exp" id="experience">
+      <section class="exp" id="experience" data-layer-name="GIT · main">
         <header class="sec-head">
           <p class="mono sec-head__idx">03</p>
           <h2 class="display" data-split>Experience</h2>
@@ -330,7 +320,7 @@
       </section>
 
       <!-- ============ CONTACT ============ -->
-      <section class="contact" id="contact">
+      <section class="contact" id="contact" data-layer-name="I/O · port 25">
         <div class="contact__big display" aria-hidden="true">
           <span data-marquee>Say hi — Say hi — Say hi — Say hi — </span>
         </div>

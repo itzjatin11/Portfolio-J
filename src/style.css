@@ -6,29 +6,20 @@
 /* Layout: full-bleed poster sections — a WebGL hero, then big condensed
    type over a tight mono HUD. High contrast, one hot accent, one cool. */
 :root {
-  --bg: #f2f0eb;
-  --bg-2: #e7e4dc;
-  --fg: #0a0a0a;
-  --muted: #5d5b56;
-  --line: rgba(10, 10, 10, 0.14);
+  /* one world: always dark, the page lives inside the machine */
+  --bg: #030507;
+  --bg-2: #0b0f12;
+  --fg: #f2f0eb;
+  --muted: #8d9396;
+  --line: rgba(242, 240, 235, 0.12);
   --accent: #ff4d2e;
-  --cool: #0e9e95;
+  --cool: #3be8d8;
 
   --display: 'Barlow Condensed', 'Arial Narrow', sans-serif-condensed, sans-serif;
   --mono: 'JetBrains Mono Variable', ui-monospace, Menlo, Consolas, monospace;
 
   --gutter: clamp(16px, 3vw, 40px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  color-scheme: light;
-}
-:root[data-theme='dark'] {
-  --bg: #050505;
-  --bg-2: #101010;
-  --fg: #f2f0eb;
-  --muted: #8d8b86;
-  --line: rgba(242, 240, 235, 0.13);
-  --accent: #ff4d2e;
-  --cool: #5cf2e8;
   color-scheme: dark;
 }
 
@@ -166,36 +157,10 @@ button {
 .nav__time {
   font-variant-numeric: tabular-nums;
 }
-.theme {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: 1px solid currentColor;
-  border-radius: 99px;
-  padding: 4px 10px 4px 6px;
-  cursor: pointer;
-  font-family: var(--mono);
-  font-size: 11px;
-  text-transform: uppercase;
-}
-.theme__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: inset -4px -2px 0 0 #000;
-  transition: box-shadow 0.4s var(--ease);
-}
-:root[data-theme='light'] .theme__dot {
-  box-shadow: inset 0 0 0 0 #000;
-}
-
 /* ---------- journey hero: pinned fly-through ---------- */
 .journey {
   position: relative;
   height: 420vh;
-  background: #030507;
   color: #f2f0eb;
 }
 .journey__stick {
@@ -205,7 +170,7 @@ button {
   overflow: hidden;
 }
 .journey__gl {
-  position: absolute;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -225,20 +190,9 @@ button {
   color: rgba(242, 240, 235, 0.7);
   font-variant-numeric: tabular-nums;
 }
-.hud__tl,
-.hud__tr,
 .hud__br,
 .boot {
   position: absolute;
-}
-.hud__tl {
-  top: 84px;
-  left: var(--gutter);
-}
-.hud__tr {
-  top: 84px;
-  right: var(--gutter);
-  text-align: right;
 }
 .hud__k {
   color: rgba(242, 240, 235, 0.4);
@@ -760,33 +714,6 @@ button {
   color: var(--cool);
 }
 
-/* ---------- motherboard background (fixed, multi-depth) ---------- */
-.mobo {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-}
-.mobo__layer {
-  position: absolute;
-  inset: 0 0 -200% 0;
-  background-color: var(--fg);
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  will-change: transform;
-}
-.mobo__layer--1 {
-  opacity: 0.035;
-}
-.mobo__layer--2 {
-  opacity: 0.06;
-}
-.mobo__layer--3 {
-  opacity: 0.09;
-  background-color: var(--accent);
-}
-
 /* ---------- pinned desktop modes (motion only) ---------- */
 .bus__trace,
 .bus__label {
@@ -1066,10 +993,6 @@ button {
   .nav__time {
     display: none;
   }
-  .hud__tl,
-  .hud__tr {
-    top: 64px;
-  }
   .journey {
     height: 340vh;
   }
@@ -1132,5 +1055,71 @@ button {
   }
   .hello__text .c {
     opacity: 1;
+  }
+}
+
+/* ---------- the world behind every section ---------- */
+.journey__gl {
+  z-index: -2;
+  transition: opacity 0.6s;
+}
+.world-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, rgba(3, 5, 7, 0.8) 0%, rgba(3, 5, 7, 0.9) 70%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+  opacity: 0;
+}
+.skill,
+.win {
+  background: rgba(11, 15, 18, 0.88);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* persistent HUD: where you are inside the machine */
+.hud-g {
+  position: fixed;
+  top: 84px;
+  z-index: 35;
+  pointer-events: none;
+  color: rgba(242, 240, 235, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+.hud-g--l {
+  left: var(--gutter);
+}
+.hud-g--r {
+  right: var(--gutter);
+  text-align: right;
+}
+.hud-g .hud__k {
+  color: rgba(242, 240, 235, 0.4);
+  font-size: 10.5px;
+}
+.hud-g .hud__v {
+  color: var(--cool);
+  font-size: 15px;
+}
+.hud-g .hud__v .unit {
+  text-transform: none;
+}
+/* the hero has its own content in those corners; the global HUD only hugs the edge after it */
+.is-cruise .hud-g {
+  top: auto;
+  bottom: 22px;
+}
+.is-cruise .hud-g .hud__v {
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .hud-g {
+    top: 64px;
+  }
+  .is-cruise .hud-g {
+    display: none;
   }
 }

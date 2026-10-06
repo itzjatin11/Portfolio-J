@@ -310,6 +310,9 @@ export function createJourney(canvas, { reduced = false } = {}) {
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
   let progress = 0;
   let shown = 0; // eased progress
+  let cruise = 0; // 0..1 through the rest of the page, after the hero
+  let cruiseShown = 0;
+  let boost = 0; // scroll velocity kick
   let running = false;
   let raf = 0;
   let last = performance.now();
@@ -327,6 +330,7 @@ export function createJourney(canvas, { reduced = false } = {}) {
 
   function update(dt, t) {
     shown += (progress - shown) * Math.min(1, dt * 6);
+    cruiseShown += (cruise - cruiseShown) * Math.min(1, dt * 4);
     pointer.x += (pointer.tx - pointer.x) * 0.05;
     pointer.y += (pointer.ty - pointer.y) * 0.05;
 
@@ -344,7 +348,7 @@ export function createJourney(canvas, { reduced = false } = {}) {
     const m = o;
     for (let i = 0; i < streamCount; i++) {
       const s = streamData[i];
-      s.y += s.v * dt * (0.4 + shown);
+      s.y += s.v * dt * (0.4 + shown + boost);
       // recycle before a streak gets close enough to fill the lens
       if (s.y > ceiling) s.y -= TUNNEL_DEPTH;
       m.position.set(s.x, s.y, s.z);
@@ -354,7 +358,15 @@ export function createJourney(canvas, { reduced = false } = {}) {
       streams.setMatrixAt(i, m.matrix);
     }
     streams.instanceMatrix.needsUpdate = true;
-    frames.forEach((f, i) => (f.rotation.y = i * 0.18 + t * 0.00015 * (i % 2 ? 1 : -1)));
+    // layer frames rise past the camera and recycle below, so the tunnel never ends
+    frames.forEach((f, i) => {
+      f.rotation.y = i * 0.18 + t * 0.00015 * (i % 2 ? 1 : -1);
+      if (shown > 0.5) {
+        f.position.y += dt * (1.2 + boost * 3) * shown;
+        if (f.position.y > camera.position.y - 1.5) f.position.y -= 88;
+      }
+    });
+    boost *= Math.pow(0.04, dt);
 
     // the package "opens" as the camera reaches it, so we pass through cleanly
     const through = shown > 0.455;
@@ -367,7 +379,8 @@ export function createJourney(canvas, { reduced = false } = {}) {
     camera.position.x += pointer.x * (1.2 - inside * 0.8);
     camera.position.z += pointer.y * (1.2 - inside * 0.8);
     camera.lookAt(look);
-    camera.rotateZ(inside * shown * 2.4); // slow spiral once inside
+    // slow spiral once inside; keeps turning as you scroll the rest of the page
+    camera.rotateZ(inside * shown * 2.4 + cruiseShown * Math.PI * 3);
     scene.fog.near = 8 - inside * 6;
     scene.fog.far = 46 - inside * 22;
   }
@@ -392,6 +405,17 @@ export function createJourney(canvas, { reduced = false } = {}) {
         update(0, 0);
         renderer.render(scene, camera);
       }
+    },
+    setCruise(c) {
+      cruise = c;
+      if (reduced) {
+        cruiseShown = c;
+        update(0, 0);
+        renderer.render(scene, camera);
+      }
+    },
+    kick(v) {
+      boost = Math.min(4, boost + Math.abs(v) * 0.002);
     },
     setPointer(x, y) {
       pointer.tx = x;

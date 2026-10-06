@@ -19,18 +19,21 @@ Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pag
   - Its overlays (HUD, boot log, titles) are driven by one scrubbed GSAP timeline in `src/main.js`.
   - three.js is lazy-loaded.
   - The render loop pauses when the hero is off screen or the tab is hidden.
-- **After the hero** the inside-the-computer theme continues:
-  - a fixed motherboard background with three trace layers moving at different speeds
-  - skills as a pinned horizontal data bus
-  - projects as app windows flying out of the depth
-  - experience as a git log graph that draws as you scroll
-  - a self-typing terminal prompt in the contact section
-  - Pinning only applies on wide screens; narrow ones get simple reveals.
+- **One continuous world.** The 3D tunnel stays fixed behind the whole page.
+  - A scrim dims it behind readable sections.
+  - Its speed and spin follow your scroll.
+  - A fixed HUD reports the current layer and the depth: PCB → Package → Die → Core → Bus → Proc → Git → I/O.
+  - The sections build on it:
+    - skills are a pinned horizontal data bus
+    - projects are app windows flying out of the depth
+    - experience is a git log graph drawn on scroll
+    - contact is a self-typing terminal
+  - Pinning only applies on wide screens.
 - **Motion** is in `src/main.js`:
   - letter-by-letter titles
   - the scroll-lit intro paragraph
   - hero type splitting apart on scroll
   - drifting outline words
   - card tilt and a pointer-following project preview
-- **Theme**: there's a light/dark toggle, and the choice is remembered per browser.
+- **Theme**: the site is dark only, by design.
 - If the visitor has **reduced motion** turned on, smooth scroll and animation are skipped, and the 3D hero shows a single frame.
