@@ -1059,14 +1059,21 @@ button {
 }
 
 /* ---------- the world behind every section ---------- */
+/* No negative z-index: hosts that paint their own root background (like the
+   artifact viewer) would cover it. Canvas and scrim sit at 0, content above. */
 .journey__gl {
-  z-index: -2;
+  z-index: 0;
   transition: opacity 0.6s;
+}
+main,
+.foot {
+  position: relative;
+  z-index: 1;
 }
 .world-scrim {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   background:
     radial-gradient(ellipse at center, rgba(3, 5, 7, 0.8) 0%, rgba(3, 5, 7, 0.9) 70%),
@@ -1111,6 +1118,12 @@ button {
 .is-cruise .hud-g {
   top: auto;
   bottom: 22px;
+}
+.hud-g {
+  transition: opacity 0.3s;
+}
+.at-foot .hud-g {
+  opacity: 0;
 }
 .is-cruise .hud-g .hud__v {
   font-size: 12px;

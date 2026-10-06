@@ -179,6 +179,12 @@ function initMotion() {
       depthEl.textContent = String(1600 + Math.round(self.progress * 8400)).padStart(4, '0');
     },
   });
+  // get the HUD out of the footer's way
+  ScrollTrigger.create({
+    trigger: '.foot',
+    start: 'top bottom',
+    onToggle: (self) => root.classList.toggle('at-foot', self.isActive),
+  });
   // dim the world behind readable sections
   gsap.to('[data-scrim]', {
     opacity: 1,
