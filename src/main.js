@@ -163,7 +163,7 @@ function loadWorld() {
 }
 // three.js comes in after the first paint and fonts, so text is never blocked by it.
 const idle = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1200 }) : setTimeout(fn, 200));
-const afterLoad = () => (document.fonts?.ready ?? Promise.resolve()).then(() => idle(loadWorld));
+const afterLoad = () => !location.search.includes('noworld') && (document.fonts?.ready ?? Promise.resolve()).then(() => idle(loadWorld));
 if (document.readyState === 'complete') afterLoad();
 else addEventListener('load', afterLoad, { once: true });
 
@@ -328,8 +328,8 @@ function paintWindows({ i, t }) {
     w._k = key;
     w.style.transform = `translate3d(0,0,${z.toFixed(1)}px)`;
     w.style.opacity = o.toFixed(3);
-    w.style.visibility = o < 0.01 ? 'hidden' : 'visible';
-    if (!workState.keyboard) w.inert = o < 0.5;
+    w.style.visibility = o < 0.01 && !workState.keyboard ? 'hidden' : 'visible';
+    w.inert = !workState.keyboard && o < 0.5;
   });
 }
 
@@ -431,7 +431,11 @@ mm.add({ desk: DESK, mob: '(max-width: 1023.98px)' }, (ctx) => {
     const onKey = (e) => {
       if (e.key !== 'Tab') return;
       workState.keyboard = true;
-      workState.wins.forEach((w) => (w.inert = false));
+      workState.wins.forEach((w) => {
+        w.inert = false;
+        w.style.visibility = 'visible';
+        w._k = null;
+      });
     };
     const onPointer = () => (workState.keyboard = false);
     addEventListener('keydown', onKey);
@@ -465,7 +469,7 @@ mm.add({ desk: DESK, mob: '(max-width: 1023.98px)' }, (ctx) => {
     desk ? seam('#work', 'top 100%', 'top 30%') : seam('#work', 'top 70%', 'top 35%'),
     desk ? seam('#experience', 'top 100%', 'top 30%') : seam('#experience', 'top 70%', 'top 35%'),
     desk ? seam('#contact', 'top 100%', 'top 20%') : seam('#contact', 'top 75%', 'top 30%'),
-    ScrollTrigger.create({ trigger: '.foot', start: 'top bottom', end: 'max' }),
+    ScrollTrigger.create({ trigger: '.foot', start: desk ? 'top 85%' : 'top 90%', end: 'max' }),
   ];
   M.local = [
     null,

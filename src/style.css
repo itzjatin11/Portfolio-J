@@ -338,7 +338,7 @@ main,
   z-index: 35;
   top: calc(58px + env(safe-area-inset-top, 0px));
   left: var(--gutter);
-  width: 372px;
+  width: 424px;
   padding: 8px 12px 9px;
   font-size: 10.5px;
   line-height: 1.55;
@@ -940,7 +940,7 @@ main,
 
 /* ---------- contact ---------- */
 .contact {
-  min-height: 110vh;
+  min-height: 120vh;
 }
 .term {
   margin-top: 26px;
@@ -1056,7 +1056,7 @@ main,
 
 /* ---------- footer: the closing wide shot sits behind it ---------- */
 .foot {
-  min-height: 42vh;
+  min-height: 50vh;
   display: flex;
   align-items: flex-end;
   padding: 20px var(--gutter) calc(22px + env(safe-area-inset-bottom, 0px));
@@ -1135,11 +1135,9 @@ main,
     width: min(40vw, 600px);
     will-change: transform, opacity;
     opacity: 0;
-    visibility: hidden;
   }
   .js-motion .win:first-child {
     opacity: 1;
-    visibility: visible;
   }
   .js-motion .work .more {
     position: absolute;
@@ -1232,7 +1230,7 @@ main,
     height: 90px;
   }
   .hero {
-    height: 125vh;
+    height: 150vh;
   }
   .foot {
     min-height: 28vh;
@@ -1272,7 +1270,7 @@ main,
     font-size: 14vw;
     white-space: normal;
     width: 92vw;
-    top: 26%;
+    top: 34%;
   }
   .boot {
     bottom: 22px;

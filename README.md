@@ -1,6 +1,6 @@
 # jatindeveloper.in
 
-Personal portfolio of Jatin Singh Taadiyal. It's a static site built with Vite, GSAP ScrollTrigger and Lenis smooth scrolling. three.js renders the hero. Barlow Condensed and JetBrains Mono are self-hosted through Fontsource.
+Personal portfolio of Jatin Singh Taadiyal. A static site built with Vite, GSAP ScrollTrigger, Lenis and three.js. Fonts (Barlow Condensed, Barlow, JetBrains Mono, Latin subsets) are self-hosted in `public/fonts`.
 
 ```bash
 npm install
@@ -9,32 +9,28 @@ npm run build    # production build -> dist/
 npm run preview  # serve the build
 ```
 
-Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pages).
+Deploy `dist/` to any static host.
 
-## Editing
+## The idea
 
-- **Content** is plain HTML in `index.html`: projects, about text and toolbox.
-- **Contact form** posts to Formspree (`action` on the form in `index.html`) without leaving the page.
-- **3D hero** is in `src/journey.js`: a scroll-driven fly-through from a circuit board, into the chip and down a data tunnel.
-  - Its overlays (HUD, boot log, titles) are driven by one scrubbed GSAP timeline in `src/main.js`.
-  - three.js is lazy-loaded.
-  - The render loop pauses when the hero is off screen or the tab is hidden.
-- **After the hero** the inside-the-computer theme continues:
-  - a fixed motherboard background with three trace layers moving at different speeds
-  - skills as a pinned horizontal data bus
-  - projects as app windows flying out of the depth
-  - experience as a git log graph that draws as you scroll
-  - a self-typing terminal prompt in the contact section
-  - Pinning only applies on wide screens; narrow ones get simple reveals.
-- **Going deeper.** Every section is one layer further inside the machine.
-  - The layers, with their zoom: Registers ×10⁴ → Data bus ×10⁵ → Memory ×10⁶ → Storage ×10⁷ → Transistor ×10⁸.
-  - A pinned "dive" between sections opens a window onto the next layer and zooms into it until it fills the screen.
-  - Each layer has its own procedural pattern, defined in `src/layers.js` as theme-coloured CSS masks, drifting at two parallax depths behind the content.
-- **Motion** is in `src/main.js`:
-  - letter-by-letter titles
-  - the scroll-lit intro paragraph
-  - hero type splitting apart on scroll
-  - drifting outline words
-  - card tilt and a pointer-following project preview
-- **Theme**: there's a light/dark toggle, and the choice is remembered per browser.
-- If the visitor has **reduced motion** turned on, smooth scroll and animation are skipped, and the 3D hero shows a single frame.
+A visit is a request to Jatin's machine. To answer it, his profile is read off the SSD and carried to the CPU core along the real load path, and the camera travels with the data through one persistent 3D world:
+
+SSD (About) → PCIe bus (Skills) → DRAM (Work) → cache (Experience) → core and transistor (Contact) → back out to the board (footer).
+
+Travel on the board is sideways between parts. Scale only changes at the CPU: the die and the FinFET live in their own places in the scene (y = −120 and y = −240), and the camera swaps to them while fog briefly fills the screen with the page background.
+
+## Files
+
+- `index.html`: all content. Everything is readable without JavaScript.
+- `src/world.js`: the three.js world. One fixed canvas behind the page; one travel value `T` (0 hero, 1 storage, 2 PCIe, 3 DRAM, 4 cache, 5 core, 6 back on the board). Camera paths are Catmull-Rom curves re-parameterised for constant perceived speed. Frames render on demand only.
+- `src/textures.js`: procedural canvas textures. Most are channel-coded (R trace, G accent, B silkscreen) so the theme recolours them on the GPU without redrawing.
+- `src/gauge.js`: the persistent gauge (view width, access time, human scale, "if L1 were 1 second").
+- `src/main.js`: scroll → `T` mapping, pins (desktop), mobile hops, contact form and the on-submit round trip, theme.
+- `src/style.css`: layout, both themes and the scene palette (`--s-*` variables read by the world).
+
+## Notes
+
+- Contact form posts to Formspree (`action` on the form).
+- Light theme is a "blueprint X-ray" palette; the scene tweens to it in 400 ms.
+- Reduced motion, or a low-end device (no WebGL2 or ≤ 2 GB memory): no camera travel, one still frame per station with a short crossfade.
+- `?debug` exposes the world on `window.__world` for inspection; `?noworld` skips the 3D scene.
