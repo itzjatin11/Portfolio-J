@@ -19,16 +19,22 @@ Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pag
   - Its overlays (HUD, boot log, titles) are driven by one scrubbed GSAP timeline in `src/main.js`.
   - three.js is lazy-loaded.
   - The render loop pauses when the hero is off screen or the tab is hidden.
-- **Intro, then story.** After the core, the 3D scene fades out and stops rendering.
-  - The rest of the page is told as chapters in time order: Prologue, 2023, 2025, Late 2025, On the side, 2026, Epilogue.
-  - Each chapter has a year that drifts slower than the page, story lines that reveal, its projects, and a closing "Skills unlocked" row.
-  - A side spine shows which chapter you're in.
-  - Chapter content lives in `index.html` under the `CHAPTER nn` comments.
+- **After the hero** the inside-the-computer theme continues:
+  - a fixed motherboard background with three trace layers moving at different speeds
+  - skills as a pinned horizontal data bus
+  - projects as app windows flying out of the depth
+  - experience as a git log graph that draws as you scroll
+  - a self-typing terminal prompt in the contact section
+  - Pinning only applies on wide screens; narrow ones get simple reveals.
+- **Going deeper.** Every section is one layer further inside the machine.
+  - The layers, with their zoom: Registers ×10⁴ → Data bus ×10⁵ → Memory ×10⁶ → Storage ×10⁷ → Transistor ×10⁸.
+  - A pinned "dive" between sections opens a window onto the next layer and zooms into it until it fills the screen.
+  - Each layer has its own procedural pattern, defined in `src/layers.js` as theme-coloured CSS masks, drifting at two parallax depths behind the content.
 - **Motion** is in `src/main.js`:
   - letter-by-letter titles
   - the scroll-lit intro paragraph
   - hero type splitting apart on scroll
   - drifting outline words
   - card tilt and a pointer-following project preview
-- **Theme**: the site is dark only, by design.
+- **Theme**: there's a light/dark toggle, and the choice is remembered per browser.
 - If the visitor has **reduced motion** turned on, smooth scroll and animation are skipped, and the 3D hero shows a single frame.
