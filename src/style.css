@@ -351,12 +351,11 @@ main,
   z-index: 35;
   top: calc(58px + env(safe-area-inset-top, 0px));
   left: var(--gutter);
-  width: min(480px, 36vw);
+  width: clamp(360px, 36vw, 480px);
   padding: 8px 12px 9px;
   font-size: 10.5px;
   line-height: 1.55;
   color: var(--fg);
-  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 4px;
   pointer-events: none;
@@ -408,9 +407,8 @@ main,
 .gauge__human {
   color: var(--muted);
   text-transform: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* wraps on narrow laptops instead of truncating */
+  text-wrap: balance;
 }
 .gauge__bar {
   display: none;
