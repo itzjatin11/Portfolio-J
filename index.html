@@ -42,7 +42,7 @@
         <a href="#skills">Skills</a>
         <a href="#work">Work</a>
         <a href="#experience">Experience</a>
-        <a href="#contact">Say hello</a>
+        <a href="#contact">Contact</a>
       </nav>
       <div class="nav__right mono">
         <a class="nav__quiet" href="mailto:jatintaadiyal@gmail.com">Say hello →</a>
@@ -64,10 +64,10 @@
       <p class="gauge__top">
         <span class="gauge__where" data-g-where>Board</span>
         <span class="gauge__k">View</span> <b class="gauge__v" data-g-view>30 cm</b>
-        <span class="gauge__k">Access</span> <b class="gauge__v" data-g-access>—</b>
+        <span class="gauge__k" data-g-access-k>Access</span> <b class="gauge__v" data-g-access>—</b>
       </p>
       <div class="gauge__ruler"><span class="gauge__ticks"></span><span class="gauge__mark" data-g-mark></span></div>
-      <p class="gauge__human"><span data-g-human>≈ a ruler</span><span class="gauge__time" data-g-time></span></p>
+      <p class="gauge__human" data-g-human>≈ a ruler</p>
       <span class="gauge__bar"><span data-g-bar></span></span>
     </div>
 
@@ -99,6 +99,7 @@
 
       <!-- ============ ABOUT · STORAGE ============ -->
       <section class="station about" id="about" data-station="1">
+        <div class="beat" aria-hidden="true"></div>
         <div class="panel">
           <p class="kicker mono">01 · Storage</p>
           <h2 class="display h2" data-split>Hi, I'm Jatin.</h2>
@@ -106,8 +107,7 @@
             I'm a full-stack developer who cares about the parts nobody sees: clean data models,
             predictable APIs, and automation that removes busywork. As a Business Analyst at Authentic
             Security I map processes and gather requirements, which keeps me asking what problem we're
-            solving and for whom. Scope first, build second. I care more about software that works under
-            real conditions than software that looks good in a portfolio screenshot.
+            solving and for whom. Scope first, build second.
           </p>
           <ul class="facts mono" aria-label="Quick facts">
             <li>Auckland</li>
@@ -117,15 +117,15 @@
             <li>.NET/SQL/Node</li>
           </ul>
           <a
-            class="file mono"
+            class="cvlink mono"
             href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
             target="_blank"
             rel="noopener"
-            ><span class="file__icon">PDF</span> JATIN-CV-2026.pdf <span class="file__arrow" aria-hidden="true">↗</span></a
+            >CV ↗</a
           >
         </div>
         <aside class="legend" aria-label="About this scene">
-          <p class="legend__cap">Storage: saved, not running yet. This is the part of me that's written down.</p>
+          <p class="legend__cap" title="A NAND page is 16 KiB; the system asks for one 4 KiB block (LBA).">Storage: saved, not running yet. This is the part of me that's written down.</p>
           <p class="legend__what">
             <span class="mono">What's happening</span>
             A computer keeps everything on its SSD until it needs it. We've just read his profile off the drive.
@@ -135,6 +135,7 @@
 
       <!-- ============ SKILLS · PCIe BUS ============ -->
       <section class="station skills" id="skills" data-station="2">
+        <div class="beat" aria-hidden="true"></div>
         <div class="skills__frame">
           <div class="skills__top">
             <div class="panel panel--head">
@@ -192,7 +193,7 @@
                 <p class="skill__pair mono">pair 06 / 08</p>
                 <h3 class="display">Cloud</h3>
                 <p class="skill__text">Azure fundamentals, plus SharePoint and Purview every day.</p>
-                <p class="skill__used mono"><span>Used in:</span> AZ-900, 2025</p>
+                <p class="skill__used mono"><span>Used in:</span> SharePoint &amp; Purview at work · AZ-900 2025</p>
                 <p class="skill__tags mono">Azure · SharePoint · Purview</p>
               </article>
               <article class="skill">
@@ -216,6 +217,7 @@
 
       <!-- ============ WORK · MEMORY ============ -->
       <section class="station work" id="work" data-station="3">
+        <div class="beat" aria-hidden="true"></div>
         <div class="work__frame">
           <div class="panel panel--head">
             <p class="kicker mono">03 · Memory</p>
@@ -293,32 +295,31 @@
 
       <!-- ============ EXPERIENCE · CACHE ============ -->
       <section class="station exp" id="experience" data-station="4">
+        <div class="beat" aria-hidden="true"></div>
         <div class="panel">
           <p class="kicker mono">04 · Cache</p>
           <h2 class="display h2" data-split>Where I've worked</h2>
-          <p class="intro">Most recent first, like my career.</p>
+          <p class="intro">Oldest first, newest closest to the core.</p>
           <ul class="stats mono" aria-label="Highlights">
-            <li>100% accuracy</li>
-            <li>GPA 8.2 / 9</li>
             <li>40 min → 1 click</li>
+            <li>GPA 8.2 / 9</li>
           </ul>
-          <p class="gitcmd mono" aria-hidden="true">$ git log --career --graph</p>
+          <p class="gitcmd mono" aria-hidden="true">$ git log --reverse --career</p>
           <div class="gitwrap" data-gitlog>
             <span class="gitlog__rail" aria-hidden="true"><span data-git-fill></span></span>
             <ol class="gitlog">
-              <li class="commit" data-commit data-level="1">
+              <li class="commit" data-commit data-level="3">
                 <span class="commit__dot" aria-hidden="true"></span>
-                <p class="commit__head mono"><span class="commit__sha">a3f9c21</span> <span class="commit__ref">(HEAD -&gt; main)</span> <span class="commit__when">Jun 2026 – now</span> <span class="commit__lvl" title="L1 cache · about 1 ns">L1</span></p>
-                <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Business Analyst</span></h3>
-                <p class="commit__org">Authentic Security</p>
-                <p class="commit__desc">I run process improvement end to end: requirements, stakeholders, process mapping and data analysis.</p>
+                <p class="commit__head mono"><span class="commit__sha">e41a6c0</span> <span class="commit__when">2023 – 2025</span> <span class="commit__lvl" title="L3 cache · about 10 ns">L3</span></p>
+                <h3 class="commit__msg"><span class="commit__type mono">init:</span> <span class="display">BIT Software Development</span></h3>
+                <p class="commit__org">Auckland Institute of Studies</p>
+                <p class="commit__desc">GPA 8.2/9 and the Academic Excellence Award.</p>
               </li>
-              <li class="commit" data-commit data-level="1">
+              <li class="commit" data-commit data-level="3">
                 <span class="commit__dot" aria-hidden="true"></span>
-                <p class="commit__head mono"><span class="commit__sha">7be0d14</span> <span class="commit__when">Mar – Jun 2026</span> <span class="commit__lvl" title="L1 cache · about 1 ns">L1</span></p>
-                <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Cash Processing Officer</span></h3>
-                <p class="commit__org">Authentic Security</p>
-                <p class="commit__desc">High-volume reconciliation at 100% accuracy, plus internal tooling and SharePoint.</p>
+                <p class="commit__head mono"><span class="commit__sha">0d2f7b3</span> <span class="commit__ref">(tag: az-900)</span> <span class="commit__when">2025</span> <span class="commit__lvl" title="L3 cache · about 10 ns">L3</span></p>
+                <h3 class="commit__msg"><span class="commit__type mono">cert:</span> <span class="display">Microsoft Azure Fundamentals</span></h3>
+                <p class="commit__org">Microsoft</p>
               </li>
               <li class="commit" data-commit data-level="2">
                 <span class="commit__dot" aria-hidden="true"></span>
@@ -327,18 +328,19 @@
                 <p class="commit__org">Source Infinity</p>
                 <p class="commit__desc">REST APIs in Node.js and Python, WebRTC and cloud storage for a video streaming app.</p>
               </li>
-              <li class="commit" data-commit data-level="3">
+              <li class="commit" data-commit data-level="1">
                 <span class="commit__dot" aria-hidden="true"></span>
-                <p class="commit__head mono"><span class="commit__sha">0d2f7b3</span> <span class="commit__ref">(tag: az-900)</span> <span class="commit__when">2025</span> <span class="commit__lvl" title="L3 cache · about 10 ns">L3</span></p>
-                <h3 class="commit__msg"><span class="commit__type mono">cert:</span> <span class="display">Microsoft Azure Fundamentals</span></h3>
-                <p class="commit__org">Microsoft</p>
+                <p class="commit__head mono"><span class="commit__sha">7be0d14</span> <span class="commit__when">Mar – Jun 2026</span> <span class="commit__lvl" title="L1 cache · about 1 ns">L1</span></p>
+                <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Cash Processing Officer</span></h3>
+                <p class="commit__org">Authentic Security</p>
+                <p class="commit__desc">High-volume reconciliation at 100% accuracy, plus internal tooling and SharePoint.</p>
               </li>
-              <li class="commit" data-commit data-level="3">
+              <li class="commit" data-commit data-level="1">
                 <span class="commit__dot" aria-hidden="true"></span>
-                <p class="commit__head mono"><span class="commit__sha">e41a6c0</span> <span class="commit__when">2023 – 2025</span> <span class="commit__lvl" title="L3 cache · about 10 ns">L3</span></p>
-                <h3 class="commit__msg"><span class="commit__type mono">init:</span> <span class="display">BIT Software Development</span></h3>
-                <p class="commit__org">Auckland Institute of Studies</p>
-                <p class="commit__desc">GPA 8.2/9 and the Academic Excellence Award.</p>
+                <p class="commit__head mono"><span class="commit__sha">a3f9c21</span> <span class="commit__ref">(HEAD -&gt; main)</span> <span class="commit__when">Jun 2026 – now</span> <span class="commit__lvl" title="L1 cache · about 1 ns">L1</span></p>
+                <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Business Analyst</span></h3>
+                <p class="commit__org">Authentic Security</p>
+                <p class="commit__desc">I run process improvement end to end: requirements, stakeholders, process mapping and data analysis.</p>
               </li>
             </ol>
           </div>
@@ -372,6 +374,7 @@
 
       <!-- ============ CONTACT · CORE ============ -->
       <section class="station contact" id="contact" data-station="5">
+        <div class="beat" aria-hidden="true"></div>
         <div class="panel">
           <p class="kicker mono">05 · Core</p>
           <h2 class="display h2" data-split>Say hello.</h2>

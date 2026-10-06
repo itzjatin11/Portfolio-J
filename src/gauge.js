@@ -2,17 +2,19 @@
 // that is in human terms. Values interpolate in log space with T, so going in they only
 // count down.
 
+// View width matched to what each station actually frames.
 const VIEW = [
   [0, 0.3],
   [1, 0.02],
-  [2, 1e-3],
-  [3, 1e-5],
-  [4, 1e-6],
-  [4.5, 1e-7],
-  [5, 5e-10],
+  [2, 0.01],
+  [3, 0.02],
+  [4, 1e-3],
+  [4.32, 1e-5],
+  [4.7, 5e-8],
+  [5, 2e-9],
   [6, 0.3],
 ];
-// access time in seconds (null = nothing requested yet)
+// access time in seconds (null = nothing requested yet); at the transistor it is switching time
 const ACCESS = [
   [0.85, 100e-6],
   [1, 100e-6],
@@ -20,28 +22,32 @@ const ACCESS = [
   [3, 100e-9],
   [3.999, 10e-9],
   [4.001, 1e-9],
-  [4.5, 0.2e-9],
+  [4.32, 0.2e-9],
+  [4.7, 1e-12],
   [5, 1e-12],
 ];
-const PLACES = [
-  ['Board', 'Board'],
-  ['Storage', 'Storage'],
-  ['PCIe bus', 'Bus'],
-  ['Memory', 'Memory'],
-  ['Cache', 'Cache'],
-  ['Core', 'Core'],
-  ['Transistor', 'Transistor'],
-];
+// [T, desktop, mobile] — shown only close to a station, so the comparison always matches the view
 const HUMAN = [
   [0, 'a ruler', 'a ruler'],
   [1, 'a postage stamp', 'a stamp'],
-  [2, 'a human hair', 'a hair'],
-  [3, 'a red blood cell', 'a blood cell'],
-  [4, 'a bacterium', 'a bacterium'],
-  [4.5, 'a virus', 'a virus'],
-  [5, 'a few atoms', 'atoms'],
+  [2, 'a fingernail · traces ≈ a hair', 'a fingernail'],
+  [3, 'a postage stamp', 'a stamp'],
+  [4, 'a grain of sand', 'a grain of sand'],
+  [4.32, 'a red blood cell', 'a blood cell'],
+  [4.7, 'a virus', 'a virus'],
+  [5, 'a strand of DNA', 'DNA'],
   [6, 'a ruler', 'a ruler'],
 ];
+function placeOf(T) {
+  if (T < 0.5) return ['Board', 'Board'];
+  if (T < 1.5) return ['Storage', 'Storage'];
+  if (T < 2.5) return ['PCIe bus', 'Bus'];
+  if (T < 3.5) return ['Memory', 'Memory'];
+  if (T < 4.15) return ['Cache', 'Cache'];
+  if (T < 4.6) return ['Register', 'Register'];
+  if (T < 5.5) return ['Transistor', 'Transistor'];
+  return ['Board', 'Board'];
+}
 const CACHE_NS = { 1: 1e-9, 2: 3e-9, 3: 10e-9 };
 
 function logLerp(table, T) {
@@ -89,11 +95,11 @@ export function fmtHuman(s) {
 export function createGauge(root) {
   if (!root) return { update() {} };
   const el = (s) => root.querySelector(s);
-  const where = el('[data-g-where]');
+  const where_ = el('[data-g-where]');
+  const accessK = el('[data-g-access-k]');
   const view = el('[data-g-view]');
   const access = el('[data-g-access]');
-  const human = el('[data-g-human]');
-  const time = el('[data-g-time]');
+  const humanEl = el('[data-g-human]');
   const mark = el('[data-g-mark]');
   const bar = el('[data-g-bar]');
   const last = {};
@@ -104,33 +110,35 @@ export function createGauge(root) {
     }
   };
   return {
-    update(T, level = 1, mobile = false) {
+    update(T, level = 1, mobile = false, extra = '') {
       const v = logLerp(VIEW, T);
-      const station = T >= 5.5 ? 0 : T >= 4.75 ? 6 : T >= 4.4 ? 5 : Math.round(T);
-      const nearHuman = HUMAN.reduce((a, b) => (Math.abs(b[0] - T) < Math.abs(a[0] - T) ? b : a));
-      const place = PLACES[station];
+      const near = HUMAN.reduce((x, y) => (Math.abs(y[0] - T) < Math.abs(x[0] - T) ? y : x));
+      const showHuman = Math.abs(near[0] - T) < 0.12;
+      const place = placeOf(T);
       const viewText = fmtLength(v);
-      // access
       let acc = null;
       let accText = '—';
+      const inCache = T > 3.97 && T < 4.03;
       if (T >= 0.85 && T < 5.5) {
-        if (T > 3.97 && T < 4.03) {
+        if (inCache) {
           acc = CACHE_NS[level];
-          accText = `L3 10 · L2 3 · L1 1 ns`;
+          accText = 'L3 10 · L2 3 · L1 1 ns';
         } else {
           acc = logLerp(ACCESS, T);
           accText = fmtTime(acc);
         }
       }
+      const where = extra ? `${place[0]} · ${extra}` : place[0];
       if (mobile) {
-        set(where, 'where', `${place[1]} · ${viewText} · ≈ ${nearHuman[2]}`);
+        set(where_, 'where', [extra ? `${place[1]} ${extra}` : place[1], viewText, showHuman ? `≈ ${near[2]}` : ''].filter(Boolean).join(' · '));
       } else {
-        set(where, 'where', place[0]);
+        set(where_, 'where', where);
         set(view, 'view', viewText);
+        set(accessK, 'accK', T >= 4.6 && T < 5.5 ? 'Switch' : 'Access');
         set(access, 'access', accText);
-        set(human, 'human', `≈ ${nearHuman[1]}`);
-        set(time, 'time', acc ? `≈ ${fmtHuman(acc)}, if L1 were 1 second` : '');
-        root.dataset.level = T > 3.97 && T < 4.03 ? String(level) : '';
+        const human = [showHuman ? `≈ ${near[1]}` : '', acc ? `≈ ${fmtHuman(acc)}, if L1 were 1 second` : ''].filter(Boolean).join(' · ');
+        set(humanEl, 'human', human || '\u00a0');
+        root.dataset.level = inCache ? String(level) : '';
       }
       // log ruler: 30 cm (left) → 0.5 nm (right)
       const f = Math.min(1, Math.max(0, (Math.log10(0.3) - Math.log10(v)) / (Math.log10(0.3) - Math.log10(5e-10))));

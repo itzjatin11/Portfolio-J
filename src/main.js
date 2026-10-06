@@ -40,6 +40,8 @@ function sceneColours() {
   const cs = getComputedStyle(root);
   const out = Object.fromEntries(SCENE_KEYS.map((k) => [k, cs.getPropertyValue(`--s-${k}`).trim()]));
   out.edgeAmt = parseFloat(cs.getPropertyValue('--s-edge-amt')) || 0.3;
+  out.glowRest = parseFloat(cs.getPropertyValue('--s-glow-rest')) || 0.55;
+  out.fogK = parseFloat(cs.getPropertyValue('--s-fog')) || 1;
   return out;
 }
 let world = null;
@@ -202,6 +204,22 @@ function computeT(y) {
 }
 const progress = (st, y) => (st ? clamp01((y - st.start) / Math.max(1, st.end - st.start)) : 0);
 
+const beats = $$('.beat');
+// a fixed copy of each station's legend, shown one at a time on desktop
+const legendHost = document.createElement('div');
+legendHost.className = 'legend-fixed';
+legendHost.setAttribute('aria-hidden', 'true');
+const legends = $$('.station').map((sec) => {
+  const src = $('.legend', sec);
+  const el = src.cloneNode(true);
+  el.removeAttribute('aria-label');
+  el.dataset.k = sec.dataset.station;
+  legendHost.appendChild(el);
+  return el;
+});
+if (!reduceMotion) document.body.appendChild(legendHost);
+else legends.length = 0;
+
 const skillsState = { cardW: 1, gap: 18, shift: 0, cards: [] };
 const workState = { wins: [], current: -1 };
 const HOLD = 1.4;
@@ -226,7 +244,8 @@ function update(y = window.scrollY) {
 
   // ---------- hero overlays ----------
   if (!reduceMotion) {
-    const nameOut = sstep(0.14, 0.3, T);
+    // desktop: the name gives way to the tagline; mobile: it simply scrolls away with the hero
+    const nameOut = desk ? sstep(0.14, 0.3, T) : 0;
     els.heroCopy.style.opacity = (1 - nameOut).toFixed(3);
     els.heroCopy.style.transform = `translate3d(0, ${(-nameOut * 40).toFixed(1)}px, 0)`;
     const tag = bump(T, 0.28, 0.36, 0.54, 0.64);
@@ -276,8 +295,33 @@ function update(y = window.scrollY) {
   G.level = +($$('[data-commit]')[c]?.dataset.level || 1);
 
   // ---------- push to the world + gauge ----------
-  if (G.override == null) gauge.update(stills ? Math.round(T) : T, G.level, !desk);
+  // rack position while reading projects off the DIMM
+  const rack = T > 2.75 && T < 3.25 ? `U${Math.round(L[3] * 4) + 1} of 5` : '';
+  if (G.override == null) gauge.update(stills ? Math.round(T) : T, G.level, !desk, rack);
   G.L = L;
+
+  // one legend at a time (desktop), chosen by station
+  if (desk && legends.length) {
+    const k = T < 0.62 || T > 5.3 ? 0 : Math.max(1, Math.min(5, Math.round(T)));
+    if (k !== G.legend) {
+      G.legend = k;
+      legends.forEach((el) => el.classList.toggle('is-on', +el.dataset.k === k));
+    }
+  }
+  // mobile: scene tags only over a scene-only beat, never over copy
+  if (!desk && world) {
+    let band = null;
+    let best = 0;
+    beats.forEach((b) => {
+      const r = b.getBoundingClientRect();
+      const vis = Math.min(r.bottom, innerHeight * 0.46) - Math.max(r.top, 60);
+      if (vis > best) {
+        best = vis;
+        band = [r.top, r.bottom];
+      }
+    });
+    world.setTagBand(best > 80 ? band : [0, 0]);
+  } else world?.setTagBand(null);
   pushWorld();
 }
 
@@ -465,11 +509,11 @@ mm.add({ desk: DESK, mob: '(max-width: 1023.98px)' }, (ctx) => {
   // seams (desk ≈ 60–80 vh, mobile ≈ 35 vh)
   M.seams = [
     ScrollTrigger.create({ trigger: '#about', start: 0, end: desk ? 'top 25%' : 'top 40%' }),
-    desk ? seam('#skills', 'top 85%', 'top 25%') : seam('#skills', 'top 70%', 'top 35%'),
-    desk ? seam('#work', 'top 100%', 'top 30%') : seam('#work', 'top 70%', 'top 35%'),
-    desk ? seam('#experience', 'top 100%', 'top 30%') : seam('#experience', 'top 70%', 'top 35%'),
-    desk ? seam('#contact', 'top 100%', 'top 20%') : seam('#contact', 'top 75%', 'top 30%'),
-    ScrollTrigger.create({ trigger: '.foot', start: desk ? 'top 85%' : 'top 90%', end: 'max' }),
+    desk ? seam('#skills', 'top 95%', 'top 35%') : seam('#skills', 'top 65%', 'top 25%'),
+    desk ? seam('#work', 'top 100%', 'top 40%') : seam('#work', 'top 65%', 'top 25%'),
+    desk ? seam('#experience', 'top 100%', 'top 35%') : seam('#experience', 'top 65%', 'top 25%'),
+    desk ? seam('#contact', 'top 115%', 'top 25%') : seam('#contact', 'top 70%', 'top 20%'),
+    ScrollTrigger.create({ trigger: '.foot', start: desk ? 'top 60%' : 'top 70%', end: 'max' }),
   ];
   M.local = [
     null,
@@ -566,7 +610,7 @@ const typed = $('[data-type]');
 const termOut = $('[data-term-out]');
 function roundTripText() {
   const s = Math.max(1, Math.round(performance.now() / 1000));
-  return `HTTP/1.1 200 OK · round trip: ${Math.floor(s / 60)}m ${s % 60}s · served: nvme0n1 → DRAM → L1 → you`;
+  return `HTTP/1.1 200 OK · served: nvme0n1 → DRAM → L1 → you · time on page: ${Math.floor(s / 60)}m ${s % 60}s`;
 }
 if (reduceMotion) {
   ScrollTrigger.create({ trigger: '#contact', start: 'top 60%', once: true, onEnter: () => (termOut.textContent = roundTripText()) });

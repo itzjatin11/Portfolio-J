@@ -262,6 +262,10 @@ function camPath(pos, look) {
   }
   for (let i = 0; i <= N; i++) cum[i] /= cum[N];
   return {
+    atU(u, outP, outL) {
+      pc.getPoint(clamp(u, 0, 1), outP);
+      lc.getPoint(clamp(u, 0, 1), outL);
+    },
     at(p, outP, outL) {
       p = clamp(p, 0, 1);
       let lo = 0;
@@ -277,6 +281,16 @@ function camPath(pos, look) {
       lc.getPoint(u, outL);
     },
   };
+}
+
+function piecewise(pts, x) {
+  for (let i = 1; i < pts.length; i++)
+    if (x <= pts[i][0]) {
+      const [x0, y0] = pts[i - 1];
+      const [x1, y1] = pts[i];
+      return y0 + (y1 - y0) * ease(clamp((x - x0) / (x1 - x0), 0, 1));
+    }
+  return pts[pts.length - 1][1];
 }
 
 /* ================================================================== WORLD */
@@ -321,18 +335,17 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   lidTop.position.y = 0.3315;
   boardW.add(substrate, diePreview, lid, lidTop);
 
-  // pads around the package
-  const pinsPerSide = 16;
-  const pins = new InstancedMesh(new BoxGeometry(0.12, 0.06, 0.45), solid('metal', { edge: 0 }), pinsPerSide * 4);
-  let k = 0;
-  for (let side = 0; side < 4; side++)
-    for (let i = 0; i < pinsPerSide; i++) {
-      const t = -2.6 + (i * 5.2) / (pinsPerSide - 1);
-      const d = 3.3;
-      const p = [[t, 0.03, -d], [d, 0.03, t], [t, 0.03, d], [-d, 0.03, t]][side];
-      place(pins, k++, p, [1, 1, 1], side % 2 ? Math.PI / 2 : 0);
-    }
-  boardW.add(pins);
+  // LGA: the package sits flat in a socket; a thin load frame around it, no leads
+  const frame = boxes(
+    [
+      [[0, 0.05, -3.25], [6.9, 0.1, 0.35]],
+      [[0, 0.05, 3.25], [6.9, 0.1, 0.35]],
+      [[-3.25, 0.05, 0], [0.35, 0.1, 6.15]],
+      [[3.25, 0.05, 0], [0.35, 0.1, 6.15]],
+    ],
+    solid('metal', { edge: 1 }),
+  );
+  boardW.add(frame);
 
   // Dark parts: SSD controller, NAND, connectors, DIMM chips, caps, VRM chokes, NIC …
   const NAND1 = [-12.0, 0.27, 10];
@@ -647,7 +660,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     F.atomR = F.atoms.map((p) => Math.hypot(p[0], p[1] - size / 2, p[2]));
     F.atomMax = Math.max(...F.atomR);
     F.lattice = new InstancedMesh(new SphereGeometry(0.06, mobile ? 8 : 10, mobile ? 6 : 8), solid('trace', { edge: 0, emit: 'die' }), F.atoms.length);
-    F.lattice.material.uniforms.uEmitAmt.value = 0.35;
+    F.lattice.material.uniforms.uEmitAmt.value = dark ? 0.35 : 0.05;
     F.lattice.instanceMatrix.setUsage(DynamicDrawUsage);
     finW.add(F.lattice);
     const bonds = [];
@@ -678,7 +691,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       const z = chipZ(L * 4);
       return [[4.4, 3.5, z - 1.0], [8.4, 2.5, z]];
     },
-    (L) => [[lerp(6.0, 5.4, L), DIE_Y + 10.5, lerp(4.5, 3.9, L)], [3.0, DIE_Y, -4.2]],
+    (L) => [[lerp(6.2, 4.6, L), DIE_Y + lerp(9.8, 7.4, L), lerp(6.4, -1.4, L)], [lerp(3.0, 2.5, L), DIE_Y, lerp(0.2, -5.4, L)]],
     (L) => [[lerp(6.4, 5.8, L), FIN_Y + lerp(4.8, 4.3, L), lerp(7.6, 7.0, L)], [0, FIN_Y + 1.5, 0]],
   ];
   const PROJECT_CHIP = [0, 2, 3, 5, 7];
@@ -742,9 +755,11 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     [
       {
         a: 0, b: 0.58, w: 'die',
+        // the register beat: arrive over the register file, linger while R0 fills, then dive into it
+        warpU: [[0, 0], [0.3, 0.5], [0.8, 0.6], [1, 1]],
         path: camPath(
-          [at(4, 1)[0], [4.6, DIE_Y + 4.5, -4.0], [3.9, DIE_Y + 1.4, -6.9], [3.4, DIE_Y + 0.4, -7.9], [3.27, DIE_Y + 0.17, -8.27]],
-          [at(4, 1)[1], [3.25, DIE_Y, -8.6], [3.25, DIE_Y + 0.08, -8.5], [3.25, DIE_Y + 0.1, -8.42], [3.25, DIE_Y + 0.1, -8.36]],
+          [at(4, 1)[0], [4.8, DIE_Y + 4.2, -4.4], [4.4, DIE_Y + 1.9, -6.3], [3.7, DIE_Y + 0.8, -7.4], [3.27, DIE_Y + 0.17, -8.27]],
+          [at(4, 1)[1], [3.1, DIE_Y, -7.6], [3.25, DIE_Y, -9.0], [3.25, DIE_Y + 0.05, -8.6], [3.25, DIE_Y + 0.1, -8.36]],
         ),
       },
       {
@@ -783,6 +798,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     pair: new Float32Array(8).fill(-9), // spark phase per PCIe pair (-1 → 1 crosses the view), -9 = none
     gatePulse: 0,
     override: null, // T used by the on-submit round trip
+    tagBand: null,
+    bandKey: '',
   };
   const lineHop = { cur: new Vector3(), target: new Vector3(), init: false };
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -826,7 +843,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     const phases = SEAMS[k];
     const ph = phases.find((x) => q >= x.a && q <= x.b) || phases[phases.length - 1];
     const lq = (q - ph.a) / (ph.b - ph.a);
-    ph.path.at(lq, outP, outL);
+    if (ph.warpU) ph.path.atU(piecewise(ph.warpU, lq), outP, outL);
+    else ph.path.at(lq, outP, outL);
     // carry the stations' live local progress in and out of the seam (no jumps)
     if (ph === phases[0] && k >= 1) {
       const wgt = 1 - sstep(0, 0.4, lq);
@@ -864,13 +882,14 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   const TG = {
     cpu: tag("CPU · where we're going"),
     cut: tag('cutaway · not to scale'),
-    page: tag('PAGE 4 KiB', { cls: 'tag--hot' }),
+    page: tag('LBA 4 KiB', { cls: 'tag--hot' }),
     land: tag('4 KiB @ 0x7F3A…', { cls: 'tag--hot' }),
     line: tag('JATIN SINGH TAADIYAL|FULL-STACK DEV|C#/.NET SQL NODE|AKL NZ 2026', { cls: 'tag--line' }),
     l1: tag('L1 · 1 ns', { w: 'die' }),
     l2: tag('L2 · 3 ns', { w: 'die' }),
     l3: tag('L3 · 10 ns', { w: 'die' }),
-    r0: tag('R0 = 4A 41 54 49 4E 20 53 49 · "JATIN SI"', { w: 'die', cls: 'tag--hot' }),
+    r0: tag('register · r0 = JATIN SI · 4A 41 54 49 4E 20 53 49', { w: 'die', cls: 'tag--hot' }),
+    u: [1, 2, 3, 4, 5].map((n) => tag(`U${n}`, { cls: 'tag--chip' })),
     alu: tag('ALU', { w: 'die' }),
     gate: tag('gate · bit = 1', { w: 'fin', cls: 'tag--hot' }),
     lat: tag('silicon lattice · not to scale', { w: 'fin' }),
@@ -880,7 +899,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     TG.l1.pos.set(1.0, DIE_Y + 0.2, -5.9);
     TG.l2.pos.set(-0.6, DIE_Y + 0.2, -4.0);
     TG.l3.pos.set(-1.2, DIE_Y + 0.2, 0.2);
-    TG.r0.pos.set(4.4, DIE_Y + 0.14, -8.36);
+    TG.r0.pos.set(2.2, DIE_Y + 0.14, -8.36);
     TG.alu.pos.set(4.9, DIE_Y + 0.25, -12.4);
     TG.gate.pos.set(0, FIN_Y + 1.5, -4.2);
     TG.lat.pos.set(-1.7, FIN_Y + 3.2, 1.0);
@@ -900,6 +919,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   }
 
   const theme = { t: 1, dur: 0.4, start: 0, from: null, to: null };
+  const themeOpts = { glowRest: 0.55, fogK: 1 };
   function stepTheme(now) {
     if (!theme.to || theme.t >= 1) return;
     theme.t = theme.dur > 0 ? Math.min(1, (now - theme.start) / (theme.dur * 1000)) : 1;
@@ -962,7 +982,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       t.alpha = a;
       if (pos) t.pos.copy(pos);
     };
-    Object.values(TG).forEach((t) => t && (t.alpha = 0));
+    Object.values(TG).flat().forEach((t) => t && (t.alpha = 0));
 
     if (S.override == null) {
       setTag(TG.cpu, bump(T, 0.12, 0.22, 0.48, 0.6));
@@ -1044,6 +1064,17 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       // work station: the current project's chip is lit
       const pf = S.L[3] * 4;
       for (let i = 0; i < 5; i++) decalLevel[PROJECT_CHIP[i]] = clamp(1 - Math.abs(pf - i) * 1.4, 0, 1);
+      // a read strobe runs along the DIMM bus from one chip to the next between projects
+      const i0 = Math.min(3, Math.floor(pf));
+      const f = pf - i0;
+      if (f > 0.02 && f < 0.98) {
+        packet.visible = true;
+        const zz = lerp(CHIP_Z[PROJECT_CHIP[i0]], CHIP_Z[PROJECT_CHIP[i0 + 1]], sstep(0.05, 0.95, f));
+        const up = Math.min(sstep(0, 0.15, f), 1 - sstep(0.85, 1, f));
+        packet.position.set(8.32, lerp(2.7, 0.95, up), zz);
+        packet.scale.setScalar(0.7);
+      }
+      TG.u?.forEach((t, n) => setTag(t, n === Math.round(pf) ? 1 : 0.55, tmp.set(8.3, 1.9, CHIP_Z[PROJECT_CHIP[n]])));
     } else if (k === 3) {
       // a 64-byte line rides back to the package, then on into the die
       for (let i = 0; i < 5; i++) decalLevel[PROJECT_CHIP[i]] = Math.max(0, (1 - Math.abs(4 - i) * 1.4) * (1 - sstep(0, 0.1, p)));
@@ -1062,7 +1093,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       } else if (p > 0.66) {
         line.scale.set(1.6, 0.1, 0.22);
         const f = sstep(0.68, 1, p);
-        const pts = [V([13.6, DIE_Y + 0.2, 0.4]), V([3.25, DIE_Y + 0.2, 0.4]), V([3.25, DIE_Y + 0.25, -4.0]), V([1.8, DIE_Y + 0.3, -5.9])];
+        const pts = [V([13.6, DIE_Y + 0.2, 0.4]), V([8.4, DIE_Y + 0.2, 0.4]), V([3.25, DIE_Y + 0.2, 0.4])];
         along(pts, f, line.position);
         lineHop.cur.copy(line.position);
         setTag(TG.line, sstep(0.72, 0.8, p), tmp.copy(line.position).add(tmp2.set(0, 0.6, 0)));
@@ -1108,8 +1139,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       const alu = inS4 ? bump(p, 0.26, 0.3, 0.42, 0.48) * (0.6 + 0.4 * Math.sin((p - 0.26) * 120)) : 0;
       D.aluMat.uniforms.uEmitAmt.value = clamp(alu, 0, 1) * 0.85;
       if (inS4) {
-        setTag(TG.r0, bump(p, 0.1, 0.18, 0.44, 0.52));
-        setTag(TG.alu, bump(p, 0.24, 0.3, 0.44, 0.5));
+        setTag(TG.r0, bump(p, 0.12, 0.18, 0.46, 0.5));
+        setTag(TG.alu, bump(p, 0.28, 0.32, 0.44, 0.48));
         setTag(TG.l1, 0.45 * (1 - sstep(0, 0.12, p)));
         setTag(TG.l2, 0.45 * (1 - sstep(0, 0.12, p)));
         setTag(TG.l3, 0.45 * (1 - sstep(0, 0.12, p)));
@@ -1186,7 +1217,9 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     camera.updateProjectionMatrix();
 
     // fog: tighter the deeper we go, closed fully across each place swap
-    const fo = w === 'board' ? (T < 3 || T > 5 ? [0.55, 2.1] : [0.5, 1.7]) : w === 'die' ? [0.7, 2.6] : [0.8, 3.2];
+    const fk = themeOpts.fogK;
+    const fo0 = w === 'board' ? (T < 3 || T > 5 ? [0.55, 2.1] : [0.5, 1.7]) : w === 'die' ? [0.7, 2.6] : [0.8, 3.2];
+    const fo = [fo0[0] * fk, fo0[1] * fk];
     fogF = cam.f;
     const fnear = dist * fo[0] * (1 - fogF);
     const ffar = lerp(dist * fo[1], dist * 0.01 + 0.001, ease(fogF));
@@ -1218,6 +1251,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
           const x = (tmp.x * 0.5 + 0.5) * vw;
           const y = (-tmp.y * 0.5 + 0.5) * vh;
           if (x < 8 || x > vw - 8 || y < 60 || y > (mobile ? vh * 0.46 : vh - 20)) a = 0;
+          if (S.tagBand && (y < S.tagBand[0] + 14 || y > S.tagBand[1] - 14)) a = 0;
+          if (!mobile && x > vw - Math.min(360, vw * 0.3) - 90 && y < 250) a = 0; // keep clear of the legend
           t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
         }
       }
@@ -1250,7 +1285,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     // exposure: brighter only while T is changing, back to rest 300 ms after it stops
     const moving = now - lastTChange < 300 && S.override == null ? 1 : S.override != null ? 1 : 0;
     const T = S.override ?? S.T;
-    const rest = T < 0.45 ? 0.9 : T > 5.6 ? 0.85 : 0.55;
+    const rest = T < 0.45 ? 0.9 : T > 5.6 ? 0.85 : themeOpts.glowRest;
     glowTarget = moving ? 1 : rest;
     U.glow.value += (glowTarget - U.glow.value) * Math.min(1, dt * 8 || 1);
     if (Math.abs(glowTarget - U.glow.value) > 0.004) anim = Math.max(anim, 0.05);
@@ -1338,6 +1373,9 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       theme.to = Object.fromEntries(KEYS.map((key) => [key, new Color(colors[key] || '#000')]));
       theme.edgeFrom = U.edgeAmt.value;
       theme.edgeTo = colors.edgeAmt ?? U.edgeAmt.value;
+      themeOpts.glowRest = colors.glowRest ?? 0.55;
+      themeOpts.fogK = colors.fogK ?? 1;
+      if (F.lattice) F.lattice.material.uniforms.uEmitAmt.value = isDark ? 0.35 : 0.05;
       theme.t = 0;
       theme.dur = duration;
       theme.start = performance.now();
@@ -1346,6 +1384,14 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
         applyBlend();
       }
       stepTheme(performance.now());
+      dirty = true;
+    },
+    // [top, bottom] screen band the tags may use (mobile: a scene-only beat), or null
+    setTagBand(band) {
+      const key = band ? `${band[0] | 0},${band[1] | 0}` : '';
+      if (S.bandKey === key) return;
+      S.bandKey = key;
+      S.tagBand = band;
       dirty = true;
     },
     setTagText(name, text) {
