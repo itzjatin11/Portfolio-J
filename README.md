@@ -19,16 +19,11 @@ Deploy `dist/` to any static host (Vercel, Netlify, GitHub Pages, Cloudflare Pag
   - Its overlays (HUD, boot log, titles) are driven by one scrubbed GSAP timeline in `src/main.js`.
   - three.js is lazy-loaded.
   - The render loop pauses when the hero is off screen or the tab is hidden.
-- **One continuous world.** The 3D tunnel stays fixed behind the whole page.
-  - A scrim dims it behind readable sections.
-  - Its speed and spin follow your scroll.
-  - A fixed HUD reports the current layer and the depth: PCB → Package → Die → Core → Bus → Proc → Git → I/O.
-  - The sections build on it:
-    - skills are a pinned horizontal data bus
-    - projects are app windows flying out of the depth
-    - experience is a git log graph drawn on scroll
-    - contact is a self-typing terminal
-  - Pinning only applies on wide screens.
+- **Intro, then story.** After the core, the 3D scene fades out and stops rendering.
+  - The rest of the page is told as chapters in time order: Prologue, 2023, 2025, Late 2025, On the side, 2026, Epilogue.
+  - Each chapter has a year that drifts slower than the page, story lines that reveal, its projects, and a closing "Skills unlocked" row.
+  - A side spine shows which chapter you're in.
+  - Chapter content lives in `index.html` under the `CHAPTER nn` comments.
 - **Motion** is in `src/main.js`:
   - letter-by-letter titles
   - the scroll-lit intro paragraph

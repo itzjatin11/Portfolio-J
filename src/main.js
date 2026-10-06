@@ -30,14 +30,12 @@ setInterval(tick, 15_000);
 // three.js loads after the page is interactive, so text paints first.
 let journey = null;
 let heroProgress = 0;
-let cruiseProgress = 0;
+let inHero = true;
 import('./journey.js')
   .then(({ createJourney }) => {
     journey = createJourney($('[data-gl]'), { reduced: reduceMotion });
     journey.setProgress(heroProgress);
-    journey.setCruise(cruiseProgress);
-    // the machine is the backdrop for the whole page, so it runs whenever the tab is visible
-    journey.setRunning(!document.hidden);
+    journey.setRunning(inHero && !document.hidden);
   })
   .catch(() => {
     // No WebGL: the hero still reads as type on a dark background.
@@ -96,7 +94,6 @@ function initMotion() {
   /* ---------- smooth scroll ---------- */
   const lenis = new Lenis({ lerp: 0.1 });
   lenis.on('scroll', ScrollTrigger.update);
-  lenis.on('scroll', ({ velocity }) => journey?.kick(velocity));
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
 
@@ -118,7 +115,7 @@ function initMotion() {
   intro
     .from('.stage__kicker', { opacity: 0, y: 10, duration: 0.8 }, 0.3)
     .from('.hud__tl, .hud__tr, .hud__br', { opacity: 0, duration: 0.8, stagger: 0.1 }, 0.5)
-    .from('[data-gl]', { opacity: 0, duration: 1.6, ease: 'power2.out' }, 0);
+    .from('[data-gl]', { opacity: 0, duration: 1.6, ease: 'power2.out', clearProps: 'opacity' }, 0);
 
   /* ---------- fly-through: one scrubbed timeline drives the overlays ---------- */
   const layerEl = $('[data-layer]');
@@ -155,64 +152,68 @@ function initMotion() {
     .to('[data-boot]', { opacity: 0, duration: 0.08 }, 0.5)
     .fromTo('[data-stage="b"]', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.1 }, 0.62)
     .to('[data-stage="b"]', { opacity: 0, scale: 1.25, duration: 0.08 }, 0.88);
-  document.addEventListener('visibilitychange', () => journey?.setRunning(!document.hidden));
+  document.addEventListener('visibilitychange', () => journey?.setRunning(inHero && !document.hidden));
 
-  /* ---------- after the hero: keep travelling through the machine ---------- */
   function setLayer(name) {
     if (layerEl.dataset.v === name) return;
     layerEl.dataset.v = name;
     scramble(layerEl, name);
   }
+
+  /* ---------- the intro ends; the story begins ---------- */
+  // Past the core the 3D scene fades out and stops rendering; the rest of the
+  // page is read, not flown through.
   ScrollTrigger.create({
     trigger: '[data-journey]',
-    start: 'bottom bottom',
-    endTrigger: 'html',
-    end: 'bottom bottom',
-    // measured after the pinned sections below add their scroll length
-    refreshPriority: -1,
-    // stays on through the page end; only scrolling back into the hero clears it
-    onEnter: () => root.classList.add('is-cruise'),
-    onLeaveBack: () => root.classList.remove('is-cruise'),
-    onUpdate: (self) => {
-      cruiseProgress = self.progress;
-      journey?.setCruise(self.progress);
-      depthEl.textContent = String(1600 + Math.round(self.progress * 8400)).padStart(4, '0');
+    start: 'bottom 60%',
+    onEnter: () => {
+      inHero = false;
+      root.classList.add('is-story');
+      gsap.delayedCall(0.8, () => !inHero && journey?.setRunning(false));
+    },
+    onLeaveBack: () => {
+      inHero = true;
+      root.classList.remove('is-story');
+      journey?.setRunning(!document.hidden);
     },
   });
-  // get the HUD out of the footer's way
-  ScrollTrigger.create({
-    trigger: '.foot',
-    start: 'top bottom',
-    onToggle: (self) => root.classList.toggle('at-foot', self.isActive),
-  });
-  // dim the world behind readable sections
-  gsap.to('[data-scrim]', {
-    opacity: 1,
-    ease: 'none',
-    scrollTrigger: { trigger: '[data-journey]', start: 'bottom 120%', end: 'bottom 40%', scrub: true, refreshPriority: -1 },
-  });
-  $$('[data-layer-name]').forEach((sec) => {
+
+  /* ---------- story spine: chapters as a reading-progress rail ---------- */
+  const chapters = $$('[data-chapter]');
+  const spineList = $('.spine__list');
+  spineList.innerHTML = chapters
+    .map((c) => `<li><a href="#${c.id}"><b>${c.dataset.chapter}</b><span>${c.dataset.chapterTitle}</span></a></li>`)
+    .join('');
+  const spineLinks = $$('a', spineList);
+  spineLinks.forEach((a) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      lenis.scrollTo(a.getAttribute('href'), { duration: 1.4 });
+    }),
+  );
+  chapters.forEach((c, i) =>
     ScrollTrigger.create({
-      trigger: sec,
-      start: 'top 50%',
-      end: 'bottom 50%',
-      refreshPriority: -1,
-      onToggle: (self) => self.isActive && setLayer(sec.dataset.layerName),
-    });
+      trigger: c,
+      start: 'top 55%',
+      end: 'bottom 55%',
+      onToggle: (self) => self.isActive && spineLinks.forEach((a, k) => a.classList.toggle('is-active', k === i)),
+    }),
+  );
+  gsap.to('[data-spine-fill]', {
+    scaleY: 1,
+    ease: 'none',
+    scrollTrigger: { trigger: chapters[0], start: 'top 55%', endTrigger: chapters.at(-1), end: 'top 55%', scrub: true },
   });
 
-  /* ---------- section titles decode like data coming off the bus ---------- */
+  /* ---------- chapter titles rise word by word, like turning a page ---------- */
   $$('[data-split]').forEach((el) => {
-    const text = el.textContent.trim();
-    el.setAttribute('aria-label', text);
-    ScrollTrigger.create({
-      trigger: el,
-      start: 'top 85%',
-      once: true,
-      onEnter: () => scramble(el, text, 0, 1.1),
+    gsap.from(splitChars(el), {
+      yPercent: 110,
+      duration: 1.1,
+      ease: 'expo.out',
+      stagger: 0.022,
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
     });
-    el.style.opacity = '0';
-    ScrollTrigger.create({ trigger: el, start: 'top 85%', once: true, onEnter: () => (el.style.opacity = '') });
   });
 
   /* ---------- hello paragraph lights up with scroll ---------- */
@@ -224,134 +225,60 @@ function initMotion() {
     scrollTrigger: { trigger: '[data-reveal-chars]', start: 'top 80%', end: 'bottom 50%', scrub: true },
   });
 
-  gsap.fromTo(
-    '[data-ghost]',
-    { xPercent: 0 },
-    {
-      xPercent: -30,
-      ease: 'none',
-      scrollTrigger: { trigger: '.skills', start: 'top bottom', end: 'bottom top', scrub: true },
-    },
-  );
-
-  const mm = gsap.matchMedia();
-
-  /* ---------- skills: pinned data bus on desktop, cards socket in sideways ---------- */
-  mm.add('(min-width: 1101px)', () => {
-    const track = $('[data-cards]');
-    const cards = $$('.skill', track);
-    const distance = () => track.scrollWidth - ($('[data-bus]').clientWidth) + 40;
-    const countEl = $('[data-bus-count]');
-    const bus = gsap.timeline({
-      defaults: { ease: 'none' },
-      scrollTrigger: {
-        trigger: '.skills',
-        start: 'top top',
-        end: () => `+=${distance() + innerHeight * 0.4}`,
-        pin: true,
-        scrub: 0.6,
-        invalidateOnRefresh: true,
-        onUpdate: (self) =>
-          (countEl.textContent = String(Math.min(8, 1 + Math.floor(self.progress * 8))).padStart(2, '0')),
+  /* ---------- chapter openers: year parallax + story lines ---------- */
+  $$('[data-year-par]').forEach((el) => {
+    gsap.fromTo(
+      el,
+      { yPercent: 30 },
+      {
+        yPercent: -30,
+        ease: 'none',
+        scrollTrigger: { trigger: el.closest('.chapter'), start: 'top bottom', end: 'bottom top', scrub: true },
       },
-    });
-    bus
-      .to(track, { x: () => -distance(), duration: 1 }, 0)
-      .fromTo('[data-bus-pulse]', { x: 0 }, { x: () => innerWidth - 140, duration: 0.25, repeat: 3 }, 0);
-    // each card swings into its socket as it reaches the viewport
-    cards.forEach((card) => {
-      gsap.fromTo(
-        card,
-        { rotationY: -55, opacity: 0.2, z: -200 },
-        {
-          rotationY: 0,
-          opacity: 1,
-          z: 0,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: card,
-            containerAnimation: bus,
-            start: 'left 100%',
-            end: 'left 55%',
-            scrub: true,
-          },
-        },
-      );
-    });
-  });
-  mm.add('(max-width: 1100px)', () => {
-    gsap.from('.skill', {
-      y: 50,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'expo.out',
-      stagger: 0.06,
-      scrollTrigger: { trigger: '[data-cards]', start: 'top 85%', once: true },
-    });
-  });
-
-  /* ---------- work: app windows fly out of the depth toward you ---------- */
-  mm.add('(min-width: 1101px)', () => {
-    const wins = $$('[data-win]');
-    const tl = gsap.timeline({
-      defaults: { ease: 'none' },
-      scrollTrigger: {
-        trigger: '.work',
-        start: 'top top',
-        end: () => `+=${innerHeight * wins.length * 0.9}`,
-        pin: true,
-        scrub: 0.6,
-        invalidateOnRefresh: true,
-      },
-    });
-    wins.forEach((w, i) => {
-      gsap.set(w, { z: -1600, opacity: 0, rotationX: 8, zIndex: wins.length - i });
-      tl.to(w, { z: 0, opacity: 1, rotationX: 0, duration: 1, ease: 'power2.out' }, i * 1.2);
-      if (i < wins.length - 1) {
-        tl.to(w, { z: 700, opacity: 0, duration: 0.8, ease: 'power2.in' }, i * 1.2 + 1.2);
-      }
-    });
-  });
-  mm.add('(max-width: 1100px)', () => {
-    $$('[data-win]').forEach((w) =>
-      gsap.from(w, {
-        y: 60,
-        opacity: 0,
-        duration: 0.9,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: w, start: 'top 88%', once: true },
-      }),
     );
   });
-
-  /* ---------- experience: git graph draws as you scroll ---------- */
-  gsap.to('[data-git-fill]', {
-    scaleY: 1,
-    ease: 'none',
-    scrollTrigger: { trigger: '[data-gitlog]', start: 'top 60%', end: 'bottom 60%', scrub: true },
-  });
-  $$('[data-commit]').forEach((c) => {
-    ScrollTrigger.create({
-      trigger: c,
-      start: 'top 62%',
-      onEnter: () => c.classList.add('is-on'),
-      onLeaveBack: () => c.classList.remove('is-on'),
-    });
-    gsap.from(c, {
-      x: 40,
+  $$('[data-lines]').forEach((box) => {
+    gsap.from(box.children, {
+      y: 28,
       opacity: 0,
-      duration: 0.9,
+      duration: 1,
       ease: 'expo.out',
-      scrollTrigger: { trigger: c, start: 'top 90%', once: true },
+      stagger: 0.18,
+      scrollTrigger: { trigger: box, start: 'top 82%', once: true },
     });
   });
-  gsap.from('.quotes blockquote', {
-    y: 40,
-    opacity: 0,
-    duration: 0.9,
-    ease: 'expo.out',
-    stagger: 0.08,
-    scrollTrigger: { trigger: '.quotes', start: 'top 85%', once: true },
+  $$('.ch-open__num').forEach((el) =>
+    gsap.from(el, {
+      opacity: 0,
+      x: -16,
+      duration: 0.8,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+    }),
+  );
+
+  /* ---------- chapter artefacts rise in, with a little depth ---------- */
+  $$('[data-rise]').forEach((el) => {
+    gsap.from(el, {
+      y: 70,
+      opacity: 0,
+      rotationX: 6,
+      transformPerspective: 1000,
+      transformOrigin: '50% 100%',
+      duration: 1.1,
+      ease: 'expo.out',
+      scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+    });
+  });
+
+  /* ---------- skills unlocked pop in at the end of each chapter ---------- */
+  $$('[data-unlock]').forEach((box) => {
+    const tl = gsap.timeline({ scrollTrigger: { trigger: box, start: 'top 90%', once: true } });
+    tl.from(box, { opacity: 0, duration: 0.4 }).from(
+      $$('li', box),
+      { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(2.2)', stagger: 0.07 },
+      0.15,
+    );
   });
 
   /* ---------- contact: terminal command types itself ---------- */

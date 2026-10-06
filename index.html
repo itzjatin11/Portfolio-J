@@ -30,9 +30,9 @@
     <header class="nav mono">
       <a href="#top" class="nav__mark" aria-label="Back to top">JST<span>/26</span></a>
       <nav class="nav__links" aria-label="Sections">
-        <a href="#skills">Skills</a>
-        <a href="#work">Work</a>
-        <a href="#experience">Experience</a>
+        <a href="#hello">About</a>
+        <a href="#ch-02">Story</a>
+        <a href="#ch-06">Now</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="nav__right">
@@ -41,15 +41,11 @@
     </header>
 
     <canvas class="journey__gl" data-gl aria-hidden="true"></canvas>
-    <div class="world-scrim" aria-hidden="true" data-scrim></div>
-    <div class="hud-g hud-g--l mono" aria-hidden="true">
-      <p class="hud__k">layer</p>
-      <p class="hud__v" data-layer>PCB</p>
-    </div>
-    <div class="hud-g hud-g--r mono" aria-hidden="true">
-      <p class="hud__k">depth</p>
-      <p class="hud__v"><span data-depth>0000</span> <span class="unit">µm</span></p>
-    </div>
+
+    <nav class="spine" aria-label="Chapters" data-spine>
+      <span class="spine__rail"><span class="spine__fill" data-spine-fill></span></span>
+      <ol class="spine__list mono"></ol>
+    </nav>
 
     <main id="top">
       <!-- ============ JOURNEY (hero) ============ -->
@@ -59,6 +55,14 @@
           <div class="journey__flash" data-flash aria-hidden="true"></div>
 
           <div class="hud mono" aria-hidden="true">
+            <div class="hud__tl">
+              <p class="hud__k">layer</p>
+              <p class="hud__v" data-layer>PCB</p>
+            </div>
+            <div class="hud__tr">
+              <p class="hud__k">depth</p>
+              <p class="hud__v"><span data-depth>0000</span> <span class="unit">µm</span></p>
+            </div>
             <ol class="boot" data-boot>
               <li>&gt; power on <span>ok</span></li>
               <li>&gt; load profile jatin_singh_taadiyal</li>
@@ -90,7 +94,8 @@
       </section>
 
       <!-- ============ HELLO ============ -->
-      <section class="hello" id="hello" data-layer-name="CORE · /home/jatin">
+      <section class="hello chapter-lite" id="hello" data-chapter="01" data-chapter-title="Prologue">
+        <p class="ch-open__num mono hello__ch"><span>Chapter 01</span> · Prologue</p>
         <h2 class="hello__title display" data-split>Hi, I'm Jatin.</h2>
         <p class="hello__text" data-reveal-chars>
           I'm a full-stack developer who cares about the parts of software nobody sees: clean data
@@ -107,225 +112,203 @@
         >
       </section>
 
-      <!-- ============ SKILLS ============ -->
-      <section class="skills" id="skills" data-layer-name="BUS · 0x00">
-        <div class="skills__ghost display" aria-hidden="true" data-ghost>Skills / Skills / Skills /</div>
-        <header class="sec-head">
-          <p class="mono sec-head__idx">01</p>
-          <h2 class="display" data-split>Skills / Experience</h2>
+      <!-- ============ CHAPTER 02 ============ -->
+      <section class="chapter" id="ch-02" data-chapter="02" data-chapter-title="Where it started">
+        <header class="ch-open">
+          <p class="ch-open__year display" aria-hidden="true" data-year-par>2023</p>
+          <p class="ch-open__num mono"><span>Chapter 02</span> · 2023</p>
+          <h2 class="ch-open__title display" data-split>Where it started</h2>
+          <div class="ch-open__story" data-lines>
+            <p>In 2023 I started a Bachelor of IT in Software Development at the Auckland Institute of Studies. The first things I built were small Python tools for everyday problems.</p>
+            <p>A salon still running on pen and paper got a point-of-sale system. My own messy backups got a script that never copies the same file twice.</p>
+          </div>
         </header>
-
-        <div class="bus" data-bus>
-          <div class="bus__trace" aria-hidden="true"><span class="bus__pulse" data-bus-pulse></span></div>
-          <p class="bus__label mono" aria-hidden="true">0x00 · data bus · <span data-bus-count>01</span>/08</p>
-        <div class="cards" data-cards>
-          <article class="skill">
-            <header><h3 class="display">C# / .NET</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
-            <p>
-              My main language. ASP.NET Core MVC and Web API with EF Core — CV Analyzer, SpecTacular
-              and the API behind my Android app all run on it. Strict types catch my mistakes before
-              users do.
-            </p>
-            <p class="skill__tags mono">ASP.NET Core · Web API · EF Core · Razor</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">SQL &amp; Data</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
-            <p>
-              SQL Server mostly, plus MySQL, MongoDB and Firestore. I design the schema before the
-              screens — most bugs I've chased started as a data-model shortcut.
-            </p>
-            <p class="skill__tags mono">SQL Server · MySQL · MongoDB · Firestore</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">Python</h3><p class="skill__since"><b class="display">3</b><span class="mono">yrs · since 2023</span></p></header>
-            <p>
-              Where I started building real tools: Tkinter desktop apps, a backup script that never
-              copies a file twice, and backend services during my internship.
-            </p>
-            <p class="skill__tags mono">Tkinter · scripting · APIs</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">Node.js &amp; APIs</h3><p class="skill__since"><b class="display">1</b><span class="mono">yr · internship 2025</span></p></header>
-            <p>
-              REST APIs, WebRTC signalling and cloud storage for a video streaming app at Source
-              Infinity. Designing clean contracts between services is the part I enjoy most.
-            </p>
-            <p class="skill__tags mono">Node.js · REST · WebRTC</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">Kotlin &amp; Android</h3><p class="skill__since"><b class="display">1</b><span class="mono">yr · since 2025</span></p></header>
-            <p>
-              MVVM, Retrofit and a task app that syncs through its own .NET API instead of living
-              only on the phone.
-            </p>
-            <p class="skill__tags mono">Kotlin · MVVM · Retrofit</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">Cloud</h3><p class="skill__since"><b class="display">AZ-900</b><span class="mono">certified 2025</span></p></header>
-            <p>
-              Microsoft Certified in Azure Fundamentals — core services, pricing, governance and
-              security — plus SharePoint and Purview day to day.
-            </p>
-            <p class="skill__tags mono">Azure · SharePoint · Purview</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">Automation</h3><p class="skill__since"><b class="display">M365</b><span class="mono">used daily at work</span></p></header>
-            <p>
-              Power Automate, Power Query and VBA. Turning a 40-minute manual task into a single
-              click is my favourite kind of win.
-            </p>
-            <p class="skill__tags mono">Power Automate · Power Query (M) · VBA</p>
-          </article>
-          <article class="skill">
-            <header><h3 class="display">Analysis</h3><p class="skill__since"><b class="display">Now</b><span class="mono">current role · 2026</span></p></header>
-            <p>
-              Requirements, process mapping and stakeholder work. It's made me a better developer:
-              I ask what "done" means before I open the editor.
-            </p>
-            <p class="skill__tags mono">Requirements · Process mapping · Data</p>
-          </article>
+        <div class="ch-body">
+            <article class="win" data-rise>
+              <header class="win__bar mono"><i></i><i></i><i></i><span>femina_pos.py</span><span class="win__pid">2024</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">Python · desktop</p>
+                <h3 class="win__name display">Femina Salon</h3>
+                <p class="win__desc">A point-of-sale that replaced a salon’s paper workflow: customer records and membership tiers at 10, 15 or 20% off, through to payment and a saved receipt.</p>
+                <p class="win__flow mono"><span>Tkinter UI</span><span>Billing rules</span><span>MySQL</span><span>Receipt</span></p>
+                <p class="win__stack mono">Python · Tkinter · MySQL · Pillow</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/Femina-Salon-Management-System" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <div class="minors">
+            <a class="minor" href="https://github.com/itzjatin11/Automatic-Backup" target="_blank" rel="noopener" data-rise>
+              <span class="minor__name display">Automatic Backup</span>
+              <span class="minor__desc">Dated folder backups that skip files already copied.</span>
+              <span class="minor__go mono">Source ↗</span>
+            </a>
+            <a class="minor" href="https://github.com/itzjatin11/image-finder" target="_blank" rel="noopener" data-rise>
+              <span class="minor__name display">Image Finder</span>
+              <span class="minor__desc">Photo records in MS Access, searchable by name and birthdate.</span>
+              <span class="minor__go mono">Source ↗</span>
+            </a>
+            </div>
         </div>
-        </div>
+        <aside class="unlock" data-unlock>
+          <p class="unlock__k mono">Skills unlocked</p>
+          <ul class="unlock__list mono"><li>Python</li><li>Tkinter</li><li>MySQL</li><li>MS Access</li><li>Schema design</li></ul>
+        </aside>
       </section>
 
-      <!-- ============ WORK ============ -->
-      <section class="work" id="work" data-layer-name="PROC · 5 running">
-        <header class="sec-head">
-          <p class="mono sec-head__idx">02</p>
-          <h2 class="display" data-split>Selected work</h2>
+      <!-- ============ CHAPTER 03 ============ -->
+      <section class="chapter" id="ch-03" data-chapter="03" data-chapter-title="Learning to build properly">
+        <header class="ch-open">
+          <p class="ch-open__year display" aria-hidden="true" data-year-par>2025</p>
+          <p class="ch-open__num mono"><span>Chapter 03</span> · 2025</p>
+          <h2 class="ch-open__title display" data-split>Learning to build properly</h2>
+          <div class="ch-open__story" data-lines>
+            <p>Then I moved to C# and .NET and started building the way production teams do: layered architecture, an ORM, real authentication, and an API in front of the database.</p>
+            <p>I finished the degree with a GPA of 8.2 out of 9, an Academic Excellence Award, and Azure Fundamentals (AZ-900).</p>
+          </div>
         </header>
-
-        <div class="wins" data-wins>
-          <article class="win" data-win>
-            <header class="win__bar mono"><i></i><i></i><i></i><span>cv-analyzer.exe</span><span class="win__pid">pid 01</span></header>
-            <div class="win__body">
-              <p class="win__meta mono">01 / 05 · 2025</p>
-              <h3 class="win__name display">CV Analyzer</h3>
-              <p class="win__desc">Parses batches of résumés into structured records, groups candidates by overlapping skills and exports to Excel.</p>
-              <p class="win__flow mono"><span>Upload</span><span>MVC</span><span>Affinda</span><span>SQL Server</span><span>Excel</span></p>
-              <p class="win__stack mono">ASP.NET Core · NLP API · SQL Server</p>
-              <a class="win__link mono" href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener">View source ↗</a>
+        <div class="ch-body ch-body--wide">
+            <article class="win" data-rise>
+              <header class="win__bar mono"><i></i><i></i><i></i><span>cv-analyzer.exe</span><span class="win__pid">2025</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">ASP.NET Core · NLP</p>
+                <h3 class="win__name display">CV Analyzer</h3>
+                <p class="win__desc">Parses batches of résumés into structured records, groups candidates by overlapping skills and exports reports to Excel.</p>
+                <p class="win__flow mono"><span>Upload</span><span>MVC</span><span>Affinda API</span><span>SQL Server</span><span>Excel</span></p>
+                <p class="win__stack mono">ASP.NET Core MVC · C# · EF Core · EPPlus</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <article class="win" data-rise>
+              <header class="win__bar mono"><i></i><i></i><i></i><span>spectacular.dll</span><span class="win__pid">2025</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">ASP.NET Core · e-commerce</p>
+                <h3 class="win__name display">SpecTacular</h3>
+                <p class="win__desc">An eyewear store with a customer cart and an admin dashboard for users, products and image uploads behind role-based login.</p>
+                <p class="win__flow mono"><span>Razor</span><span>Controllers</span><span>Services</span><span>EF Core</span></p>
+                <p class="win__stack mono">ASP.NET Core MVC · SQL Server · Bootstrap</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/Spectacular--Web-App" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <article class="win" data-rise>
+              <header class="win__bar mono"><i></i><i></i><i></i><span>tasks.apk</span><span class="win__pid">2025</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">Kotlin · Android + API</p>
+                <h3 class="win__name display">Tasks for Android</h3>
+                <p class="win__desc">A task manager that syncs through its own .NET 8 Web API and SQL Server instead of living only on the phone.</p>
+                <p class="win__flow mono"><span>Kotlin / MVVM</span><span>Retrofit</span><span>Web API</span><span>SQL Server</span></p>
+                <p class="win__stack mono">Kotlin · Retrofit · ASP.NET Core Web API</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/To-Do-Mobile_App" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <div class="quotes">
+            <blockquote class="quote" data-rise>
+              <p>“A creative problem-solver who thinks critically about every project.”</p>
+              <footer class="mono">Ashwini — Professor</footer>
+            </blockquote>
+            <blockquote class="quote" data-rise>
+              <p>“Remarkable teamwork — unique insights and leadership when needed.”</p>
+              <footer class="mono">Havea — Professor</footer>
+            </blockquote>
             </div>
-          </article>
-          <article class="win" data-win>
-            <header class="win__bar mono"><i></i><i></i><i></i><span>tasks.apk</span><span class="win__pid">pid 02</span></header>
-            <div class="win__body">
-              <p class="win__meta mono">02 / 05 · 2025</p>
-              <h3 class="win__name display">Tasks for Android</h3>
-              <p class="win__desc">A Kotlin task manager that syncs through its own Web API and SQL Server instead of living only on the device.</p>
-              <p class="win__flow mono"><span>Kotlin/MVVM</span><span>Retrofit</span><span>Web API</span><span>SQL Server</span></p>
-              <p class="win__stack mono">Kotlin · Retrofit · .NET 8 API</p>
-              <a class="win__link mono" href="https://github.com/itzjatin11/To-Do-Mobile_App" target="_blank" rel="noopener">View source ↗</a>
-            </div>
-          </article>
-          <article class="win" data-win>
-            <header class="win__bar mono"><i></i><i></i><i></i><span>spectacular.dll</span><span class="win__pid">pid 03</span></header>
-            <div class="win__body">
-              <p class="win__meta mono">03 / 05 · 2025</p>
-              <h3 class="win__name display">SpecTacular</h3>
-              <p class="win__desc">Eyewear store with a customer cart and an admin dashboard for users, products and image uploads behind role-based login.</p>
-              <p class="win__flow mono"><span>Razor</span><span>Controllers</span><span>Services</span><span>EF Core</span></p>
-              <p class="win__stack mono">ASP.NET Core MVC · EF Core</p>
-              <a class="win__link mono" href="https://github.com/itzjatin11/Spectacular--Web-App" target="_blank" rel="noopener">View source ↗</a>
-            </div>
-          </article>
-          <article class="win" data-win>
-            <header class="win__bar mono"><i></i><i></i><i></i><span>soulscriptbykai.com</span><span class="win__pid">pid 04</span></header>
-            <div class="win__body">
-              <p class="win__meta mono">04 / 05 · Live</p>
-              <h3 class="win__name display">SoulScriptByKai</h3>
-              <p class="win__desc">Production website and booking flow for a self-employed client. Enquiries post straight to Formspree — no booking subscription.</p>
-              <p class="win__flow mono"><span>Static site</span><span>Booking modal</span><span>Formspree</span><span>Inbox</span></p>
-              <p class="win__stack mono">Client site · HTML/CSS/JS · Formspree</p>
-              <a class="win__link mono" href="https://soulscriptbykai.com/" target="_blank" rel="noopener">Visit live site ↗</a>
-            </div>
-          </article>
-          <article class="win" data-win>
-            <header class="win__bar mono"><i></i><i></i><i></i><span>femina_pos.py</span><span class="win__pid">pid 05</span></header>
-            <div class="win__body">
-              <p class="win__meta mono">05 / 05 · 2024</p>
-              <h3 class="win__name display">Femina Salon</h3>
-              <p class="win__desc">Salon point-of-sale with customer records and membership tiers that apply 10/15/20% off through to payment and receipt.</p>
-              <p class="win__flow mono"><span>Tkinter UI</span><span>Billing rules</span><span>MySQL</span><span>Receipt</span></p>
-              <p class="win__stack mono">Python · Tkinter · MySQL</p>
-              <a class="win__link mono" href="https://github.com/itzjatin11/Femina-Salon-Management-System" target="_blank" rel="noopener">View source ↗</a>
-            </div>
-          </article>
         </div>
-        <a class="more mono" href="https://github.com/itzjatin11" target="_blank" rel="noopener">More on GitHub ↗</a>
+        <aside class="unlock" data-unlock>
+          <p class="unlock__k mono">Skills unlocked</p>
+          <ul class="unlock__list mono"><li>C# / .NET</li><li>ASP.NET Core MVC</li><li>Web API</li><li>EF Core</li><li>SQL Server</li><li>Kotlin</li><li>Azure (AZ-900)</li></ul>
+        </aside>
       </section>
 
-      <!-- ============ EXPERIENCE ============ -->
-      <section class="exp" id="experience" data-layer-name="GIT · main">
-        <header class="sec-head">
-          <p class="mono sec-head__idx">03</p>
-          <h2 class="display" data-split>Experience</h2>
+      <!-- ============ CHAPTER 04 ============ -->
+      <section class="chapter" id="ch-04" data-chapter="04" data-chapter-title="First production backend">
+        <header class="ch-open">
+          <p class="ch-open__year display" aria-hidden="true" data-year-par>Late 2025</p>
+          <p class="ch-open__num mono"><span>Chapter 04</span> · Late 2025</p>
+          <h2 class="ch-open__title display" data-split>First production backend</h2>
+          <div class="ch-open__story" data-lines>
+            <p>My first role on a real product: backend developer intern at Source Infinity, building services for a video streaming app.</p>
+            <p>REST APIs in Node.js and Python, WebRTC signalling and cloud storage. Designing clean contracts between services became the part I enjoy most.</p>
+          </div>
         </header>
-        <p class="gitcmd mono" aria-hidden="true">$ git log --career --graph</p>
-        <div class="gitwrap" data-gitlog>
-        <span class="gitlog__rail" aria-hidden="true"><span data-git-fill></span></span>
-        <ol class="gitlog">
-          <li class="commit" data-commit>
-            <span class="commit__dot" aria-hidden="true"></span>
-            <p class="commit__head mono"><span class="commit__sha">a3f9c21</span> <span class="commit__ref">(HEAD -> main)</span> <span class="commit__when">Jun 2026 — now</span></p>
-            <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Business Analyst</span></h3>
-            <p class="commit__org">Authentic Security</p>
-            <p class="commit__desc">Process improvement end to end: requirements, stakeholder workshops, process mapping and data analysis.</p>
-          </li>
-          <li class="commit" data-commit>
-            <span class="commit__dot" aria-hidden="true"></span>
-            <p class="commit__head mono"><span class="commit__sha">7be0d14</span> <span class="commit__when">Mar — Jun 2026</span></p>
-            <h3 class="commit__msg"><span class="commit__type mono">chore:</span> <span class="display">Cash Processing Officer</span></h3>
-            <p class="commit__org">Authentic Security</p>
-            <p class="commit__desc">High-volume reconciliation at 100% accuracy; supported internal tooling and SharePoint.</p>
-          </li>
-          <li class="commit" data-commit>
-            <span class="commit__dot" aria-hidden="true"></span>
-            <p class="commit__head mono"><span class="commit__sha">51c8e9a</span> <span class="commit__when">Oct — Dec 2025</span></p>
-            <h3 class="commit__msg"><span class="commit__type mono">feat:</span> <span class="display">Backend Developer Intern</span></h3>
-            <p class="commit__org">Source Infinity</p>
-            <p class="commit__desc">REST APIs in Node.js and Python, WebRTC and cloud storage for a video streaming app.</p>
-          </li>
-          <li class="commit" data-commit>
-            <span class="commit__dot" aria-hidden="true"></span>
-            <p class="commit__head mono"><span class="commit__sha">0d2f7b3</span> <span class="commit__ref">(tag: az-900)</span> <span class="commit__when">2025</span></p>
-            <h3 class="commit__msg"><span class="commit__type mono">cert:</span> <span class="display">Azure Fundamentals</span></h3>
-            <p class="commit__org">Microsoft</p>
-            <p class="commit__desc">Core Azure services, pricing, governance and security.</p>
-          </li>
-          <li class="commit" data-commit>
-            <span class="commit__dot" aria-hidden="true"></span>
-            <p class="commit__head mono"><span class="commit__sha">e41a6c0</span> <span class="commit__when">2023 — 2025</span></p>
-            <h3 class="commit__msg"><span class="commit__type mono">build:</span> <span class="display">BIT, Software Development</span></h3>
-            <p class="commit__org">Auckland Institute of Studies</p>
-            <p class="commit__desc">GPA 8.2 / 9 · Academic Excellence Award. Web, mobile and desktop systems in C#/.NET, Kotlin, SQL Server and Java.</p>
-          </li>
-        </ol>
+        <div class="ch-body">
+            <figure class="term-card" data-rise>
+              <figcaption class="win__bar mono"><i></i><i></i><i></i><span>source-infinity — oct → dec 2025</span></figcaption>
+              <pre class="mono"><span class="c">$</span> role      backend developer intern
+<span class="c">$</span> product   video streaming app
+<span class="c">$</span> built     REST APIs · WebRTC signalling · cloud storage
+<span class="c">$</span> stack     node.js · python
+<span class="c">$</span> status    <span class="ok">complete ✓</span></pre>
+            </figure>
         </div>
+        <aside class="unlock" data-unlock>
+          <p class="unlock__k mono">Skills unlocked</p>
+          <ul class="unlock__list mono"><li>Node.js</li><li>REST APIs</li><li>WebRTC</li><li>Cloud storage</li><li>Working in a team</li></ul>
+        </aside>
+      </section>
 
-        <div class="quotes">
-          <blockquote>
-            <p>“A creative problem-solver who thinks critically about every project.”</p>
-            <footer class="mono">Ashwini — Professor</footer>
-          </blockquote>
-          <blockquote>
-            <p>“Remarkable teamwork — unique insights and leadership when needed.”</p>
-            <footer class="mono">Havea — Professor</footer>
-          </blockquote>
-          <blockquote>
-            <p>“Always reliable. Patience and positivity with every challenge.”</p>
-            <footer class="mono">Pobir — Co-founder, Rose N Petal</footer>
-          </blockquote>
+      <!-- ============ CHAPTER 05 ============ -->
+      <section class="chapter" id="ch-05" data-chapter="05" data-chapter-title="Shipping for a real client">
+        <header class="ch-open">
+          <p class="ch-open__year display" aria-hidden="true" data-year-par>On the side</p>
+          <p class="ch-open__num mono"><span>Chapter 05</span> · On the side</p>
+          <h2 class="ch-open__title display" data-split>Shipping for a real client</h2>
+          <div class="ch-open__story" data-lines>
+            <p>A self-employed client needed a website that takes bookings without paying for a booking platform every month.</p>
+            <p>I designed it, built it and launched it. It’s live today, and enquiries go straight to their inbox.</p>
+          </div>
+        </header>
+        <div class="ch-body">
+            <article class="win" data-rise>
+              <header class="win__bar mono"><i></i><i></i><i></i><span>soulscriptbykai.com</span><span class="win__pid">live</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">Client site · production</p>
+                <h3 class="win__name display">SoulScriptByKai</h3>
+                <p class="win__desc">Production website and booking flow. A custom booking modal posts straight to Formspree, so there’s no booking subscription to pay for.</p>
+                <p class="win__flow mono"><span>Static site</span><span>Booking modal</span><span>Formspree</span><span>Client inbox</span></p>
+                <p class="win__stack mono">HTML · CSS · JavaScript · Formspree</p>
+                <a class="win__link mono" href="https://soulscriptbykai.com/" target="_blank" rel="noopener">Visit live site ↗</a>
+              </div>
+            </article>
+            <div class="quotes">
+            <blockquote class="quote" data-rise>
+              <p>“Always reliable. Patience and positivity with every challenge.”</p>
+              <footer class="mono">Pobir — Co-founder, Rose N Petal</footer>
+            </blockquote>
+            </div>
         </div>
+        <aside class="unlock" data-unlock>
+          <p class="unlock__k mono">Skills unlocked</p>
+          <ul class="unlock__list mono"><li>Client delivery</li><li>Responsive UI</li><li>Formspree</li><li>Going live</li></ul>
+        </aside>
+      </section>
+
+      <!-- ============ CHAPTER 06 ============ -->
+      <section class="chapter" id="ch-06" data-chapter="06" data-chapter-title="Now">
+        <header class="ch-open">
+          <p class="ch-open__year display" aria-hidden="true" data-year-par>2026</p>
+          <p class="ch-open__num mono"><span>Chapter 06</span> · 2026</p>
+          <h2 class="ch-open__title display" data-split>Now</h2>
+          <div class="ch-open__story" data-lines>
+            <p>In March 2026 I joined Authentic Security as a Cash Processing Officer — high-volume reconciliation at 100% accuracy — and in June moved into a Business Analyst role.</p>
+            <p>Now I work on process improvement end to end: requirements, stakeholder workshops, process mapping and data analysis. It sharpens the question that comes before any code: what problem are we actually solving, and for whom?</p>
+          </div>
+        </header>
+        <div class="ch-body">
+            <ol class="now" data-rise>
+              <li><p class="mono">Mar 2026</p><h3 class="display">Cash Processing Officer</h3><p>Reconciliation at 100% accuracy; internal tooling and SharePoint.</p></li>
+              <li class="is-now"><p class="mono">Jun 2026 — now</p><h3 class="display">Business Analyst</h3><p>Requirements, process mapping, stakeholder workshops and data analysis.</p></li>
+            </ol>
+        </div>
+        <aside class="unlock" data-unlock>
+          <p class="unlock__k mono">Skills unlocked</p>
+          <ul class="unlock__list mono"><li>Business analysis</li><li>Process mapping</li><li>Power Automate</li><li>Power Query (M)</li><li>SharePoint</li><li>VBA</li></ul>
+        </aside>
       </section>
 
       <!-- ============ CONTACT ============ -->
-      <section class="contact" id="contact" data-layer-name="I/O · port 25">
+      <section class="contact" id="contact" data-chapter="07" data-chapter-title="Epilogue">
         <div class="contact__big display" aria-hidden="true">
           <span data-marquee>Say hi — Say hi — Say hi — Say hi — </span>
         </div>
         <div class="contact__body">
-          <p class="mono sec-head__idx">04</p>
+          <p class="mono sec-head__idx">Epilogue</p>
           <div class="term mono" aria-hidden="true">
             <p><span class="term__ps">guest@jst-26:~$</span> <span data-type="mail --to jatin">mail --to jatin</span><i class="cursor-blink">▍</i></p>
           </div>
