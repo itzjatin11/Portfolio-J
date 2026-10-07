@@ -48,7 +48,7 @@ let world = null;
 function applyTheme(theme, animate = true) {
   root.dataset.theme = theme;
   themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
-  $('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#050505' : '#f2f0eb');
+  $('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#050505' : '#f2f0eb');
   try {
     localStorage.setItem('theme', theme);
   } catch {}
