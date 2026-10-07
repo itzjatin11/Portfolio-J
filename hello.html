@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Jatin Singh Taadiyal · Full-stack developer, Auckland</title>
+    <meta
+      name="description"
+      content="Jatin Singh Taadiyal is a full-stack developer in Auckland, NZ. C#/.NET, SQL Server and Node. Business Analyst at Authentic Security."
+    />
+    <meta name="theme-color" content="#050505" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/barlow-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        if (localStorage.getItem('calm') === '1') document.documentElement.dataset.calm = '1';
+      } catch {}
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js-motion');
+    </script>
+  </head>
+  <body class="hl">
+    <a class="skip-link" href="#work">Skip to my work</a>
+
+    <canvas class="world" data-world aria-hidden="true"></canvas>
+    <div class="scrim" data-scrim aria-hidden="true"></div>
+    <div class="tags" data-tags aria-hidden="true"></div>
+
+    <header class="nav">
+      <a href="#top" class="nav__mark mono" aria-label="Back to the top">JST<span>/26</span></a>
+      <!-- The route doubles as the menu: where the hello is now, and where it goes next -->
+      <nav class="route mono" aria-label="Sections" data-route>
+        <ol>
+          <li><a href="#about" data-stop="1"><span class="route__dot" aria-hidden="true"></span>Auckland<small>About</small></a></li>
+          <li><a href="#skills" data-stop="2"><span class="route__dot" aria-hidden="true"></span>Wi-Fi<small>Skills</small></a></li>
+          <li><a href="#work" data-stop="3"><span class="route__dot" aria-hidden="true"></span>Data centre<small>Work</small></a></li>
+          <li><a href="#experience" data-stop="4"><span class="route__dot" aria-hidden="true"></span>Ocean<small>Experience</small></a></li>
+          <li><a href="#contact" data-stop="5"><span class="route__dot" aria-hidden="true"></span>You<small>Contact</small></a></li>
+        </ol>
+        <span class="route__line" aria-hidden="true"><span class="route__fill" data-route-fill></span><span class="route__spark" data-route-spark></span></span>
+      </nav>
+      <div class="nav__right mono">
+        <a
+          class="nav__quiet"
+          href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
+          target="_blank"
+          rel="noopener"
+          >CV</a
+        >
+        <button class="pill" type="button" data-calm aria-pressed="false" title="Fade between sections instead of moving the camera">
+          <span class="pill__box" aria-hidden="true"></span><span class="pill__label">Calm</span>
+        </button>
+        <button class="pill theme" type="button" data-theme-toggle aria-label="Switch colour theme">
+          <span class="theme__dot" aria-hidden="true"></span><span class="theme__label">Dark</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ============ HERO ============ -->
+      <section class="hero" data-hero>
+        <div class="hero__stick">
+          <div class="hero__copy">
+            <h1 class="hero__name" aria-label="Jatin Singh Taadiyal">
+              <span class="hero__line" data-chars>Jatin Singh</span>
+              <span class="hero__line" data-chars>Taadiyal</span>
+            </h1>
+            <p class="hero__pitch">
+              Full-stack developer · C#/.NET, SQL Server, Node · Business Analyst at Authentic Security ·
+              Auckland, NZ
+            </p>
+            <p class="hero__hook">I think in systems before I think in syntax.</p>
+          </div>
+          <div class="hero__cue mono">
+            <p>Scroll to follow a hello from Auckland to you <span aria-hidden="true">↓</span></p>
+            <a href="#work">or jump to my work →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 1 · AUCKLAND / ABOUT ============ -->
+      <section class="stop about" id="about" data-stop-section="1">
+        <div class="beat" aria-hidden="true"></div>
+        <div class="panel">
+          <p class="kicker mono"><b>01</b> Auckland <span>· About</span></p>
+          <p class="where">It starts on my laptop, in Auckland.</p>
+          <h2 class="display h2" data-split>Hi, I'm Jatin.</h2>
+          <p class="about__text">
+            I'm a full-stack developer who cares about the parts nobody sees: clean data models,
+            predictable APIs, and automation that removes busywork. As a Business Analyst at Authentic
+            Security I map processes and gather requirements, which keeps me asking what problem we're
+            solving and for whom. Scope first, build second.
+          </p>
+          <ul class="facts mono" aria-label="Quick facts">
+            <li>Auckland</li>
+            <li>BA @ Authentic Security</li>
+            <li>BIT, GPA 8.2/9</li>
+            <li>AZ-900</li>
+            <li>.NET/SQL/Node</li>
+          </ul>
+          <a
+            class="cvlink mono"
+            href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
+            target="_blank"
+            rel="noopener"
+            >CV ↗</a
+          >
+        </div>
+      </section>
+
+      <!-- ============ 2 · WI-FI / SKILLS ============ -->
+      <section class="stop skills" id="skills" data-stop-section="2">
+        <div class="beat" aria-hidden="true"></div>
+        <div class="panel panel--wide">
+          <p class="kicker mono"><b>02</b> Wi-Fi <span>· Skills</span></p>
+          <p class="where">Out through the router.</p>
+          <h2 class="display h2" data-split>What I work with</h2>
+          <p class="intro">Eight things I use, and where I've used them.</p>
+          <div class="grid">
+            <article class="skill">
+              <h3 class="display">C# / .NET</h3>
+              <p class="skill__text">My main language. CV Analyzer, SpecTacular and my Android app's API all run on it. Strict types catch my mistakes before users do.</p>
+              <p class="skill__used mono"><span>Used in:</span> CV Analyzer, SpecTacular, Tasks API</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">SQL &amp; Data</h3>
+              <p class="skill__text">SQL Server mostly, plus MySQL, MongoDB and Firestore. I design the schema before the screens, because most bugs I've chased started as a data-model shortcut.</p>
+              <p class="skill__used mono"><span>Used in:</span> every project here</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">Python</h3>
+              <p class="skill__text">Where I started building real tools: desktop apps, a backup script, backend services.</p>
+              <p class="skill__used mono"><span>Used in:</span> Femina POS, internship</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">Node.js &amp; APIs</h3>
+              <p class="skill__text">REST APIs, WebRTC and cloud storage for a video streaming app. Clean contracts between services are my favourite part.</p>
+              <p class="skill__used mono"><span>Used in:</span> Source Infinity</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">Kotlin &amp; Android</h3>
+              <p class="skill__text">MVVM, Retrofit and an app that syncs through its own API.</p>
+              <p class="skill__used mono"><span>Used in:</span> Tasks for Android</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">Cloud</h3>
+              <p class="skill__text">Azure fundamentals, plus SharePoint and Purview every day.</p>
+              <p class="skill__used mono"><span>Used in:</span> SharePoint &amp; Purview at work · AZ-900</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">Automation</h3>
+              <p class="skill__text">Power Automate, Power Query and VBA. A 40-minute manual task, made one click.</p>
+              <p class="skill__used mono"><span>Used in:</span> daily at work</p>
+            </article>
+            <article class="skill">
+              <h3 class="display">Analysis</h3>
+              <p class="skill__text">Requirements, process mapping, stakeholders. I ask what 'done' means before I open the editor.</p>
+              <p class="skill__used mono"><span>Used in:</span> current role</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 3 · DATA CENTRE / WORK ============ -->
+      <section class="stop work" id="work" data-stop-section="3">
+        <div class="beat" aria-hidden="true"></div>
+        <div class="panel">
+          <p class="kicker mono"><b>03</b> Data centre <span>· Work</span></p>
+          <p class="where">Past the servers where my projects run.</p>
+          <h2 class="display h2" data-split>Things I've built</h2>
+          <div class="wins">
+            <article class="win" data-win data-name="CV Analyzer">
+              <header class="win__bar mono"><i></i><i></i><i></i><span>cv-analyzer</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">01 / 05 · 2025</p>
+                <h3 class="win__name display">CV Analyzer</h3>
+                <p class="win__desc">Turns a pile of résumés into a shortlist grouped by shared skills, then exports it to Excel.</p>
+                <p class="win__flow mono"><span>Upload</span><span>MVC</span><span>Affinda</span><span>SQL Server</span><span>Excel</span></p>
+                <p class="win__stack mono">ASP.NET Core · NLP API · SQL Server</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/CVAnalyzer" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <article class="win" data-win data-name="Tasks for Android">
+              <header class="win__bar mono"><i></i><i></i><i></i><span>tasks</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">02 / 05 · 2025</p>
+                <h3 class="win__name display">Tasks for Android</h3>
+                <p class="win__desc">Your tasks stay put when you change phones, because they sync through my own .NET 8 API and SQL Server.</p>
+                <p class="win__flow mono"><span>Kotlin/MVVM</span><span>Retrofit</span><span>Web API</span><span>SQL Server</span></p>
+                <p class="win__stack mono">Kotlin · Retrofit · .NET 8 API</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/To-Do-Mobile_App" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <article class="win" data-win data-name="SpecTacular">
+              <header class="win__bar mono"><i></i><i></i><i></i><span>spectacular</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">03 / 05 · 2025</p>
+                <h3 class="win__name display">SpecTacular</h3>
+                <p class="win__desc">A working eyewear store with a cart, an admin dashboard and separate logins for customers and staff.</p>
+                <p class="win__flow mono"><span>Razor</span><span>Controllers</span><span>Services</span><span>EF Core</span></p>
+                <p class="win__stack mono">ASP.NET Core MVC · EF Core</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/Spectacular--Web-App" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <article class="win" data-win data-name="Femina Salon">
+              <header class="win__bar mono"><i></i><i></i><i></i><span>femina-pos</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">04 / 05 · 2024</p>
+                <h3 class="win__name display">Femina Salon</h3>
+                <p class="win__desc">Replaced pen and paper at a salon. Members get 10/15/20% off automatically, and every sale prints a receipt.</p>
+                <p class="win__flow mono"><span>Tkinter UI</span><span>Billing rules</span><span>MySQL</span><span>Receipt</span></p>
+                <p class="win__stack mono">Python · Tkinter · MySQL</p>
+                <a class="win__link mono" href="https://github.com/itzjatin11/Femina-Salon-Management-System" target="_blank" rel="noopener">View source ↗</a>
+              </div>
+            </article>
+            <article class="win" data-win data-name="Client booking site">
+              <header class="win__bar mono"><i></i><i></i><i></i><span>client site · live</span></header>
+              <div class="win__body">
+                <p class="win__meta mono">05 / 05 · Client site · live</p>
+                <h3 class="win__name display">Booking site</h3>
+                <p class="win__desc">A live booking site for a self-employed client. Bookings go straight to their inbox with no subscription to pay.</p>
+                <p class="win__flow mono"><span>Static site</span><span>Booking form</span><span>Formspree</span><span>Inbox</span></p>
+                <p class="win__stack mono">HTML · CSS · JS · Formspree</p>
+                <a class="win__link mono" href="https://soulscriptbykai.com/" target="_blank" rel="noopener">Visit live site ↗</a>
+              </div>
+            </article>
+          </div>
+          <a class="more mono" href="https://github.com/itzjatin11" target="_blank" rel="noopener">More on GitHub ↗</a>
+        </div>
+      </section>
+
+      <!-- ============ 4 · OCEAN / EXPERIENCE ============ -->
+      <section class="stop exp" id="experience" data-stop-section="4">
+        <div class="beat" aria-hidden="true"></div>
+        <div class="panel">
+          <p class="kicker mono"><b>04</b> Ocean <span>· Experience</span></p>
+          <p class="where">Along the cable on the sea floor. Each light is a stop on my way here.</p>
+          <h2 class="display h2" data-split>Where I've worked</h2>
+          <ul class="stats mono" aria-label="Highlights">
+            <li>40 min → 1 click</li>
+            <li>GPA 8.2 / 9</li>
+          </ul>
+          <ol class="timeline">
+            <li class="job" data-job data-label="2023 · Study">
+              <p class="job__when mono">2023 – 2025</p>
+              <h3 class="display">BIT Software Development</h3>
+              <p class="job__org">Auckland Institute of Studies</p>
+              <p class="job__desc">GPA 8.2/9 and the Academic Excellence Award.</p>
+            </li>
+            <li class="job" data-job data-label="2025 · Azure">
+              <p class="job__when mono">2025</p>
+              <h3 class="display">Microsoft Azure Fundamentals</h3>
+              <p class="job__org">Microsoft · AZ-900</p>
+            </li>
+            <li class="job" data-job data-label="2025 · Internship">
+              <p class="job__when mono">Oct – Dec 2025</p>
+              <h3 class="display">Backend Developer Intern</h3>
+              <p class="job__org">Source Infinity</p>
+              <p class="job__desc">REST APIs in Node.js and Python, WebRTC and cloud storage for a video streaming app.</p>
+            </li>
+            <li class="job" data-job data-label="2026 · Authentic Security">
+              <p class="job__when mono">Mar – Jun 2026</p>
+              <h3 class="display">Cash Processing Officer</h3>
+              <p class="job__org">Authentic Security</p>
+              <p class="job__desc">High-volume reconciliation at 100% accuracy, plus internal tooling and SharePoint.</p>
+            </li>
+            <li class="job" data-job data-label="Now · Business Analyst">
+              <p class="job__when mono">Jun 2026 – now</p>
+              <h3 class="display">Business Analyst</h3>
+              <p class="job__org">Authentic Security</p>
+              <p class="job__desc">I run process improvement end to end: requirements, stakeholders, process mapping and data analysis.</p>
+            </li>
+          </ol>
+
+          <div class="quotes">
+            <h3 class="quotes__title display">What people say</h3>
+            <p class="intro">From two professors and a business owner I've worked with.</p>
+            <blockquote>
+              <p>“A creative problem-solver who thinks critically about every project. Attention to detail and an innovative mindset.”</p>
+              <footer class="mono">Ashwini, Professor</footer>
+            </blockquote>
+            <blockquote>
+              <p>“Remarkable teamwork and collaboration. Unique insights, leadership when needed, and strong communication.”</p>
+              <footer class="mono">Havea, Professor</footer>
+            </blockquote>
+            <blockquote>
+              <p>“Always reliable and supportive. He approaches every challenge with patience and positivity.”</p>
+              <footer class="mono">Pobir, Co-founder, Rose N Petal</footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 5 · YOU / CONTACT ============ -->
+      <section class="stop contact" id="contact" data-stop-section="5">
+        <div class="beat" aria-hidden="true"></div>
+        <div class="panel">
+          <p class="kicker mono"><b>05</b> You <span>· Contact</span></p>
+          <p class="where">It reached you. Send one back?</p>
+          <h2 class="display h2" data-split>Say hello.</h2>
+          <p class="intro">Questions about a project, something on .NET, or just to say hi. Email gets to me fastest.</p>
+          <a class="contact__mail display" href="mailto:jatintaadiyal@gmail.com">jatintaadiyal@gmail.com</a>
+          <ul class="contact__links mono">
+            <li><a href="https://www.linkedin.com/in/jatinsinghtaadiyal/" target="_blank" rel="noopener">LinkedIn ↗</a></li>
+            <li><a href="https://github.com/itzjatin11" target="_blank" rel="noopener">GitHub ↗</a></li>
+            <li><a href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing" target="_blank" rel="noopener">CV ↗</a></li>
+          </ul>
+
+          <form class="form" action="https://formspree.io/f/maqzrnyb" method="POST" data-form>
+            <label class="field"><span class="mono">Your name</span><input type="text" name="name" required autocomplete="name" /></label>
+            <label class="field"><span class="mono">Your email</span><input type="email" name="email" required autocomplete="email" /></label>
+            <label class="field field--wide"><span class="mono">What's on your mind?</span><textarea name="message" rows="3" required></textarea></label>
+            <div class="form__foot field--wide">
+              <button type="submit" class="btn mono">Send it to Auckland</button>
+              <p class="form__note mono" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot mono">
+      <p>Built in Auckland by Jatin Singh Taadiyal · Three.js · GSAP · Lenis · Vite · <a href="#top">Back to the top ↑</a></p>
+    </footer>
+
+    <script type="module" src="/src/hello/main.js"></script>
+  </body>
+</html>
