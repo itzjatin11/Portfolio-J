@@ -212,9 +212,21 @@ button {
   pointer-events: none;
   background: linear-gradient(90deg, var(--bg) 0 38%, transparent 62%);
 }
+.scrim--r {
+  background: linear-gradient(270deg, var(--bg) 0 38%, transparent 62%);
+  opacity: 0;
+}
 @media (min-width: 1024px) {
   :root[data-theme='light'] .scrim {
     background: linear-gradient(90deg, var(--bg) 0 36%, transparent 52%);
+  }
+  :root[data-theme='light'] .scrim--r {
+    background: linear-gradient(270deg, var(--bg) 0 36%, transparent 52%);
+  }
+}
+@media (max-width: 1023.98px) {
+  .scrim--r {
+    display: none;
   }
 }
 .tags {
@@ -1382,5 +1394,62 @@ section[id] {
   }
   * {
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- desktop: text alternates sides, scene takes the other half ---------- */
+@media (min-width: 1024px) {
+  .station--right {
+    grid-template-columns: 1fr var(--panel-w);
+  }
+  .station--right > .panel {
+    grid-column: 2;
+  }
+  .station--right > .legend {
+    grid-column: 1;
+    justify-self: start;
+  }
+  /* Work: windows and heading on the right */
+  .js-motion .work.station--right .work__frame {
+    align-items: flex-end;
+  }
+  .js-motion .work.station--right .panel--head {
+    width: var(--panel-w);
+  }
+  .js-motion .work.station--right .wins {
+    width: min(40vw, 600px);
+    perspective-origin: 70% 35%;
+  }
+  .js-motion .work.station--right .win {
+    left: auto;
+    right: 0;
+  }
+  .js-motion .work.station--right .more {
+    left: auto;
+    right: calc(min(40vw, 600px) + var(--gutter));
+  }
+  .js-motion .work.station--right .legend {
+    right: auto;
+    left: 0;
+  }
+  /* the fixed explainer moves to the bottom-left while the text is on the right */
+  .legend-fixed {
+    transition: opacity 0.3s ease;
+  }
+  .legend-fixed.is-left {
+    top: auto;
+    right: auto;
+    left: var(--gutter);
+    bottom: 28px;
+  }
+  .legend-fixed.is-left .legend {
+    top: auto;
+    bottom: 0;
+    right: auto;
+    left: 0;
+  }
+  .js-motion .panel,
+  .js-motion .panel--head {
+    will-change: transform;
   }
 }

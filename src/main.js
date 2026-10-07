@@ -3,6 +3,7 @@ import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { createGauge } from './gauge.js';
+import { sideAt, SIDES } from './sides.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -188,6 +189,7 @@ const els = {
   bootLast: $('[data-boot-last]'),
   boot: $('[data-boot]'),
   scrim: $('[data-scrim]'),
+  scrimR: $('[data-scrim-r]'),
   topfade: $('[data-topfade]'),
   about: $('[data-words]'),
 };
@@ -257,7 +259,13 @@ function update(y = window.scrollY) {
   }
   // scrim behind the text panel; the scene stays clear in the hero and the closing shot
   const scrim = T < 0.3 ? 0.65 : T < 0.62 ? 0.65 - 0.45 * sstep(0.3, 0.4, T) + 0.8 * sstep(0.5, 0.62, T) : T > 5.25 ? 1 - 0.75 * sstep(5.25, 5.7, T) : 1;
-  els.scrim.style.opacity = Math.min(1, scrim).toFixed(3);
+  // the backing scrim follows the text: left half, right half, or crossing during a seam
+  const side = desk ? sideAt(T) : -1;
+  const wl = Math.min(1, Math.max(0, (1 - side) / 2));
+  const wr = 1 - wl;
+  els.scrim.style.opacity = (Math.min(1, scrim) * wl).toFixed(3);
+  els.scrimR.style.opacity = (Math.min(1, scrim) * wr).toFixed(3);
+  legendHost.classList.toggle('is-left', desk && side > 0.2);
   els.topfade.style.opacity = sstep(0.5, 0.8, T);
 
   // ---------- about paragraph lights up by word ----------
@@ -370,7 +378,10 @@ function paintWindows({ i, t }) {
     const key = `${z.toFixed(0)}|${o.toFixed(3)}`;
     if (w._k === key) return;
     w._k = key;
-    w.style.transform = `translate3d(0,0,${z.toFixed(1)}px)`;
+    // incoming windows turn in from the scene side; outgoing ones tip away as they pass
+    const turn = (z < 0 ? -z / 1600 : -z / 700) * 14 * (SIDES[3] || 1);
+    const drift = (z < 0 ? -z / 1600 : z / 700) * 60 * -(SIDES[3] || 1);
+    w.style.transform = `translate3d(${drift.toFixed(1)}px,0,${z.toFixed(1)}px) rotateY(${turn.toFixed(2)}deg)`;
     w.style.opacity = o.toFixed(3);
     w.style.visibility = o < 0.01 && !workState.keyboard ? 'hidden' : 'visible';
     w.inert = !workState.keyboard && o < 0.5;
@@ -503,6 +514,82 @@ mm.add({ desk: DESK, mob: '(max-width: 1023.98px)' }, (ctx) => {
         w.inert = false;
         w._k = null;
       });
+    });
+  }
+
+  // ---------- content moves with the world ----------
+  // Each panel arrives from its own side and its layers drift at different depths;
+  // on the way out it slides off toward the side the scene is about to swing to.
+  if (desk && !reduceMotion) {
+    $$('.station').forEach((sec) => {
+      const k = +sec.dataset.station;
+      const side = SIDES[k];
+      const next = SIDES[Math.min(SIDES.length - 1, k + 1)];
+      const head = $('.panel--head', sec) || $(':scope > .panel', sec);
+      if (!head) return;
+      const pinned = !!$('.panel--head', sec);
+      const vw = () => innerWidth;
+      ctx.add(() => {
+        // arrive: from its own side, slightly low
+        gsap.fromTo(
+          head,
+          { x: () => side * vw() * 0.08, y: 60, opacity: 0.25 },
+          {
+            x: 0,
+            y: 0,
+            opacity: 1,
+            ease: 'power2.out',
+            immediateRender: false,
+            scrollTrigger: { trigger: sec, start: 'top 105%', end: pinned ? 'top 10%' : 'top 35%', scrub: true },
+          },
+        );
+        // layers at different depths while reading
+        const layers = $$(':scope > .kicker, :scope > .h2, :scope > .intro', head);
+        layers.forEach((el, n) => {
+          gsap.fromTo(
+            el,
+            { yPercent: 0 },
+            {
+              yPercent: -(n + 1) * (pinned ? 6 : 14),
+              ease: 'none',
+              immediateRender: false,
+              scrollTrigger: { trigger: sec, start: 'top 60%', end: pinned ? 'bottom bottom' : 'bottom 30%', scrub: true },
+            },
+          );
+        });
+        // leave: toward the side the next panel is coming from, fading as the camera moves on
+        if (k < SIDES.length - 1 && !pinned) {
+          gsap.fromTo(
+            head,
+            { xPercent: 0 },
+            {
+              xPercent: next === side ? -6 : -side * 10,
+              opacity: 0.2,
+              ease: 'power1.in',
+              immediateRender: false,
+              scrollTrigger: { trigger: sec, start: 'bottom 55%', end: 'bottom 5%', scrub: true },
+            },
+          );
+        }
+      });
+    });
+  }
+
+  // small screens: one column, so items alternate the side they slide in from
+  if (!desk && !reduceMotion) {
+    ctx.add(() => {
+      ['.skill', '[data-win]', '[data-commit]'].forEach((sel) =>
+        $$(sel).forEach((el, n) =>
+          gsap.from(el, {
+            x: (n % 2 ? 1 : -1) * Math.min(48, innerWidth * 0.12),
+            rotate: (n % 2 ? 1 : -1) * 1.2,
+            opacity: 0,
+            duration: 0.9,
+            ease: 'expo.out',
+            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          }),
+        ),
+      );
     });
   }
 

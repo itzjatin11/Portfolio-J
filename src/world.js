@@ -49,6 +49,7 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as TX from './textures.js';
+import { sideAt } from './sides.js';
 
 const { clamp, lerp, smoothstep } = MathUtils;
 const sstep = (a, b, x) => smoothstep(x, a, b);
@@ -1208,12 +1209,13 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     camera.near = Math.max(0.004, dist * 0.02);
     camera.far = Math.max(60, dist * 40);
 
-    // subject to the right (desktop) / top (mobile) once the text panel is in play
+    // subject opposite the text (desktop) / on top (mobile) once the text panel is in play
     const H0 = 0.24; // hero: chip a little right of centre, clear of the name
     const shift = T < 0.4 ? H0 : T < 0.92 ? lerp(H0, 1, ease((T - 0.4) / 0.52)) : T > 5.3 ? lerp(1, H0, ease(clamp((T - 5.3) / 0.6, 0, 1))) : 1;
     view.shift = shift;
     if (mobile) camera.setViewOffset(view.w, view.h, 0, view.h * 0.2 * shift, view.w, view.h);
-    else camera.setViewOffset(view.w, view.h, -view.w * 0.19 * shift, 0, view.w, view.h);
+    // subject sits opposite the text panel, swinging across with each seam
+    else camera.setViewOffset(view.w, view.h, view.w * 0.19 * shift * sideAt(T), 0, view.w, view.h);
     camera.updateProjectionMatrix();
 
     // fog: tighter the deeper we go, closed fully across each place swap
