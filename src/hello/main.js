@@ -70,23 +70,11 @@ applyTheme(root.dataset.theme || 'dark', false);
 $('[data-theme-toggle]').addEventListener('click', () => applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
 
 /* ---------------------------------------------------------------- calm view */
-// The camera fades between stops instead of moving, and content fades in where it's read.
-const calmBtn = $('[data-calm]');
-let calm = reduceMotion || lowTier || root.dataset.calm === '1';
-function setCalm(on) {
-  calm = on;
-  calmBtn.setAttribute('aria-pressed', String(on));
-  player.setCalm(on);
-  world?.setCalm(on);
-  lastLayout.valid = false; // cards fly out of the scene, or fade in place
-}
-setCalm(calm);
-calmBtn.addEventListener('click', () => {
-  setCalm(!calm);
-  try {
-    localStorage.setItem('calm', calm ? '1' : '0');
-  } catch {}
-});
+// For visitors who've asked their device to reduce motion, and for low-end devices: the camera
+// fades between stops instead of flying, and cards fade in where they're read. No switch on the
+// page; it follows the device setting.
+const calm = reduceMotion || lowTier;
+player.setCalm(calm);
 
 /* ---------------------------------------------------------------- contact form */
 const form = $('[data-form]');
@@ -167,6 +155,7 @@ function measure() {
   geo.railW = els.fill.parentElement.offsetWidth;
   geo.tops = stops.map((s) => s.sec.getBoundingClientRect().top + scrollY);
   geo.max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  geo.footH = $('.foot').offsetHeight;
   stops.forEach((s) => s.items.forEach((it) => ((it.w = it.el.offsetWidth), (it.h = it.el.offsetHeight))));
 }
 function keyframes() {
@@ -312,7 +301,9 @@ function layout(st) {
         fit = Math.min(1, (r.w * 0.94) / it.w, (r.h * 0.94) / it.h);
       }
       const hh = (it.h * fit) / 2;
-      ry = it.h * fit > vh - top - 16 ? top + hh : clamp(ry, top + hh, vh - 16 - hh);
+      // the last card sits above the footer, which is on screen at the end of the page
+      const bottom = stop.k === 5 ? geo.footH + 12 : 16;
+      ry = it.h * fit > vh - top - bottom ? top + hh : clamp(ry, top + hh, vh - bottom - hh);
       rx = clamp(rx, (it.w * fit) / 2 + 12, vw - (it.w * fit) / 2 - 12);
       // where it comes from
       const a = world ? world.project(it.src, srcAt) : null;

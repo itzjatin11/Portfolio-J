@@ -885,7 +885,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     cut: tag('cutaway · not to scale'),
     page: tag('LBA 4 KiB', { cls: 'tag--hot' }),
     land: tag('4 KiB @ 0x7F3A…', { cls: 'tag--hot' }),
-    line: tag('JATIN SINGH TAADIYAL|FULL-STACK DEV|C#/.NET SQL NODE|AKL NZ 2026', { cls: 'tag--line' }),
+    line: tag('JATIN SINGH TAADIYAL|FULL-STACK DEV|C#/.NET PY SQL NODE|AKL NZ 2026', { cls: 'tag--line' }),
     l1: tag('L1 · 1 ns', { w: 'die' }),
     l2: tag('L2 · 3 ns', { w: 'die' }),
     l3: tag('L3 · 10 ns', { w: 'die' }),

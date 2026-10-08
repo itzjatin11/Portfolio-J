@@ -6,7 +6,7 @@
     <title>Jatin Singh Taadiyal · Full-stack developer, Auckland</title>
     <meta
       name="description"
-      content="Jatin Singh Taadiyal is a full-stack developer in Auckland, NZ. C#/.NET, SQL Server and Node. Business Analyst at Authentic Security."
+      content="Jatin Singh Taadiyal is a full-stack developer in Auckland, NZ, working with C#/.NET, Python, SQL Server and Node. Business Analyst at Authentic NZ."
     />
     <meta name="theme-color" content="#050505" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -16,7 +16,6 @@
       try {
         const t = localStorage.getItem('theme');
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-        if (localStorage.getItem('calm') === '1') document.documentElement.dataset.calm = '1';
       } catch {}
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js-motion', 'stage');
       // If the page script never ran (it failed to load, or threw), don't leave the cards hidden
@@ -45,16 +44,6 @@
         <span class="rail__line" aria-hidden="true"><span class="rail__fill" data-rail-fill></span><span class="rail__spark" data-rail-spark></span></span>
       </nav>
       <div class="nav__right mono">
-        <a
-          class="nav__quiet"
-          href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
-          target="_blank"
-          rel="noopener"
-          >CV</a
-        >
-        <button class="pill" type="button" data-calm aria-pressed="false" title="Fade between sections instead of moving the camera">
-          <span class="pill__box" aria-hidden="true"></span><span class="pill__label">Calm</span>
-        </button>
         <button class="pill theme" type="button" data-theme-toggle aria-label="Switch colour theme">
           <span class="theme__dot" aria-hidden="true"></span><span class="theme__label">Dark</span>
         </button>
@@ -71,7 +60,7 @@
               <span class="hero__line" data-chars>Taadiyal</span>
             </h1>
             <p class="hero__pitch">
-              Full-stack developer · C#/.NET, SQL Server, Node · Business Analyst at Authentic Security ·
+              Full-stack developer · C#/.NET, Python, SQL Server, Node · Business Analyst at Authentic NZ ·
               Auckland, NZ
             </p>
             <p class="hero__hook">I think in systems before I think in syntax.</p>
@@ -96,24 +85,17 @@
           <h2 class="display h2">Hi, I'm Jatin.</h2>
           <p class="about__text">
             I'm a full-stack developer who cares about the parts nobody sees: clean data models,
-            predictable APIs, and automation that removes busywork. As a Business Analyst at Authentic
-            Security I map processes and gather requirements, which keeps me asking what problem we're
+            predictable APIs, and automation that removes busywork. As a Business Analyst at Authentic NZ I map
+            processes and gather requirements, which keeps me asking what problem we're
             solving and for whom. Scope first, build second.
           </p>
           <ul class="facts mono" aria-label="Quick facts">
             <li>Auckland</li>
-            <li>BA @ Authentic Security</li>
+            <li>BA @ Authentic NZ</li>
             <li>BIT, GPA 8.2/9</li>
             <li>AZ-900</li>
-            <li>.NET/SQL/Node</li>
+            <li>.NET/Python/SQL/Node</li>
           </ul>
-          <a
-            class="cvlink mono"
-            href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing"
-            target="_blank"
-            rel="noopener"
-            >CV ↗</a
-          >
         </div>
       </section>
 
@@ -136,8 +118,8 @@
           </article>
           <article class="item skill" data-src="ant2" data-x="0.12" data-y="0.42">
             <h3 class="display">Python</h3>
-            <p class="skill__text">Where I started building real tools: desktop apps, a backup script, backend services.</p>
-            <p class="skill__used mono"><span>Used in:</span> Femina POS, internship</p>
+            <p class="skill__text">One of the languages I use most. Scripts that automate the boring parts, desktop tools, and backend REST APIs, from a salon's Tkinter and MySQL point-of-sale app to API work on my internship.</p>
+            <p class="skill__used mono"><span>Used in:</span> Femina POS, Source Infinity internship, scripting</p>
           </article>
           <article class="item skill" data-src="ant0" data-x="0.88" data-y="0.42">
             <h3 class="display">Node.js &amp; APIs</h3>
@@ -151,8 +133,8 @@
           </article>
           <article class="item skill" data-src="ant2" data-x="0.68" data-y="0.72">
             <h3 class="display">Cloud</h3>
-            <p class="skill__text">Azure fundamentals, plus SharePoint and Purview every day.</p>
-            <p class="skill__used mono"><span>Used in:</span> SharePoint &amp; Purview at work · AZ-900</p>
+            <p class="skill__text">Azure fundamentals, plus Microsoft 365 tools like SharePoint day to day.</p>
+            <p class="skill__used mono"><span>Used in:</span> SharePoint at work · AZ-900</p>
           </article>
           <article class="item skill" data-src="ant0" data-x="0.12" data-y="0.72">
             <h3 class="display">Automation</h3>
@@ -260,14 +242,14 @@
           <article class="item job" data-src="drawer3" data-x="0.8" data-y="0.5">
             <p class="job__when mono">Mar – Jun 2026</p>
             <h3 class="display">Cash Processing Officer</h3>
-            <p class="job__org">Authentic Security</p>
-            <p class="job__desc">High-volume reconciliation at 100% accuracy, plus internal tooling and SharePoint.</p>
+            <p class="job__org">Authentic NZ</p>
+            <p class="job__desc">Cash processing and reconciliation with a focus on accuracy, plus helping with internal tools and SharePoint.</p>
           </article>
           <article class="item job" data-src="drawer4" data-x="0.2" data-y="0.5">
             <p class="job__when mono">Jun 2026 – now</p>
             <h3 class="display">Business Analyst</h3>
-            <p class="job__org">Authentic Security</p>
-            <p class="job__desc">I run process improvement end to end: requirements, stakeholders, process mapping and data analysis.</p>
+            <p class="job__org">Authentic NZ</p>
+            <p class="job__desc">I contribute to process improvement work: requirements, stakeholder engagement, process mapping and data analysis.</p>
           </article>
         <div class="item quotes" data-src="beacon" data-x="0.5" data-y="0.56">
           <h3 class="quotes__title display">What people say</h3>
@@ -292,12 +274,11 @@
         <div class="item contact" data-src="screen" data-x="0.5" data-y="0.5" data-fit="screen">
           <p class="kicker mono"><b>05</b> Contact</p>
           <h2 class="display h2">Say hello.</h2>
-          <p class="intro">Questions about a project, something on .NET, or just to say hi. Email gets to me fastest.</p>
+          <p class="intro">Questions about a project, something on .NET or Python, or just to say hi. Email gets to me fastest.</p>
           <a class="contact__mail display" href="mailto:jatintaadiyal@gmail.com">jatintaadiyal@gmail.com</a>
           <ul class="contact__links mono">
             <li><a href="https://www.linkedin.com/in/jatinsinghtaadiyal/" target="_blank" rel="noopener">LinkedIn ↗</a></li>
             <li><a href="https://github.com/itzjatin11" target="_blank" rel="noopener">GitHub ↗</a></li>
-            <li><a href="https://drive.google.com/file/d/1ZSudovH_FngleBsd5jp3EhWGdq9kaO1Z/view?usp=sharing" target="_blank" rel="noopener">CV ↗</a></li>
           </ul>
           <form class="form" action="https://formspree.io/f/maqzrnyb" method="POST" data-form>
               <label class="field"><span class="mono">Your name</span><input type="text" name="name" required autocomplete="name" /></label>

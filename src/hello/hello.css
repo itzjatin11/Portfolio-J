@@ -1065,6 +1065,12 @@ section[id] {
   position: relative;
   z-index: 3;
 }
+/* a card is never taller than the space between the nav and the footer; if its content is
+   longer (the contact form on a phone), it scrolls inside itself */
+.stage .item {
+  max-height: calc(100svh - 104px - 56px);
+  overflow-y: auto;
+}
 
 /* ---------- tablet + phone ---------- */
 @media (max-width: 1023.98px) {
@@ -1144,4 +1150,14 @@ section[id] {
   * {
     scroll-behavior: auto !important;
   }
+}
+
+/* the hero's smaller lines sit over bright circuit traces: a soft halo in the page colour keeps
+   them readable without a box */
+.hero__pitch,
+.hero__hook {
+  text-shadow: 0 0 2px var(--bg), 0 1px 14px var(--bg), 0 0 28px var(--bg);
+}
+.hero__hook {
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
 }

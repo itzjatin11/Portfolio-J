@@ -178,7 +178,7 @@ export function lidTexture() {
   g.fillText('JST-26', 52, 270);
   g.font = '600 26px monospace';
   g.fillStyle = ch(0, 0, 170);
-  g.fillText('C#/.NET · NODE · SQL', 54, 322);
+  g.fillText('C#/.NET · PY · NODE · SQL', 54, 322);
   g.fillText('AKL · NZ · FULL-STACK', 54, 360);
   g.fillStyle = ch(200, 0, 0);
   for (let i = 0; i < 10; i++) g.fillRect(54 + i * 22, 418, 16, 26 - (i > 6 ? 18 : 0));
