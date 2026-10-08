@@ -244,8 +244,9 @@ function layout() {
       if (out_ < 0.002) {
         if (it.shown !== false) {
           el.style.visibility = 'hidden';
-          el.style.pointerEvents = 'none';
+          el.style.pointerEvents = it.pe = 'none';
           it.line.style.opacity = 0;
+          it.lineKey = '';
           it.shown = false;
         }
         return;
@@ -272,21 +273,33 @@ function layout() {
       const py = (fly ? lerp(a.y, ry, e) : ry + (1 - e) * 24) - exit * 70;
       const s = (fly ? lerp(0.04, 1, e) : 1) * fit;
       const op = sstep(0, 0.35, appear) * (1 - exit) * atStop;
-      el.style.visibility = 'visible';
-      el.style.opacity = op.toFixed(3);
-      el.style.transform = `translate3d(${(px - it.w / 2).toFixed(1)}px, ${(py - it.h / 2).toFixed(1)}px, 0) scale(${s.toFixed(4)})`;
-      el.style.pointerEvents = op > 0.6 ? 'auto' : 'none';
+      // write styles only when something changed, so resting cards cost nothing
+      const tf = `translate3d(${(px - it.w / 2).toFixed(1)}px, ${(py - it.h / 2).toFixed(1)}px, 0) scale(${s.toFixed(3)})`;
+      const o = op.toFixed(2);
+      if (it.tf !== tf) el.style.transform = it.tf = tf;
+      if (it.op !== o) el.style.opacity = it.op = o;
+      if (it.shown !== true) el.style.visibility = 'visible';
+      const pe = op > 0.6 ? 'auto' : 'none';
+      if (it.pe !== pe) el.style.pointerEvents = it.pe = pe;
       it.shown = true;
       // a faint thread back to where it came from
       if (a && a.visible && it.fit !== 'screen') {
         const [ex, ey] = edgePoint(a.x, a.y, px, py, it.w * s, it.h * s);
-        const ln = it.line;
-        ln.setAttribute('x1', a.x.toFixed(1));
-        ln.setAttribute('y1', a.y.toFixed(1));
-        ln.setAttribute('x2', ex.toFixed(1));
-        ln.setAttribute('y2', ey.toFixed(1));
-        ln.style.opacity = (op * 0.7).toFixed(3);
-      } else it.line.style.opacity = 0;
+        // only touch the SVG when the thread actually moved (each change repaints it)
+        const key = `${a.x | 0},${a.y | 0},${ex | 0},${ey | 0},${(op * 20) | 0}`;
+        if (it.lineKey !== key) {
+          it.lineKey = key;
+          const ln = it.line;
+          ln.setAttribute('x1', a.x.toFixed(0));
+          ln.setAttribute('y1', a.y.toFixed(0));
+          ln.setAttribute('x2', ex.toFixed(0));
+          ln.setAttribute('y2', ey.toFixed(0));
+          ln.style.opacity = (op * 0.7).toFixed(2);
+        }
+      } else if (it.lineKey !== '') {
+        it.line.style.opacity = 0;
+        it.lineKey = '';
+      }
     });
   });
   if (world) Object.entries(levels).forEach(([src, v]) => world.setLevel(src, v));

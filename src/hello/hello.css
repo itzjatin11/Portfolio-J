@@ -1035,6 +1035,9 @@ section[id] {
   display: block;
 }
 .stage .item {
+  /* moving cards: no big soft shadow to repaint, and their contents never trigger page layout */
+  box-shadow: none;
+  contain: layout paint style;
   position: fixed;
   left: 0;
   top: 0;

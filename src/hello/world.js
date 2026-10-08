@@ -239,9 +239,13 @@ function camPath(pos, look) {
 export const SOURCES = ['die', 'router', 'ant0', 'ant1', 'ant2', 'dimm', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'tower', 'drawer0', 'drawer1', 'drawer2', 'drawer3', 'drawer4', 'beacon', 'screen'];
 
 export function createWorld(canvas, { mobile = false, still = false, workN = 6, expN = 7 } = {}) {
-  const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  const dprMax = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.75);
-  let dpr = dprMax;
+  // High-density screens already look smooth, so they skip multisampling (the costliest part of
+  // a frame there). The resolution starts at 1.5× at most and the governor below moves it.
+  const deviceDpr = window.devicePixelRatio || 1;
+  const renderer = new WebGLRenderer({ canvas, antialias: deviceDpr < 1.5, powerPreference: 'high-performance' });
+  const dprMax = Math.min(deviceDpr, 1.5);
+  const dprMin = Math.min(deviceDpr, mobile ? 0.75 : 0.85);
+  let dpr = Math.min(dprMax, (innerWidth * innerHeight * dprMax * dprMax) > 3.2e6 ? 1.25 : dprMax);
   renderer.setPixelRatio(dpr);
 
   const scene = new Scene();
@@ -599,6 +603,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   let anim = 0;
   let clock = 0;
   const costs = [];
+  let prevFrame = 0;
 
   function cameraFor(T, outP, outL) {
     const k = Math.min(5, Math.floor(T));
@@ -669,7 +674,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   // plays the same way however fast the wheel turns: no lagging behind a quick scroll, and no
   // sudden catch-up. Reversing mid-move plays it back from where it is; skipping more than one
   // stop (menu, keyboard, a long drag) fades straight there.
-  const DUR = [2.2, 3.0, 2.6, 2.6, 2.6]; // seconds for the move out of stop k
+  const DUR = [1.9, 2.4, 2.2, 2.2, 2.2]; // seconds for the move out of stop k
   const smoother = (t) => t * t * t * (t * (t * 6 - 15) + 10); // zero speed and acceleration at both ends
   // critically damped spring (no overshoot, no sudden start): used for movement within a stop
   function damp(i, target, smooth, dt) {
@@ -951,23 +956,25 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     if (Math.abs(glowTarget - U.glow.value) > 0.004) anim = Math.max(anim, 0.05);
     stepTheme(now);
     update(dt);
-    const t0 = performance.now();
     renderer.render(scene, camera);
-    const cost = performance.now() - t0;
-    // resolution governor: measures the draw itself (not idle gaps), never below 1×, and
-    // steps back up when there's room again
-    costs.push(cost);
-    if (costs.length > 40) costs.shift();
-    if (costs.length === 40) {
-      const med = [...costs].sort((a, b) => a - b)[20];
-      const next = med > 14 && dpr > 1 ? Math.max(1, dpr - 0.25) : med < 5 && dpr < dprMax ? Math.min(dprMax, dpr + 0.25) : dpr;
-      if (next !== dpr) {
-        dpr = next;
-        renderer.setPixelRatio(dpr);
-        resize();
-        costs.length = 0;
+    // Resolution governor. It watches the time between frames while the scene is animating
+    // continuously; that includes the GPU's work (a busy GPU delays the next frame), which the
+    // time spent inside render() does not. Below ~55 fps it steps down, and back up when there's
+    // clearly room again.
+    if (prevFrame && now - prevFrame < 70) {
+      costs.push(now - prevFrame);
+      if (costs.length >= 30) {
+        const med = [...costs].sort((a, b) => a - b)[15];
+        const next = med > 18.5 && dpr > dprMin ? Math.max(dprMin, dpr - 0.25) : med < 14 && costs.length >= 120 && dpr < dprMax ? Math.min(dprMax, dpr + 0.25) : dpr;
+        if (next !== dpr) {
+          dpr = next;
+          renderer.setPixelRatio(dpr);
+          resize();
+          costs.length = 0;
+        } else if (costs.length >= 120 || med > 18.5) costs.length = 0;
       }
     }
+    prevFrame = now;
   }
 
   function tick(now) {
