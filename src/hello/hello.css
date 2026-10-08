@@ -818,6 +818,7 @@ main,
   background: var(--accent);
   transform-origin: 0 50%;
   transform: scaleX(0);
+  will-change: transform; /* moved every frame of a move: composited, not repainted with the nav */
 }
 .rail__spark {
   position: absolute;
@@ -830,6 +831,7 @@ main,
   background: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 18px var(--accent);
   z-index: 2;
+  will-change: transform, opacity; /* slid along the line with a transform by main.js */
 }
 .pill {
   display: inline-flex;
@@ -1043,9 +1045,21 @@ section[id] {
   top: 0;
   z-index: 2;
   margin: 0;
-  visibility: hidden;
-  will-change: transform, opacity;
+  /* Out of sight until main.js brings it out: transparent and parked off screen rather than
+     visibility: hidden, so the content stays in the accessibility tree and reachable with Tab.
+     (A 2D transform and no will-change: no compositor layer while it's away.) */
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-99999px, 0);
   transform-origin: 50% 50%;
+}
+/* only the cards on screen are layers (each one costs GPU memory, ~the card's area at device pixels) */
+.stage .item.is-out {
+  will-change: transform, opacity;
+}
+/* targets of in-page links take the focus (for keyboard and screen readers) but aren't controls */
+[tabindex='-1']:focus {
+  outline: none;
 }
 .stage .foot {
   position: relative;

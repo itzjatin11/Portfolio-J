@@ -19,6 +19,7 @@ const ARRIVE = 0.82; // …and from here on, on the new stop's first card coming
 const TRIGGER = 0.15; // how far past a step the scroll must go (in steps) to ask for the next one
 const JUMP_FADE_OUT = 0.3;
 const JUMP_FADE_IN = 0.45;
+const ZERO = [0, 0, 0, 0, 0, 0];
 
 export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
   let K = []; // keyframes: { T, stop, L: number[6], y }
@@ -28,6 +29,7 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
   let goal = 0;
   let target = 0; // continuous keyframe index from the scroll position
   let calm = false;
+  let speed = 1; // playback rate, eased towards what the backlog asks for (no sudden lurches)
 
   // Rebuild the keyframes (layout or breakpoint changed). Keeps the current step.
   function setKeyframes(list) {
@@ -87,9 +89,11 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
         [seg.from, seg.to] = [seg.to, seg.from];
         seg.u = 1 - seg.u;
       }
-      // further behind = a little quicker (never under 45% of the normal time)
+      // further behind = a little quicker (never under 45% of the normal time). The rate eases
+      // over ~0.2 s rather than jumping when another flick lands mid-step, so a move never lurches.
       const backlog = Math.abs(goal - seg.to);
-      const speed = 1 / Math.max(0.45, 1 - 0.14 * backlog);
+      const want = 1 / Math.max(0.45, 1 - 0.14 * backlog);
+      speed += (want - speed) * (1 - Math.exp(-dt * 10));
       seg.u = Math.min(1, seg.u + (dt * speed) / durationOf(seg.from, seg.to));
       if (seg.u >= 1) {
         pos = seg.to;
@@ -97,6 +101,7 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
       }
       return true;
     }
+    speed = 1;
     if (jump) {
       jump.t += dt;
       if (jump.t >= JUMP_FADE_OUT && pos !== jump.to) pos = jump.to;
@@ -106,9 +111,19 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
     return false;
   }
 
-  // the state to draw, interpolated along the current step
+  // The state to draw, interpolated along the current step. It's read every frame, so it's one
+  // object reused (callers read it straight away and don't keep it).
+  const out = { T: 0, L: [0, 0, 0, 0, 0, 0], irisF: null, veil: 0, step: 0, stop: 0 };
+  const setL = (src) => {
+    for (let i = 0; i < 6; i++) out.L[i] = src[i];
+  };
   function view() {
-    const out = { T: 0, L: [0, 0, 0, 0, 0, 0], irisF: null, veil: 0, step: pos, stop: 0 };
+    out.T = 0;
+    out.irisF = null;
+    out.veil = 0;
+    out.step = pos;
+    out.stop = 0;
+    setL(ZERO);
     if (!K.length) return out;
     if (jump) {
       const t = jump.t;
@@ -117,7 +132,7 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
     if (!seg) {
       const k = K[pos];
       out.T = k.T;
-      out.L = k.L.slice();
+      setL(k.L);
       out.stop = k.stop;
       return out;
     }
@@ -126,7 +141,7 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
     const a = K[lo];
     const b = K[lo + 1];
     const f = seg.from < seg.to ? seg.u : 1 - seg.u;
-    out.L = a.L.slice();
+    setL(a.L);
     out.step = lo + f;
     if (a.stop === b.stop) {
       // within a stop: one card leaves, the next comes out
@@ -176,8 +191,9 @@ export function createPlayer({ travelSeconds, itemSeconds, placeChanges }) {
     setCalm(on) {
       calm = on;
     },
+    // playing, or about to start the next step (between two steps there's a frame with no step)
     get busy() {
-      return !!(seg || jump);
+      return !!(seg || jump) || (K.length > 0 && goal !== pos);
     },
     // scroll position of a step (for links and keyboard focus)
     yOf(stop, item = 0) {

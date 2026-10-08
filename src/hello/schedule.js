@@ -12,17 +12,23 @@ const sstep = (a, b, x) => {
 export const OUT_END = 0.3;
 export const EXIT_START = 0.8;
 
+// Both write { appear, exit } into `out` (the page calls them for every card every frame, so it
+// passes one object to reuse) and return it.
+
 // sequence: one item at a time
-export function sequence(L, n, i) {
+export function sequence(L, n, i, out = {}) {
   const u = L * n - i;
-  return { appear: sstep(0, OUT_END, u), exit: i === n - 1 && L >= 1 ? 1 : sstep(EXIT_START, 1, u) };
+  out.appear = sstep(0, OUT_END, u);
+  out.exit = i === n - 1 && L >= 1 ? 1 : sstep(EXIT_START, 1, u);
+  return out;
 }
 
 // accumulate: a heading, then the items come out one by one and stay together until the end
-export function accumulate(L, n, i) {
-  if (i === 0) return { appear: sstep(0, 0.06, L), exit: sstep(0.9, 1, L) };
-  const a = 0.06 + ((i - 1) * 0.76) / (n - 1);
-  return { appear: sstep(a, a + 0.08, L), exit: sstep(0.9, 1, L) };
+export function accumulate(L, n, i, out = {}) {
+  const a = i === 0 ? 0 : 0.06 + ((i - 1) * 0.76) / (n - 1);
+  out.appear = i === 0 ? sstep(0, 0.06, L) : sstep(a, a + 0.08, L);
+  out.exit = sstep(0.9, 1, L);
+  return out;
 }
 
 // The camera's position among the items: it rests on item i while it's read and moves on to

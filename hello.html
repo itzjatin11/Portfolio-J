@@ -19,6 +19,11 @@
         if (localStorage.getItem('calm') === '1') document.documentElement.dataset.calm = '1';
       } catch {}
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js-motion', 'stage');
+      // If the page script never ran (it failed to load, or threw), don't leave the cards hidden
+      // in the staged layout: fall back to the plain stacked page.
+      addEventListener('load', function () {
+        if (!window.__helloReady) document.documentElement.classList.remove('js-motion', 'stage');
+      });
     </script>
   </head>
   <body>
@@ -297,7 +302,7 @@
           <form class="form" action="https://formspree.io/f/maqzrnyb" method="POST" data-form>
               <label class="field"><span class="mono">Your name</span><input type="text" name="name" required autocomplete="name" /></label>
               <label class="field"><span class="mono">Your email</span><input type="email" name="email" required autocomplete="email" /></label>
-              <label class="field field--wide"><span class="mono">What's on your mind?</span><textarea name="message" rows="3" required></textarea></label>
+              <label class="field field--wide"><span class="mono">What's on your mind?</span><textarea name="message" rows="3" required data-lenis-prevent></textarea></label>
               <div class="form__foot field--wide">
                 <button type="submit" class="btn mono">Send it to Auckland</button>
                 <p class="form__note mono" role="status" aria-live="polite"></p>

@@ -18,6 +18,7 @@ import {
   Color,
   Vector3,
   Vector4,
+  Matrix4,
   Object3D,
   Group,
   Mesh,
@@ -236,9 +237,14 @@ function camPath(pos, look) {
 
 /* ================================================================== WORLD */
 // Named points that content comes out of. The page asks for their screen position every frame.
+// level keys, built once (no string building per frame)
+const CHIP_KEYS = [0, 1, 2, 3, 4].map((i) => `chip${i}`);
+const DRAWER_KEYS = [0, 1, 2, 3, 4].map((i) => `drawer${i}`);
+const ANT_KEYS = [0, 1, 2].map((i) => `ant${i}`);
+const isAtRouter = (T, w) => w === 'room' && T > 1.4 && T < 2.6;
 export const SOURCES = ['die', 'router', 'ant0', 'ant1', 'ant2', 'dimm', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'tower', 'drawer0', 'drawer1', 'drawer2', 'drawer3', 'drawer4', 'beacon', 'screen'];
 
-export function createWorld(canvas, { mobile = false, still = false, workN = 6, expN = 7 } = {}) {
+export function createWorld(canvas, { mobile = false, still = false, workN = 6, expN = 7, debug = false } = {}) {
   // High-density screens already look smooth, so they skip multisampling (the costliest part of
   // a frame there). The resolution starts at 1.5× at most and the governor below moves it.
   const deviceDpr = window.devicePixelRatio || 1;
@@ -247,6 +253,10 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   const dprMin = Math.min(deviceDpr, mobile ? 0.75 : 0.85);
   let dpr = Math.min(dprMax, (innerWidth * innerHeight * dprMax * dprMax) > 3.2e6 ? 1.25 : dprMax);
   renderer.setPixelRatio(dpr);
+  // Reading back each shader's compile log is a synchronous round trip to the GPU process the
+  // first time a material is drawn (it waits for the compile to finish). Useful while developing,
+  // a stall in production.
+  renderer.debug.checkShaderErrors = debug;
 
   const scene = new Scene();
   scene.fog = new Fog(0x000000, 10, 50);
@@ -459,6 +469,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   const decals = new InstancedMesh(new PlaneGeometry(1.42, 1.04), decalMat, 8);
   CHIP_Z.forEach((z, i) => place(decals, i, [8.5 - 0.202, 2.7, z], [1, 1, 1], -Math.PI / 2));
   const decalCol = new Color();
+  const unitTint = { g: -1, c: new Color() }; // last colour written to the tower's unit fronts
   decals.setColorAt(0, decalCol);
   Mm.add(decals);
   // the "plate" that lifts out of a chip as its project comes out
@@ -467,7 +478,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   plateMat.depthWrite = false;
   const plate = new Mesh(new BoxGeometry(0.05, 1.04, 1.42), plateMat);
   Mm.add(plate);
-  const chipPos = (i) => new Vector3(OFF.mem + 8.5 - 0.25, 2.7, CHIP_Z[PROJECT_CHIP[i]]);
+  const chipPos = (i, out) => out.set(OFF.mem + 8.5 - 0.25, 2.7, CHIP_Z[PROJECT_CHIP[i]]);
 
   /* ================================================================ TOWER */
   // A tall stack of units. Each step of the career slides out of it like a drawer.
@@ -519,7 +530,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     far.push([[x, h / 2, -30 - farR() * 120], [8 + farR() * 10, h, 8 + farR() * 10]]);
   }
   Tw.add(boxes(far, solid('pcb', { edge: 1 })));
-  const drawerPos = (i) => new Vector3(OFF.tower, unitY(JOB_U[i]), 5.2 + level[`drawer${i}`] * 4.5);
+  const drawerPos = (i, out) => out.set(OFF.tower, unitY(JOB_U[i]), 5.2 + level[DRAWER_KEYS[i]] * 4.5);
   const towerY = (idx) => {
     // camera height for item idx: 0 heading (low), 1–5 jobs, 6 quotes (top)
     const ys = [6, ...JOB_U.map(unitY), TOP + 6];
@@ -604,8 +615,19 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   let lastRender = 0;
   let anim = 0;
   let clock = 0;
+  // resolution governor (see render)
   const costs = [];
-  let prevFrame = 0;
+  let prevFrame = 0; // time of the previous frame drawn on consecutive ticks, 0 = none
+  let lastTick = 0;
+  let vsync = 16.7; // display frame interval: a low percentile of the recent tick intervals
+  const ticks = new Float32Array(60);
+  let tickN = 0;
+  let flips = 0; // how often the governor stepped back down after stepping up
+  let lastStep = 0; // -1 down, +1 up
+  // the page lays its cards out over the scene only when the camera actually moved
+  const lastCam = new Matrix4();
+  const lastProj = new Matrix4();
+  let camMoved = true;
 
   function cameraFor(T, outP, outL) {
     const k = Math.min(5, Math.floor(T));
@@ -617,7 +639,11 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       return { w: ['room', 'room', 'room', 'mem', 'tower', 'room'][k], veil: 0, k, p: 0 };
     }
     const phases = SEAMS[k];
-    const ph = phases.find((x) => p >= x.a && p < x.b) || phases[phases.length - 1];
+    let ph = phases[phases.length - 1];
+    for (let i = 0; i < phases.length; i++) if (p >= phases[i].a && p < phases[i].b) {
+      ph = phases[i];
+      break;
+    }
     const lq = (p - ph.a) / (ph.b - ph.a);
     ph.path(lq, outP, outL);
     if (ph === phases[0] && k >= 1) {
@@ -643,9 +669,9 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     if (name === 'router') return out.set(ROUTER[0], 6, ROUTER[2]);
     if (name.startsWith('ant')) return out.copy(antTips[+name[3]]);
     if (name === 'dimm') return out.set(OFF.mem + 8.5, 4.9, CHIP_Z[0]);
-    if (name.startsWith('chip')) return out.copy(chipPos(+name[4]));
+    if (name.startsWith('chip')) return chipPos(+name[4], out);
     if (name === 'tower') return out.set(OFF.tower, 4, 5.2);
-    if (name.startsWith('drawer')) return out.copy(drawerPos(+name[6]));
+    if (name.startsWith('drawer')) return drawerPos(+name[6], out);
     if (name === 'beacon') return out.copy(beacon.position).add(tmp2.set(OFF.tower, 0, 0));
     if (name === 'screen') return out.copy(SCREEN.c);
     return out.set(0, 0, 0);
@@ -695,7 +721,9 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     const cam = cameraFor(T, P, Lk);
     const { k, p, w } = cam;
     place_ = w;
-    Object.entries(W).forEach(([key, g]) => (g.visible = key === w));
+    W.room.visible = w === 'room';
+    W.mem.visible = w === 'mem';
+    W.tower.visible = w === 'tower';
     clock += dt;
 
     // ---------- room ----------
@@ -719,7 +747,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     screen.visible = out > 0.01;
     screenBackMat.depthWrite = displayMat.depthWrite = out > 0.99;
     // router: rings roll out, each antenna glows while a skill leaves it
-    const atRouter = w === 'room' && T > 1.4 && T < 2.6;
+    const atRouter = isAtRouter(T, w);
     ledMat.uniforms.uEmitAmt.value = atRouter ? 0.7 : 0.2;
     rings.forEach((m, i) => {
       m.visible = atRouter && !S.calm;
@@ -729,9 +757,9 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       m.material.uniforms.uOpacity.value = (1 - f) * 0.6 * sstep(1.4, 1.8, T);
       m.lookAt(camera.position);
     });
-    if (atRouter && !S.calm) anim = Math.max(anim, 0.05);
+    // (the rings are ambient motion: tick() redraws them at a capped rate, like the hero's pulses)
     tips.forEach((s, i) => {
-      const v = level[`ant${i}`];
+      const v = level[ANT_KEYS[i]];
       s.visible = atRouter;
       s.material.opacity = 0.35 + 0.65 * v;
       s.scale.setScalar(1.6 + v * 2.4);
@@ -739,49 +767,58 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     });
 
     // ---------- memory: the chip lights and a plate lifts out of it ----------
-    let plateOn = -1;
-    for (let i = 0; i < 8; i++) {
-      const pi = PROJECT_CHIP.indexOf(i);
-      const v = pi >= 0 ? level[`chip${pi}`] : 0;
-      if (v > 0.02 && (plateOn < 0 || v > level[`chip${plateOn}`])) plateOn = pi;
-      decalCol.copy(U.trace.value).multiplyScalar(0.35 + 0.25 * U.glow.value).lerp(U.hot.value, clamp(v, 0, 1));
-      decals.setColorAt(i, decalCol);
-    }
-    decals.instanceColor.needsUpdate = true;
-    plate.visible = plateOn >= 0 && !S.calm;
-    if (plate.visible) {
-      const v = level[`chip${plateOn}`];
-      plate.position.set(8.5 - 0.24, 2.7 + v * 2.6, CHIP_Z[PROJECT_CHIP[plateOn]]);
-      plateMat.uniforms.uOpacity.value = clamp(v * (1 - v) * 4, 0, 1) * 0.6;
+    // (only while it's on screen: the instance colours are re-uploaded whenever they're touched)
+    if (w === 'mem') {
+      let plateOn = -1;
+      for (let i = 0; i < 8; i++) {
+        const pi = PROJECT_CHIP.indexOf(i);
+        const v = pi >= 0 ? level[CHIP_KEYS[pi]] : 0;
+        if (v > 0.02 && (plateOn < 0 || v > level[CHIP_KEYS[plateOn]])) plateOn = pi;
+        decalCol.copy(U.trace.value).multiplyScalar(0.35 + 0.25 * U.glow.value).lerp(U.hot.value, clamp(v, 0, 1));
+        decals.setColorAt(i, decalCol);
+      }
+      decals.instanceColor.needsUpdate = true;
+      plate.visible = plateOn >= 0 && !S.calm;
+      if (plate.visible) {
+        const v = level[CHIP_KEYS[plateOn]];
+        plate.position.set(8.5 - 0.24, 2.7 + v * 2.6, CHIP_Z[PROJECT_CHIP[plateOn]]);
+        plateMat.uniforms.uOpacity.value = clamp(v * (1 - v) * 4, 0, 1) * 0.6;
+      }
     }
 
     // ---------- tower: the drawer slides out ----------
-    drawers.forEach((g, i) => {
-      const v = level[`drawer${i}`];
-      g.position.z = v * 4.5;
-      drawerMats[i].uniforms.uEmitAmt.value = v * 0.3;
-      g.userData.front.material.color.copy(U.trace.value).multiplyScalar(0.4).lerp(U.hot.value, v);
-    });
-    for (let i = 0; i < UNITS; i++) {
-      decalCol.copy(U.trace.value).multiplyScalar(0.3 + 0.2 * U.glow.value);
-      unitDecals.setColorAt(i, decalCol);
+    if (w === 'tower') {
+      drawers.forEach((g, i) => {
+        const v = level[DRAWER_KEYS[i]];
+        g.position.z = v * 4.5;
+        drawerMats[i].uniforms.uEmitAmt.value = v * 0.3;
+        g.userData.front.material.color.copy(U.trace.value).multiplyScalar(0.4).lerp(U.hot.value, v);
+      });
+      // the unit fronts only change with the theme and the glow
+      const ug = 0.3 + 0.2 * U.glow.value;
+      if (ug !== unitTint.g || !unitTint.c.equals(U.trace.value)) {
+        unitTint.g = ug;
+        unitTint.c.copy(U.trace.value);
+        decalCol.copy(U.trace.value).multiplyScalar(ug);
+        for (let i = 0; i < UNITS; i++) unitDecals.setColorAt(i, decalCol);
+        unitDecals.instanceColor.needsUpdate = true;
+      }
+      beaconMat.color.copy(U.hot.value);
+      beacon.scale.setScalar(3 + level.beacon * 5);
+      beaconMat.opacity = 0.5 + 0.5 * level.beacon;
     }
-    unitDecals.instanceColor.needsUpdate = true;
-    beaconMat.color.copy(U.hot.value);
-    beacon.scale.setScalar(3 + level.beacon * 5);
-    beaconMat.opacity = 0.5 + 0.5 * level.beacon;
 
     // ---------- the spark: it sits on whatever is giving out content right now ----------
     let best = null;
     let bv = 0.04;
-    SOURCES.forEach((s) => {
-      const v = level[s];
+    for (let i = 0; i < SOURCES.length; i++) {
+      const v = level[SOURCES[i]];
       const glow = v * (1 - v) * 4; // brightest mid-way out
       if (glow > bv) {
         bv = glow;
-        best = s;
+        best = SOURCES[i];
       }
-    });
+    }
     if (S.sendBack != null) {
       // a sent message: out of the screen, back into the laptop
       const f = S.sendBack;
@@ -853,9 +890,11 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   function resize() {
     const w = canvas.clientWidth || innerWidth;
     const h = canvas.clientHeight || innerHeight;
+    // resizing the drawing buffer reallocates it (and clears it), so only when the size changed:
+    // on phones a resize event fires every time the address bar slides in or out
+    if (w !== view.w || h !== view.h || canvas.width !== Math.floor(w * dpr)) renderer.setSize(w, h, false);
     view.w = w;
     view.h = h;
-    renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.fov = w / h < 0.85 ? 70 : 48;
     camera.updateProjectionMatrix();
@@ -863,7 +902,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   }
   resize();
 
-  function render(now) {
+  function render(now, continuous = false) {
     // real time (up to 0.1 s a frame), so a slow frame doesn't stretch a move
     const dt = lastRender ? clamp((now - lastRender) / 1000, 0, 0.1) : 0;
     lastRender = now;
@@ -872,42 +911,73 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     if (Math.abs(glowTarget - U.glow.value) > 0.004) anim = Math.max(anim, 0.05);
     stepTheme(now);
     update(dt);
+    if (!lastCam.equals(camera.matrixWorld) || !lastProj.equals(camera.projectionMatrix)) {
+      lastCam.copy(camera.matrixWorld);
+      lastProj.copy(camera.projectionMatrix);
+      camMoved = true;
+    }
     renderer.render(scene, camera);
-    // Resolution governor. It watches the time between frames while the scene is animating
-    // continuously; that includes the GPU's work (a busy GPU delays the next frame), which the
-    // time spent inside render() does not. Below ~55 fps it steps down, and back up when there's
-    // clearly room again.
+    if (continuous) govern(now);
+    else prevFrame = 0;
+  }
+
+  // Resolution governor. It watches the time between frames drawn on back-to-back display frames
+  // (the ambient loops are capped at ~30 fps on purpose, so those don't count); that time includes
+  // the GPU's work (a busy GPU delays the next frame), which the time spent inside render() does
+  // not. It compares it with the display's own frame interval: when frames are being missed it
+  // steps the resolution down, and back up when it keeps up comfortably. If it keeps flipping
+  // between two steps it settles on the lower one.
+  function govern(now) {
     if (prevFrame && now - prevFrame < 70) {
       costs.push(now - prevFrame);
-      if (costs.length >= 30) {
-        const med = [...costs].sort((a, b) => a - b)[15];
-        const next = med > 18.5 && dpr > dprMin ? Math.max(dprMin, dpr - 0.25) : med < 14 && costs.length >= 120 && dpr < dprMax ? Math.min(dprMax, dpr + 0.25) : dpr;
+      if (costs.length % 30 === 0) {
+        costs.sort((a, b) => a - b);
+        const med = costs[costs.length >> 1];
+        const slow = med > Math.max(18.5, vsync * 1.3);
+        const fast = costs.length >= 120 && med < vsync * 1.12 && flips < 2;
+        const next = slow && dpr > dprMin ? Math.max(dprMin, dpr - 0.25) : fast && dpr < dprMax ? Math.min(dprMax, dpr + 0.25) : dpr;
         if (next !== dpr) {
+          const step = next > dpr ? 1 : -1;
+          if (step < 0 && lastStep > 0) flips++;
+          lastStep = step;
           dpr = next;
           renderer.setPixelRatio(dpr);
           resize();
           costs.length = 0;
-        } else if (costs.length >= 120 || med > 18.5) costs.length = 0;
+        } else if (costs.length >= 120 || slow) costs.length = 0;
       }
     }
     prevFrame = now;
   }
 
+  // Called once per display frame. Draws only when something changed (or the ambient loops are
+  // due) and returns whether the camera moved, i.e. whether the page's cards must follow.
   function tick(now) {
+    if (lastTick) {
+      // ticks come once per display frame, so the quick end of their spread is the refresh
+      // interval (a low percentile, not the minimum: a late frame is often followed by an early one)
+      ticks[tickN++] = now - lastTick;
+      if (tickN === ticks.length) {
+        tickN = 0;
+        vsync = clamp(ticks.sort()[6], 4, 34);
+      }
+    }
+    lastTick = now;
     if (!running) return false;
-    const ambient = !S.calm && S.T < 0.9 && place_ === 'room';
     if (dirty || anim > 0) {
       dirty = false;
       anim = Math.max(0, anim - (lastRender ? (now - lastRender) / 1000 : 0));
+      render(now, true);
+    } else if (!S.calm && ((place_ === 'room' && S.T < 0.9) || isAtRouter(S.T, place_)) && now - lastRender > 28) {
+      // ambient motion (the hero's pulses, the router's rings): about 30 fps is plenty
       render(now);
-      return true;
+    } else {
+      if (lastRender && now - lastRender > 100) lastRender = 0;
+      prevFrame = 0;
     }
-    if (ambient && now - lastRender > 33) {
-      render(now);
-      return true;
-    }
-    if (lastRender && now - lastRender > 100) lastRender = 0;
-    return false;
+    const moved = camMoved;
+    camMoved = false;
+    return moved;
   }
 
   canvas.addEventListener('webglcontextlost', (e) => {
@@ -926,7 +996,9 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   return {
     // the player's state for this frame
     setView({ T, L, irisF, veil }) {
-      if (T === S.T && irisF === S.irisF && veil === S.jumpVeil && L.every((v, i) => v === S.L[i])) return;
+      let same = T === S.T && irisF === S.irisF && veil === S.jumpVeil;
+      for (let i = 0; same && i < 6; i++) same = L[i] === S.L[i];
+      if (same) return;
       S.T = T;
       for (let i = 0; i < 6; i++) S.L[i] = L[i];
       S.irisF = irisF;
@@ -934,9 +1006,13 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       dirty = true;
     },
     // screen position (CSS px) of a named source; visible = in front of the camera
-    project(name) {
+    // (pass `out` to reuse an object; the page calls this for every visible card every frame)
+    project(name, out = {}) {
       sourcePos(name, proj).project(camera);
-      return { x: (proj.x * 0.5 + 0.5) * view.w, y: (-proj.y * 0.5 + 0.5) * view.h, visible: proj.z < 1 };
+      out.x = (proj.x * 0.5 + 0.5) * view.w;
+      out.y = (-proj.y * 0.5 + 0.5) * view.h;
+      out.visible = proj.z < 1;
+      return out;
     },
     // the laptop screen's rectangle on the page, for the contact card
     screenRect() {
@@ -994,11 +1070,37 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       stepTheme(performance.now());
       dirty = true;
     },
-    compileAll() {
-      const vis = Object.values(W).map((g) => g.visible);
-      Object.values(W).forEach((g) => (g.visible = true));
-      renderer.compile(scene, camera);
-      Object.values(W).forEach((g, i) => (g.visible = vis[i]));
+    // Build every shader before the first frame. compileAsync uses KHR_parallel_shader_compile
+    // where there is one, so the compiling happens off the main thread (otherwise the first frame
+    // blocks on it in the middle of the intro). Then each program's first use (looking up its
+    // uniforms and attributes: more synchronous calls to the GPU) one per idle moment, rather
+    // than in the middle of the camera move that first shows a material.
+    async prepare(idle) {
+      await renderer.compileAsync(scene, camera).catch(() => {});
+      // Without the extension there's no way to ask whether a compile has finished without
+      // waiting for it, so give the driver a moment to get on with it in the background first.
+      if (!renderer.extensions.has('KHR_parallel_shader_compile')) await new Promise((r) => setTimeout(r, 500));
+      for (const p of [...renderer.info.programs]) {
+        await idle();
+        p.getUniforms();
+        p.getAttributes();
+      }
+    },
+    // Upload the textures of the places further on (laptop deck and screen, skyline, memory,
+    // tower...) one per idle moment, instead of in the middle of the camera move that first
+    // shows them, where each upload (and its mipmaps) was a visible hitch.
+    async warmTextures(idle) {
+      const list = new Set();
+      scene.traverse((o) => {
+        const m = o.material;
+        if (!m) return;
+        if (m.map) list.add(m.map);
+        if (m.uniforms) for (const k in m.uniforms) if (m.uniforms[k].value?.isTexture) list.add(m.uniforms[k].value);
+      });
+      for (const t of list) {
+        await idle();
+        if (running) renderer.initTexture(t);
+      }
     },
     resize,
     tick,
@@ -1015,7 +1117,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     },
     stats() {
       const d = camera.getWorldDirection(new Vector3());
-      return { T: S.T, place: place_, dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls, dir: [d.x, d.y, d.z], veil: veilMat.uniforms.uIris.value > 0.5 && veilMat.uniforms.uMode.value < 0.5 ? 1 : veilMat.uniforms.uOpacity.value, p: S.T % 1 };
+      return { vsync: +vsync.toFixed(2), textures: renderer.info.memory.textures, programs: renderer.info.programs?.length, T: S.T, place: place_, dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls, dir: [d.x, d.y, d.z], veil: veilMat.uniforms.uIris.value > 0.5 && veilMat.uniforms.uMode.value < 0.5 ? 1 : veilMat.uniforms.uOpacity.value, p: S.T % 1 };
     },
   };
 }
