@@ -17,6 +17,7 @@ import {
   Fog,
   Color,
   Vector3,
+  Vector4,
   Object3D,
   Group,
   Mesh,
@@ -117,10 +118,23 @@ void main() {
 ${FS_TAIL}`;
 // Full-screen veil in the page colour, used for the place changes and jumps.
 const VS_VEIL = /* glsl */ `void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+// It is also the "iris" for changes of place: a rounded box in the page colour grows out of a
+// part in one place until it fills the screen (cover), then a window opens out of a matching
+// part in the next place (reveal). uRect: centre and half-size in device pixels.
 const FS_VEIL = /* glsl */ `
-uniform vec3 uColor; uniform float uOpacity;
+uniform vec3 uColor; uniform vec3 uRim; uniform float uOpacity;
+uniform float uIris; uniform float uMode; uniform float uR; uniform float uRimAmt; uniform vec4 uRect;
+float sdBox(vec2 p, vec2 b, float r) { vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
 void main() {
-  gl_FragColor = vec4(uColor, uOpacity);
+  float a = uOpacity;
+  float rim = 0.0;
+  if (uIris > 0.5) {
+    float d = sdBox(gl_FragCoord.xy - uRect.xy, uRect.zw, uR);
+    float inside = 1.0 - smoothstep(-1.5, 1.5, d);
+    a = max(a, uMode < 0.5 ? inside : 1.0 - inside);
+    rim = (1.0 - smoothstep(0.0, 2.0, abs(d))) * uRimAmt;
+  }
+  gl_FragColor = vec4(mix(uColor, uRim, rim), max(a, rim));
   #include <colorspace_fragment>
 }`;
 
@@ -514,7 +528,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   const spark = new Sprite(sparkMat);
   spark.renderOrder = 10;
   scene.add(spark);
-  const veilMat = new ShaderMaterial({ uniforms: { uColor: U.bg, uOpacity: { value: 0 } }, vertexShader: VS_VEIL, fragmentShader: FS_VEIL, transparent: true, depthTest: false, depthWrite: false });
+  const veilMat = new ShaderMaterial({ uniforms: { uColor: U.bg, uRim: U.trace, uOpacity: { value: 0 }, uIris: { value: 0 }, uMode: { value: 0 }, uR: { value: 0 }, uRimAmt: { value: 0 }, uRect: { value: new Vector4() } }, vertexShader: VS_VEIL, fragmentShader: FS_VEIL, transparent: true, depthTest: false, depthWrite: false });
   const veil = new Mesh(new PlaneGeometry(2, 2), veilMat);
   veil.frustumCulled = false;
   veil.renderOrder = 100;
@@ -543,10 +557,12 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   const at = (k, L) => ST[k](L);
   const SEAMS = [
     [{ a: 0, b: 1, w: 'room', path: camPath([[1.5, 21, 25], [1.4, 12, 14], [0.9, 8, 7.5], at(1, 0)[0]], [[0.5, 0, -1], [0.3, 0, -0.5], [0.05, 0.1, -0.2], at(1, 0)[1]]) }],
-    [{ a: 0, b: 1, w: 'room', path: camPath([at(1, 1)[0], [1.5, 11, 10], [10, 28, 52], [30, 26, 58], at(2, 0)[0]], [at(1, 1)[1], [0.5, 1, -1], [16, 8, -8], [44, 7, -11], at(2, 0)[1]]) }],
+    // pull straight up out of the chip to a wide shot of laptop and router, then push in to the router
+    [{ a: 0, b: 1, w: 'room', path: camPath([at(1, 1)[0], [0.4, 14, 9], [12, 34, 64], [34, 40, 92], [40, 28, 64], at(2, 0)[0]], [at(1, 1)[1], [0.2, 0, -1.5], [14, 4, -6], [44, 5, -9], [54, 6, -11], at(2, 0)[1]]) }],
     [
       { a: 0, b: 0.5, w: 'room', path: camPath([at(2, 1)[0], [48, 19, 38]], [at(2, 1)[1], [62, 9, -14]]) },
-      { a: 0.5, b: 1, w: 'mem', path: camPath([at3('mem', 1, 9, -22), at3('mem', 2.6, 5.5, -16), at(3, 0)[0]], [at3('mem', 8, 1.5, -10), at3('mem', 8.3, 2.2, -10.5), at(3, 0)[1]]) },
+      // arrive by pushing straight in along the view (no turning), out of the first chip
+      { a: 0.5, b: 1, w: 'mem', path: (() => { const [p1, l1] = at(3, 0); const d = [p1[0] - l1[0], p1[1] - l1[1], p1[2] - l1[2]]; return camPath([[p1[0] + d[0] * 1.6, p1[1] + d[1] * 1.6, p1[2] + d[2] * 1.6], [p1[0] + d[0] * 0.6, p1[1] + d[1] * 0.6, p1[2] + d[2] * 0.6], p1], [l1, l1, l1]); })() },
     ],
     [
       { a: 0, b: 0.5, w: 'mem', path: camPath([at(3, 1)[0], at3('mem', 3.4, 4.2, CHIP_Z[7] + 1.5)], [at(3, 1)[1], at3('mem', 8.4, 2.8, CHIP_Z[7] + 3)]) },
@@ -557,10 +573,19 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       { a: 0.5, b: 1, w: 'room', path: camPath([[8, 62, 96], [3, 48, 66], at(5, 0)[0]], [[0, 18, -28], [0, 21, -28], at(5, 0)[1]]) },
     ],
   ];
-  const veilFor = (k, p) => (SEAMS[k] && SEAMS[k].length > 1 ? 1 - sstep(0.12, 0.2, Math.abs(p - 0.5)) : 0);
+  // the matching parts each change of place zooms through: [outgoing, incoming], as world-space quads
+  const quadXY = (x0, x1, y0, y1, z) => [new Vector3(x0, y0, z), new Vector3(x1, y0, z), new Vector3(x1, y1, z), new Vector3(x0, y1, z)];
+  const quadZY = (x, z0, z1, y0, y1) => [new Vector3(x, y0, z0), new Vector3(x, y0, z1), new Vector3(x, y1, z1), new Vector3(x, y1, z0)];
+  const chipQuad = (c) => quadZY(OFF.mem + 8.5 - 0.202, CHIP_Z[c] - 0.71, CHIP_Z[c] + 0.71, 2.18, 3.22);
+  const unitQuad = (u) => quadXY(OFF.tower - 7.7, OFF.tower + 7.7, unitY(u) - 1, unitY(u) + 1, 5.02);
+  const IRIS = {
+    2: [quadXY(ROUTER[0] - 11, ROUTER[0] + 11, -1, 2.6, ROUTER[2] + 6.5), chipQuad(0)], // router → first memory chip
+    3: [chipQuad(7), unitQuad(0)], // last memory chip → the tower's bottom unit
+    4: [unitQuad(UNITS - 1), SCREEN.corners], // the tower's top unit → the laptop screen
+  };
 
   /* ================================================================ state */
-  const S = { T: 0, Tt: 0, L: [0, 0, 0, 0, 0, 0], Lt: [0, 0, 0, 0, 0, 0], jump: null, jumpVeil: 0, calm: still, sendBack: null };
+  const S = { T: 0, Tt: 0, goal: 0, seg: null, L: [0, 0, 0, 0, 0, 0], Lv: [0, 0, 0, 0, 0, 0], Lt: [0, 0, 0, 0, 0, 0], jump: null, jumpVeil: 0, irisF: null, calm: still, sendBack: null };
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
   const view = { w: 1, h: 1 };
   const P = new Vector3();
@@ -585,7 +610,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       return { w: ['room', 'room', 'room', 'mem', 'tower', 'room'][k], veil: 0, k, p: 0 };
     }
     const phases = SEAMS[k];
-    const ph = phases.find((x) => p >= x.a && p <= x.b) || phases[phases.length - 1];
+    const ph = phases.find((x) => p >= x.a && p < x.b) || phases[phases.length - 1];
     const lq = (p - ph.a) / (ph.b - ph.a);
     ph.path(lq, outP, outL);
     if (ph === phases[0] && k >= 1) {
@@ -602,7 +627,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
         outL.add(tmp.fromArray(at(k + 1, S.L[k + 1])[1]).sub(tmp2.fromArray(at(k + 1, 0)[1])).multiplyScalar(wgt));
       }
     }
-    return { w: ph.w, veil: veilFor(k, p), k, p };
+    return { w: ph.w, k, p };
   }
 
   // world position of a named source
@@ -639,49 +664,107 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     if (theme.t < 1) anim = Math.max(anim, 0.05);
   }
 
-  /* ================================================================ easing towards the target */
-  const VMAX = 0.75; // stops per second, at most
-  function follow(dt) {
-    if (S.calm) {
-      const goal = Math.min(5, Math.round(S.Tt));
-      if (!S.jump && goal !== Math.round(S.T)) S.jump = { phase: 0, t: 0, to: goal };
-    } else if (!S.jump && Math.abs(S.Tt - S.T) > 1.6) {
-      S.jump = { phase: 0, t: 0, to: S.Tt };
+  /* ================================================================ moving between stops */
+  // The scroll only decides WHERE to go. Getting there is a fixed-length, eased camera move that
+  // plays the same way however fast the wheel turns: no lagging behind a quick scroll, and no
+  // sudden catch-up. Reversing mid-move plays it back from where it is; skipping more than one
+  // stop (menu, keyboard, a long drag) fades straight there.
+  const DUR = [2.2, 3.0, 2.6, 2.6, 2.6]; // seconds for the move out of stop k
+  const smoother = (t) => t * t * t * (t * (t * 6 - 15) + 10); // zero speed and acceleration at both ends
+  // critically damped spring (no overshoot, no sudden start): used for movement within a stop
+  function damp(i, target, smooth, dt) {
+    const w = 2 / smooth;
+    const x = w * dt;
+    const e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+    const change = S.L[i] - target;
+    const temp = (S.Lv[i] + w * change) * dt;
+    S.Lv[i] = (S.Lv[i] - w * temp) * e;
+    S.L[i] = target + (change + temp) * e;
+    if (Math.abs(S.L[i] - target) < 1e-4 && Math.abs(S.Lv[i]) < 1e-4) {
+      S.L[i] = target;
+      S.Lv[i] = 0;
+      return false;
     }
+    return true;
+  }
+  // Which stop the scroll is asking for. A move is triggered by crossing a point 15% into the
+  // gap between two stops, in the direction of travel, so stopping halfway never flip-flops.
+  const F = 0.15;
+  function setTarget(t) {
+    const prev = S.Tt;
+    S.Tt = t;
+    if (t > prev && Math.floor(t - F) > Math.floor(prev - F)) S.goal = Math.min(5, Math.max(S.goal, Math.floor(t - F) + 1));
+    if (t < prev && Math.ceil(t + F) < Math.ceil(prev + F)) S.goal = Math.max(0, Math.min(S.goal, Math.ceil(t + F) - 1));
+  }
+  function follow(dt) {
     let moving = false;
+    const goal = S.goal;
+    if (!S.jump && !S.seg && Math.abs(goal - S.T) > 1e-4) {
+      const from = Math.round(S.T);
+      if (S.calm || Math.abs(goal - from) > 1) S.jump = { phase: 0, t: 0, to: goal };
+      else S.seg = { a: from, b: goal, u: 0 };
+    }
+    if (S.seg) {
+      const g = S.seg;
+      // the scroll changed its mind: turn round from where we are
+      if (goal === g.a) {
+        [g.a, g.b] = [g.b, g.a];
+        g.u = 1 - g.u;
+      }
+      g.u = Math.min(1, g.u + dt / DUR[Math.min(g.a, g.b)]);
+      // a change of place is two eased halves: the camera brakes to a stop exactly when the
+      // iris has covered the screen, and sets off again in the new place as it opens
+      const k = Math.min(g.a, g.b);
+      const f = g.a < g.b ? g.u : 1 - g.u;
+      const p = IRIS[k] ? (f < 0.5 ? 0.5 * smoother(f * 2) : 0.5 + 0.5 * smoother(f * 2 - 1)) : smoother(f);
+      S.T = k + p;
+      S.irisF = f;
+      if (g.u >= 1) {
+        S.T = g.b;
+        S.seg = null;
+        S.irisF = null;
+      }
+      moving = true;
+    }
     if (S.jump) {
       const j = S.jump;
       j.t += dt;
       if (j.phase === 0) {
-        S.jumpVeil = Math.min(1, j.t / 0.28);
-        if (S.jumpVeil >= 1) {
-          S.T = S.calm ? j.to : S.Tt;
+        S.jumpVeil = smoother(Math.min(1, j.t / 0.3));
+        if (j.t >= 0.3) {
+          S.T = S.goal;
           for (let i = 0; i < 6; i++) S.L[i] = S.Lt[i];
           j.phase = 1;
           j.t = 0;
         }
       } else {
-        S.jumpVeil = Math.max(0, 1 - Math.max(0, j.t - 0.12) / 0.4);
-        if (S.jumpVeil <= 0) S.jump = null;
+        S.jumpVeil = 1 - smoother(clamp((j.t - 0.12) / 0.45, 0, 1));
+        if (j.t >= 0.57) S.jump = null;
       }
       moving = true;
-    } else {
-      const d = S.Tt - S.T;
-      if (Math.abs(d) > 1e-4) {
-        S.T += clamp(d * (1 - Math.exp(-dt * 3.2)), -VMAX * dt, VMAX * dt);
-        moving = true;
-      } else S.T = S.Tt;
     }
-    // stop-local progress (which card is out) follows the scroll on its own clock, so in calm
-    // view the cards still come and go while the camera stays put
-    for (let i = 0; i < 6; i++) {
-      const e = S.Lt[i] - S.L[i];
-      if (Math.abs(e) > 1e-4) {
-        S.L[i] += e * (1 - Math.exp(-dt * 4));
-        moving = true;
-      } else S.L[i] = S.Lt[i];
-    }
+    // within a stop (which card is out, the camera's small moves) the scroll is followed
+    // directly, through a soft spring
+    for (let i = 0; i < 6; i++) if (damp(i, S.Lt[i], 0.35, dt)) moving = true;
     return moving;
+  }
+
+  const qv = new Vector3();
+  function quadRect(q) {
+    let x0 = Infinity;
+    let y0 = Infinity;
+    let x1 = -Infinity;
+    let y1 = -Infinity;
+    q.forEach((c) => {
+      qv.copy(c).project(camera);
+      const x = (qv.x * 0.5 + 0.5) * view.w;
+      const y = (-qv.y * 0.5 + 0.5) * view.h;
+      x0 = Math.min(x0, x);
+      x1 = Math.max(x1, x);
+      y0 = Math.min(y0, y);
+      y1 = Math.max(y1, y);
+    });
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, hw: Math.max(2, (x1 - x0) / 2), hh: Math.max(2, (y1 - y0) / 2) };
   }
 
   /* ================================================================ update */
@@ -819,8 +902,29 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     scene.fog.near = fog[0] * fk;
     scene.fog.far = fog[1] * fk;
     scene.fog.color.copy(U.bg.value);
-    veilMat.uniforms.uOpacity.value = Math.max(cam.veil, S.jumpVeil);
-    veil.visible = veilMat.uniforms.uOpacity.value > 0.001;
+    // iris through matching parts on a change of place; a plain fade for jumps
+    const vu = veilMat.uniforms;
+    vu.uOpacity.value = S.jumpVeil;
+    vu.uIris.value = 0;
+    // timed on the move's clock, not the camera's position: the camera brakes to a stop at the
+    // swap, but the opening shouldn't wait for it
+    const fi = S.irisF;
+    if (IRIS[k] && fi != null && fi > 0.18 && fi < 0.82 && S.jumpVeil < 0.99) {
+      const cover = p < 0.5;
+      const amt = cover ? sstep(0.2, 0.48, fi) ** 2 : 1 - (1 - sstep(0.52, 0.8, fi)) ** 3;
+      const r = quadRect(IRIS[k][cover ? 0 : 1]);
+      const fw = (view.w / 2) * 1.08;
+      const fh = (view.h / 2) * 1.08;
+      const cx = lerp(r.cx, view.w / 2, amt);
+      const cy = lerp(r.cy, view.h / 2, amt);
+      const d = renderer.getPixelRatio();
+      vu.uRect.value.set(cx * d, (view.h - cy) * d, lerp(r.hw, fw, amt) * d, lerp(r.hh, fh, amt) * d);
+      vu.uR.value = lerp(6, 0, amt) * d;
+      vu.uMode.value = cover ? 0 : 1;
+      vu.uRimAmt.value = 0.7 * (1 - amt);
+      vu.uIris.value = cover && amt <= 0 ? 0 : 1;
+    }
+    veil.visible = vu.uOpacity.value > 0.001 || vu.uIris.value > 0.5;
   }
 
   /* ---------------- render loop (driven by gsap.ticker from main) ---------------- */
@@ -838,7 +942,8 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   resize();
 
   function render(now) {
-    const dt = lastRender ? Math.min(0.05, (now - lastRender) / 1000) : 0;
+    // real time (up to 0.1 s a frame), so a slow frame doesn't stretch a move
+    const dt = lastRender ? clamp((now - lastRender) / 1000, 0, 0.1) : 0;
     lastRender = now;
     if (follow(dt)) anim = Math.max(anim, 0.05);
     const glowTarget = S.T < 0.45 ? 0.9 : themeOpts.glowRest + 0.15;
@@ -898,7 +1003,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   return {
     setT(T) {
       if (Math.abs(T - S.Tt) < 1e-5) return;
-      S.Tt = T;
+      setTarget(T);
       dirty = true;
     },
     setLocal(k, v) {
@@ -907,13 +1012,19 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       dirty = true;
     },
     settle() {
-      S.T = S.calm ? Math.round(S.Tt) : S.Tt;
-      for (let i = 0; i < 6; i++) S.L[i] = S.Lt[i];
+      S.goal = Math.min(5, Math.round(S.Tt));
+      S.T = S.goal;
+      S.seg = S.jump = null;
+      S.jumpVeil = 0;
+      for (let i = 0; i < 6; i++) {
+        S.L[i] = S.Lt[i];
+        S.Lv[i] = 0;
+      }
       dirty = true;
     },
     // the eased state the camera is drawn with, so content can move in step with it
     state() {
-      return { T: S.T, L: S.L, place: place_, moving: Math.abs(S.Tt - S.T) > 1e-3 };
+      return { T: S.T, L: S.L, place: place_, moving: !!(S.seg || S.jump) };
     },
     // screen position (CSS px) of a named source; visible = in front of the camera
     project(name) {
@@ -996,7 +1107,8 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
       render(performance.now());
     },
     stats() {
-      return { T: S.T, Tt: S.Tt, place: place_, dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls };
+      const d = camera.getWorldDirection(new Vector3());
+      return { T: S.T, Tt: S.Tt, place: place_, dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls, dir: [d.x, d.y, d.z], veil: veilMat.uniforms.uIris.value > 0.5 && veilMat.uniforms.uMode.value < 0.5 ? 1 : veilMat.uniforms.uOpacity.value, p: S.T % 1 };
     },
   };
 }

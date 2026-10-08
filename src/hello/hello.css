@@ -907,12 +907,11 @@ section[id] {
 .item {
   width: min(600px, 100%);
   padding: 22px 24px 24px;
-  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  /* opaque enough to read over the scene; no backdrop blur, which repaints every frame */
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
   border: 1px solid var(--line);
   border-top: 2px solid var(--accent);
   border-radius: 6px;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.6);
 }
 .kicker {
@@ -944,8 +943,6 @@ section[id] {
   background: none;
   border: 0;
   box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
   padding: 0;
 }
 .head .kicker,
