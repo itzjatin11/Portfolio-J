@@ -33,8 +33,11 @@ export function dwell(L, n) {
   return Math.min(n - 1, k + sstep(EXIT_START - 0.05, 1, x - k));
 }
 
-// L at which item i is fully out and being read (used to scroll a focused item into view)
+// L at which item i is fully out and being read: the step the player stops on for that card
 export function holdAt(n, i, mode = 'sequence') {
-  if (mode === 'accumulate') return i === 0 ? 0.04 : 0.86;
+  if (mode === 'accumulate') return i === 0 ? 0.06 : 0.06 + ((i - 1) * 0.76) / (n - 1) + 0.08;
   return (i + 0.55) / n;
 }
+
+// changes of place (stop k → k+1) that go through the iris instead of a camera flight
+export const PLACE_CHANGES = [2, 3, 4];

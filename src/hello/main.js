@@ -1,7 +1,8 @@
 import './hello.css';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
-import { sequence, accumulate, holdAt } from './schedule.js';
+import { sequence, accumulate, holdAt, PLACE_CHANGES } from './schedule.js';
+import { createPlayer } from './player.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -14,7 +15,6 @@ const sstep = (a, b, x) => {
 };
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeOut = (t) => 1 - (1 - t) ** 3;
-const sineInOut = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -29,6 +29,17 @@ const lowTier = (() => {
   }
 })();
 const staged = root.classList.contains('stage');
+
+/* ---------------------------------------------------------------- the player */
+// One source of truth for what's on screen: the camera and the cards both read its view.
+// Seconds per step: a move to the next stop (camera travel plus a card leaving and arriving),
+// or from one card to the next within a stop.
+const TRAVEL = [2.3, 3.3, 3.1, 3.1, 3.1];
+const player = createPlayer({
+  travelSeconds: (k) => TRAVEL[k],
+  itemSeconds: (k) => (modeOf(stops[k - 1]) === 'accumulate' ? 0.55 : 1),
+  placeChanges: PLACE_CHANGES,
+});
 
 /* ---------------------------------------------------------------- theme */
 const SCENE_KEYS = ['bg', 'board', 'pcb', 'body', 'slot', 'metal', 'gold', 'trace', 'hot', 'accent', 'silk', 'edge', 'die'];
@@ -60,6 +71,7 @@ let calm = reduceMotion || lowTier || root.dataset.calm === '1';
 function setCalm(on) {
   calm = on;
   calmBtn.setAttribute('aria-pressed', String(on));
+  player.setCalm(on);
   world?.setCalm(on);
 }
 setCalm(calm);
@@ -117,9 +129,8 @@ function loadWorld() {
     .then(({ createWorld }) => {
       world = createWorld(canvas, { mobile: !isDesk(), still: calm, workN: stops[2].items.length, expN: stops[3].items.length });
       world.setTheme(sceneColours(), root.dataset.theme === 'dark', 0);
-      if (location.search.includes('debug')) window.__world = world;
-      onScroll();
-      world.settle();
+      if (location.search.includes('debug')) Object.assign(window, { __world: world, __player: player });
+      world.setView(player.view());
       world.renderNow();
       canvas.classList.add('is-on');
       requestIdle(() => world.compileAll());
@@ -132,9 +143,10 @@ if (document.readyState === 'complete') afterLoad();
 else addEventListener('load', afterLoad, { once: true });
 document.addEventListener('visibilitychange', () => world?.setRunning(!document.hidden));
 
-/* ---------------------------------------------------------------- scroll → where we are */
-// Arriving at stop k takes one screen of scroll (the camera travels, nothing to read); the rest of
-// the stop's length is its own progress L, during which its items come out one after another.
+/* ---------------------------------------------------------------- scroll → which step */
+// Arriving at stop k takes one screen of scroll (the camera travels, nothing to read); the rest
+// of the stop's length is shared out between its cards. Each card's "step" sits where it is
+// fully out; the player walks from step to step (see player.js).
 const geo = { tops: [], vh: 1, max: 1 };
 function measure() {
   geo.vh = innerHeight;
@@ -142,37 +154,22 @@ function measure() {
   geo.max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
   stops.forEach((s) => s.items.forEach((it) => ((it.w = it.el.offsetWidth), (it.h = it.el.offsetHeight))));
 }
-const target = { T: 0, L: [0, 0, 0, 0, 0, 0] };
-function onScroll(y = scrollY) {
-  const { tops, vh } = geo;
-  if (!tops.length) return;
-  let T = 0;
-  if (y < tops[0]) T = sineInOut(clamp01(y / tops[0]));
-  else {
-    T = 5;
-    for (let k = 1; k < 5; k++) {
-      const seamStart = tops[k] - vh;
-      if (y < seamStart) {
-        T = k;
-        break;
-      }
-      if (y < tops[k]) {
-        T = k + sineInOut((y - seamStart) / vh);
-        break;
-      }
-    }
-  }
-  target.T = T;
-  for (let k = 1; k <= 5; k++) {
-    const a = tops[k - 1];
-    const b = k < 5 ? tops[k] - vh : geo.max;
-    target.L[k] = clamp01((y - a) / Math.max(1, b - a));
-  }
-  if (world) {
-    target.L.forEach((v, k) => world.setLocal(k, v));
-    world.setT(T);
-  }
+function keyframes() {
+  const K = [{ T: 0, stop: 0, item: 0, L: [0, 0, 0, 0, 0, 0], y: 0 }];
+  stops.forEach((stop) => {
+    const k = stop.k;
+    const a = geo.tops[k - 1];
+    const b = k < 5 ? geo.tops[k] - geo.vh : geo.max;
+    const n = stop.items.length;
+    stop.items.forEach((_, i) => {
+      const L = [0, 0, 0, 0, 0, 0].map((_, j) => (j > 0 && j < k ? 1 : 0));
+      L[k] = holdAt(n, i, modeOf(stop));
+      K.push({ T: k, stop: k, item: i, L, y: a + L[k] * (b - a) });
+    });
+  });
+  return K;
 }
+const onScroll = () => player.setScroll(scrollY);
 
 /* ---------------------------------------------------------------- laying content over the scene */
 const els = {
@@ -201,8 +198,7 @@ function edgePoint(ax, ay, cx, cy, w, h) {
   return [cx + dx * s, cy + dy * s];
 }
 
-function layout() {
-  const st = world ? world.state() : { T: target.T, L: target.L };
+function layout(st) {
   const T = st.T;
   const desk = isDesk();
   const vw = innerWidth;
@@ -234,7 +230,7 @@ function layout() {
     const n = stop.items.length;
     const mode = modeOf(stop);
     // a stop's content only shows while the camera is at that stop
-    const atStop = 1 - sstep(0.25, 0.45, Math.abs(T - stop.k));
+    const atStop = 1 - sstep(0.02, 0.2, Math.abs(T - stop.k));
     stop.items.forEach((it, i) => {
       const { appear, exit: ex } = (mode === 'accumulate' ? accumulate : sequence)(L, n, i);
       const exit = stop.k === 5 ? 0 : ex; // the last card stays
@@ -314,15 +310,23 @@ if (!reduceMotion) {
 } else addEventListener('scroll', () => onScroll(), { passive: true });
 
 let lastLayout = '';
-gsap.ticker.add((t) => {
-  lenis?.raf(t * 1000);
-  const drew = world?.tick(performance.now());
+let lastTime = 0;
+gsap.ticker.add(() => {
+  const now = performance.now();
+  const dt = lastTime ? clamp((now - lastTime) / 1000, 0, 0.1) : 0;
+  lastTime = now;
+  lenis?.raf(now);
+  const playing = player.tick(dt);
+  const view = player.view();
+  world?.setView(view);
+  const drew = world?.tick(now);
   if (!staged) return;
-  // lay out again whenever the scene was redrawn or the scroll moved
-  const key = `${scrollY}|${innerWidth}|${innerHeight}`;
-  if (drew || key !== lastLayout || !world) {
+  // lay out again whenever the step moved, the scene was redrawn (cards follow their sources)
+  // or the window changed
+  const key = `${view.step.toFixed(4)}|${view.veil.toFixed(3)}|${innerWidth}|${innerHeight}`;
+  if (playing || drew || key !== lastLayout) {
     lastLayout = key;
-    layout();
+    layout(view);
   }
 });
 
@@ -337,17 +341,16 @@ $$('a[href^="#"]').forEach((a) =>
     const id = a.getAttribute('href');
     if (id === '#top' || id === '#') {
       e.preventDefault();
-      scrollToY(0, target.T > 1.2);
+      scrollToY(0, player.view().T > 1.2);
       return;
     }
     const sec = $(id);
     const stop = stops.find((s) => s.sec === sec);
     if (!stop) return;
     e.preventDefault();
-    // land where the stop's first item is out and readable
+    // land on the stop's first card
     const k = stop.k;
-    const y = staged ? geo.tops[k - 1] + holdAt(stop.items.length, 0, modeOf(stop)) * ((k < 5 ? geo.tops[k] - geo.vh : geo.max) - geo.tops[k - 1]) : sec.offsetTop - 80;
-    scrollToY(y, Math.abs(k - target.T) > 1.2);
+    scrollToY(staged ? player.yOf(k, 0) : sec.offsetTop - 80, Math.abs(k - player.view().T) > 1.2);
   }),
 );
 // keyboard: tabbing into a card scrolls to where that card is out
@@ -355,10 +358,7 @@ if (staged)
   stops.forEach((stop) =>
     stop.items.forEach((it, i) =>
       it.el.addEventListener('focusin', () => {
-        const k = stop.k;
-        const a = geo.tops[k - 1];
-        const b = k < 5 ? geo.tops[k] - geo.vh : geo.max;
-        const y = a + holdAt(stop.items.length, i, modeOf(stop)) * (b - a);
+        const y = player.yOf(stop.k, i);
         if (Math.abs(scrollY - y) > 4) scrollToY(y, true);
       }),
     ),
@@ -381,9 +381,16 @@ if (!reduceMotion) {
 /* ---------------------------------------------------------------- layout changes */
 let resizeTimer = 0;
 let wasDesk = isDesk();
+let settled = false;
 function refresh() {
   measure();
+  player.setKeyframes(keyframes());
   onScroll();
+  // on first load, start where the page already is (a reload halfway down)
+  if (!settled) {
+    player.settle();
+    settled = true;
+  }
   lastLayout = '';
 }
 addEventListener('resize', () => {

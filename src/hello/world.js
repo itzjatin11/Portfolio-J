@@ -44,7 +44,7 @@ import {
 } from 'three';
 import * as TX from '../textures.js';
 import * as HX from './textures.js';
-import { dwell } from './schedule.js';
+import { dwell, PLACE_CHANGES } from './schedule.js';
 
 const { clamp, lerp, smoothstep } = MathUtils;
 const sstep = (a, b, x) => smoothstep(x, a, b);
@@ -582,6 +582,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   const quadZY = (x, z0, z1, y0, y1) => [new Vector3(x, y0, z0), new Vector3(x, y0, z1), new Vector3(x, y1, z1), new Vector3(x, y1, z0)];
   const chipQuad = (c) => quadZY(OFF.mem + 8.5 - 0.202, CHIP_Z[c] - 0.71, CHIP_Z[c] + 0.71, 2.18, 3.22);
   const unitQuad = (u) => quadXY(OFF.tower - 7.7, OFF.tower + 7.7, unitY(u) - 1, unitY(u) + 1, 5.02);
+  // keys are PLACE_CHANGES
   const IRIS = {
     2: [quadXY(ROUTER[0] - 11, ROUTER[0] + 11, -1, 2.6, ROUTER[2] + 6.5), chipQuad(0)], // router → first memory chip
     3: [chipQuad(7), unitQuad(0)], // last memory chip → the tower's bottom unit
@@ -589,7 +590,8 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   };
 
   /* ================================================================ state */
-  const S = { T: 0, Tt: 0, goal: 0, seg: null, L: [0, 0, 0, 0, 0, 0], Lv: [0, 0, 0, 0, 0, 0], Lt: [0, 0, 0, 0, 0, 0], jump: null, jumpVeil: 0, irisF: null, calm: still, sendBack: null };
+  // what to draw; set every frame by the page's player (see player.js)
+  const S = { T: 0, L: [0, 0, 0, 0, 0, 0], irisF: null, jumpVeil: 0, calm: still, sendBack: null };
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
   const view = { w: 1, h: 1 };
   const P = new Vector3();
@@ -667,91 +669,6 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     KEYS.forEach((key) => U[key].value.copy(theme.from[key]).lerp(theme.to[key], e));
     U.edgeAmt.value = lerp(theme.edgeFrom, theme.edgeTo, e);
     if (theme.t < 1) anim = Math.max(anim, 0.05);
-  }
-
-  /* ================================================================ moving between stops */
-  // The scroll only decides WHERE to go. Getting there is a fixed-length, eased camera move that
-  // plays the same way however fast the wheel turns: no lagging behind a quick scroll, and no
-  // sudden catch-up. Reversing mid-move plays it back from where it is; skipping more than one
-  // stop (menu, keyboard, a long drag) fades straight there.
-  const DUR = [1.9, 2.4, 2.2, 2.2, 2.2]; // seconds for the move out of stop k
-  const smoother = (t) => t * t * t * (t * (t * 6 - 15) + 10); // zero speed and acceleration at both ends
-  // critically damped spring (no overshoot, no sudden start): used for movement within a stop
-  function damp(i, target, smooth, dt) {
-    const w = 2 / smooth;
-    const x = w * dt;
-    const e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
-    const change = S.L[i] - target;
-    const temp = (S.Lv[i] + w * change) * dt;
-    S.Lv[i] = (S.Lv[i] - w * temp) * e;
-    S.L[i] = target + (change + temp) * e;
-    if (Math.abs(S.L[i] - target) < 1e-4 && Math.abs(S.Lv[i]) < 1e-4) {
-      S.L[i] = target;
-      S.Lv[i] = 0;
-      return false;
-    }
-    return true;
-  }
-  // Which stop the scroll is asking for. A move is triggered by crossing a point 15% into the
-  // gap between two stops, in the direction of travel, so stopping halfway never flip-flops.
-  const F = 0.15;
-  function setTarget(t) {
-    const prev = S.Tt;
-    S.Tt = t;
-    if (t > prev && Math.floor(t - F) > Math.floor(prev - F)) S.goal = Math.min(5, Math.max(S.goal, Math.floor(t - F) + 1));
-    if (t < prev && Math.ceil(t + F) < Math.ceil(prev + F)) S.goal = Math.max(0, Math.min(S.goal, Math.ceil(t + F) - 1));
-  }
-  function follow(dt) {
-    let moving = false;
-    const goal = S.goal;
-    if (!S.jump && !S.seg && Math.abs(goal - S.T) > 1e-4) {
-      const from = Math.round(S.T);
-      if (S.calm || Math.abs(goal - from) > 1) S.jump = { phase: 0, t: 0, to: goal };
-      else S.seg = { a: from, b: goal, u: 0 };
-    }
-    if (S.seg) {
-      const g = S.seg;
-      // the scroll changed its mind: turn round from where we are
-      if (goal === g.a) {
-        [g.a, g.b] = [g.b, g.a];
-        g.u = 1 - g.u;
-      }
-      g.u = Math.min(1, g.u + dt / DUR[Math.min(g.a, g.b)]);
-      // a change of place is two eased halves: the camera brakes to a stop exactly when the
-      // iris has covered the screen, and sets off again in the new place as it opens
-      const k = Math.min(g.a, g.b);
-      const f = g.a < g.b ? g.u : 1 - g.u;
-      const p = IRIS[k] ? (f < 0.5 ? 0.5 * smoother(f * 2) : 0.5 + 0.5 * smoother(f * 2 - 1)) : smoother(f);
-      S.T = k + p;
-      S.irisF = f;
-      if (g.u >= 1) {
-        S.T = g.b;
-        S.seg = null;
-        S.irisF = null;
-      }
-      moving = true;
-    }
-    if (S.jump) {
-      const j = S.jump;
-      j.t += dt;
-      if (j.phase === 0) {
-        S.jumpVeil = smoother(Math.min(1, j.t / 0.3));
-        if (j.t >= 0.3) {
-          S.T = S.goal;
-          for (let i = 0; i < 6; i++) S.L[i] = S.Lt[i];
-          j.phase = 1;
-          j.t = 0;
-        }
-      } else {
-        S.jumpVeil = 1 - smoother(clamp((j.t - 0.12) / 0.45, 0, 1));
-        if (j.t >= 0.57) S.jump = null;
-      }
-      moving = true;
-    }
-    // within a stop (which card is out, the camera's small moves) the scroll is followed
-    // directly, through a soft spring
-    for (let i = 0; i < 6; i++) if (damp(i, S.Lt[i], 0.35, dt)) moving = true;
-    return moving;
   }
 
   const qv = new Vector3();
@@ -950,7 +867,6 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     // real time (up to 0.1 s a frame), so a slow frame doesn't stretch a move
     const dt = lastRender ? clamp((now - lastRender) / 1000, 0, 0.1) : 0;
     lastRender = now;
-    if (follow(dt)) anim = Math.max(anim, 0.05);
     const glowTarget = S.T < 0.45 ? 0.9 : themeOpts.glowRest + 0.15;
     U.glow.value += (glowTarget - U.glow.value) * Math.min(1, dt * 6 || 1);
     if (Math.abs(glowTarget - U.glow.value) > 0.004) anim = Math.max(anim, 0.05);
@@ -1008,30 +924,14 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
   const proj = new Vector3();
   /* ---------------- public API ---------------- */
   return {
-    setT(T) {
-      if (Math.abs(T - S.Tt) < 1e-5) return;
-      setTarget(T);
+    // the player's state for this frame
+    setView({ T, L, irisF, veil }) {
+      if (T === S.T && irisF === S.irisF && veil === S.jumpVeil && L.every((v, i) => v === S.L[i])) return;
+      S.T = T;
+      for (let i = 0; i < 6; i++) S.L[i] = L[i];
+      S.irisF = irisF;
+      S.jumpVeil = veil;
       dirty = true;
-    },
-    setLocal(k, v) {
-      if (Math.abs(S.Lt[k] - v) < 1e-5) return;
-      S.Lt[k] = v;
-      dirty = true;
-    },
-    settle() {
-      S.goal = Math.min(5, Math.round(S.Tt));
-      S.T = S.goal;
-      S.seg = S.jump = null;
-      S.jumpVeil = 0;
-      for (let i = 0; i < 6; i++) {
-        S.L[i] = S.Lt[i];
-        S.Lv[i] = 0;
-      }
-      dirty = true;
-    },
-    // the eased state the camera is drawn with, so content can move in step with it
-    state() {
-      return { T: S.T, L: S.L, place: place_, moving: !!(S.seg || S.jump) };
     },
     // screen position (CSS px) of a named source; visible = in front of the camera
     project(name) {
@@ -1115,7 +1015,7 @@ export function createWorld(canvas, { mobile = false, still = false, workN = 6, 
     },
     stats() {
       const d = camera.getWorldDirection(new Vector3());
-      return { T: S.T, Tt: S.Tt, place: place_, dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls, dir: [d.x, d.y, d.z], veil: veilMat.uniforms.uIris.value > 0.5 && veilMat.uniforms.uMode.value < 0.5 ? 1 : veilMat.uniforms.uOpacity.value, p: S.T % 1 };
+      return { T: S.T, place: place_, dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls, dir: [d.x, d.y, d.z], veil: veilMat.uniforms.uIris.value > 0.5 && veilMat.uniforms.uMode.value < 0.5 ? 1 : veilMat.uniforms.uOpacity.value, p: S.T % 1 };
     },
   };
 }
