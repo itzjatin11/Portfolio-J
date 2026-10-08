@@ -1,14 +1,15 @@
-// "Hello from Auckland": one three.js world behind the page.
+// "Hello" journey: one three.js world behind the page.
 //
-// A hello leaves Jatin's laptop in Auckland and travels to the visitor:
-//   chip (hero) → laptop on a desk → Wi-Fi router → data centre → ocean cable → your screen.
-// The first three stops share one room, so the camera simply pulls back and slides across.
-// The data centre, the ocean and the globe are separate places; the camera only changes place
-// while it is still, behind a short fade to the page colour.
+// Start on the motherboard, dive into the chip (About comes up out of the die), pull out of the
+// laptop to the Wi-Fi router (skills leave its antennas like payloads), into a row of memory
+// (each project lifts out of a chip), up a tower of drawers (each step of the career slides out),
+// and back to the laptop, where the contact form sits on its screen.
+// The page's content is laid out over the scene by main.js: every card starts at the screen
+// position of the thing it comes out of, then settles where it can be read.
 //
-// One number drives everything: T (0 hero, 1 About … 5 Contact). main.js sets a target from the
+// One number drives the camera: T (0 hero, 1 About … 5 Contact). main.js sets a target from the
 // scroll position and the world eases towards it at a capped speed, so a fast flick of the wheel
-// can't spin the view. Skipping more than one stop fades straight there instead of flying.
+// can't spin the view. Changes of place happen behind a short fade while the camera is still.
 import {
   WebGLRenderer,
   Scene,
@@ -16,7 +17,6 @@ import {
   Fog,
   Color,
   Vector3,
-  Matrix4,
   Object3D,
   Group,
   Mesh,
@@ -26,14 +26,10 @@ import {
   PlaneGeometry,
   BoxGeometry,
   CylinderGeometry,
-  SphereGeometry,
   TorusGeometry,
-  TubeGeometry,
   BufferGeometry,
-  Float32BufferAttribute,
   BufferAttribute,
   CatmullRomCurve3,
-  QuadraticBezierCurve3,
   ShaderMaterial,
   MeshBasicMaterial,
   PointsMaterial,
@@ -43,12 +39,11 @@ import {
   AdditiveBlending,
   NormalBlending,
   DynamicDrawUsage,
-  DoubleSide,
   MathUtils,
 } from 'three';
 import * as TX from '../textures.js';
 import * as HX from './textures.js';
-import { LAND, LAND_W, LAND_H } from './land.js';
+import { dwell } from './schedule.js';
 
 const { clamp, lerp, smoothstep } = MathUtils;
 const sstep = (a, b, x) => smoothstep(x, a, b);
@@ -57,7 +52,7 @@ const bump = (x, a, b, c, d) => Math.min(sstep(a, b, x), 1 - sstep(c, d, x));
 const V = (a) => new Vector3(a[0], a[1], a[2]);
 
 // Places sit far apart; only the one the camera is in is drawn.
-const OFF = { room: 0, dc: 1000, ocean: 2000, globe: 3000 };
+const OFF = { room: 0, mem: 1000, tower: 2000 };
 const at3 = (place, x, y, z) => [x + OFF[place], y, z];
 
 /* ------------------------------------------------------------------ palette */
@@ -120,30 +115,6 @@ void main() {
   c = mix(c, uC1, clamp(t.r * uK.x * uGlow, 0.0, 1.0));
   c = mix(c, uC2, clamp(t.g * uK.y * uGlow, 0.0, 1.0));
 ${FS_TAIL}`;
-// A cable or wire as a tube; uv.x runs along it so a band of light can ride it.
-const VS_WIRE = /* glsl */ `
-varying float vU;
-#include <common>
-#include <fog_pars_vertex>
-void main() {
-  vU = uv.x;
-  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-  gl_Position = projectionMatrix * mvPosition;
-  #include <fog_vertex>
-}`;
-const FS_WIRE = /* glsl */ `
-varying float vU;
-uniform vec3 uBase, uTrace, uHot; uniform float uS; uniform float uBand; uniform float uMix; uniform float uOpacity;
-#include <common>
-#include <fog_pars_fragment>
-void main() {
-  float g = uS > -0.5 ? exp(-pow((vU - uS) * uBand, 2.0)) : 0.0;
-  vec3 c = mix(uBase, uTrace, uMix);
-  c = mix(c, uHot, clamp(g, 0.0, 1.0));
-  gl_FragColor = vec4(c, uOpacity);
-  #include <colorspace_fragment>
-  #include <fog_fragment>
-}`;
 // Full-screen veil in the page colour, used for the place changes and jumps.
 const VS_VEIL = /* glsl */ `void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 const FS_VEIL = /* glsl */ `
@@ -195,15 +166,6 @@ function channel(map, base, { c1 = 'trace', c2 = 'accent', c3 = 'silk', k = [1, 
     transparent,
   });
 }
-function wireMaterial(base = 'body', mix = 0.25) {
-  return new ShaderMaterial({
-    uniforms: { ...fogU(), uBase: U[base], uTrace: U.trace, uHot: U.hot, uS: { value: -1 }, uBand: { value: 30 }, uMix: { value: mix }, uOpacity: { value: 1 } },
-    vertexShader: VS_WIRE,
-    fragmentShader: FS_WIRE,
-    fog: true,
-  });
-}
-
 const dummy = new Object3D();
 function place(mesh, i, pos, scale = [1, 1, 1], rotY = 0) {
   dummy.position.set(pos[0], pos[1], pos[2]);
@@ -259,7 +221,10 @@ function camPath(pos, look) {
 }
 
 /* ================================================================== WORLD */
-export function createWorld(canvas, { mobile = false, still = false, tagLayer = null, projects = [], stops = [] } = {}) {
+// Named points that content comes out of. The page asks for their screen position every frame.
+export const SOURCES = ['die', 'router', 'ant0', 'ant1', 'ant2', 'dimm', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'tower', 'drawer0', 'drawer1', 'drawer2', 'drawer3', 'drawer4', 'beacon', 'screen'];
+
+export function createWorld(canvas, { mobile = false, still = false, workN = 6, expN = 7 } = {}) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   const dprMax = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.75);
   let dpr = dprMax;
@@ -270,29 +235,36 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   scene.background = U.bg.value;
   const camera = new PerspectiveCamera(48, 1, 0.1, 3000);
 
-  const W = { room: new Group(), dc: new Group(), ocean: new Group(), globe: new Group() };
+  const W = { room: new Group(), mem: new Group(), tower: new Group() };
   Object.entries(W).forEach(([k, g]) => {
     g.position.x = OFF[k];
     scene.add(g);
   });
-
   const glowTex = TX.glowTexture();
+  const level = Object.fromEntries(SOURCES.map((s) => [s, 0])); // how far each source's content is out (0..1)
 
   /* ================================================================ ROOM */
-  // The motherboard (as in the hero of the main site), inside a laptop on a desk in Auckland.
+  // The motherboard of the hero, inside a laptop on a desk, with a Wi-Fi router beside it.
   const R = W.room;
   const traces = TX.makeTraces(mobile ? 80 : 140);
-  const board = new Mesh(new PlaneGeometry(TX.BOARD, TX.BOARD), channel(TX.boardTexture(traces, mobile ? 1024 : 2048), 'board', { k: [1, 1, 0.55] }));
+  const boardTex = TX.boardTexture(traces, mobile ? 1024 : 2048);
+  const board = new Mesh(new PlaneGeometry(TX.BOARD, TX.BOARD), channel(boardTex, 'board', { k: [1, 1, 0.55] }));
   board.rotation.x = -Math.PI / 2;
   R.add(board);
   const substrate = new Mesh(new BoxGeometry(6, 0.18, 6), solid('pcb'));
   substrate.position.y = 0.09;
-  const lid = new Mesh(new BoxGeometry(5.2, 0.15, 5.2), solid('body'));
+  const dieMat = channel(TX.dieTexture(mobile ? 1024 : 2048), 'die', { k: [1, 1, 0.8] });
+  const die = new Mesh(new PlaneGeometry(4.4, 4.4), dieMat);
+  die.rotation.x = -Math.PI / 2;
+  die.position.y = 0.185;
+  const lidMat = solid('body', { transparent: true });
+  const lid = new Mesh(new BoxGeometry(5.2, 0.15, 5.2), lidMat);
   lid.position.y = 0.255;
-  const lidTop = new Mesh(new PlaneGeometry(5.2, 5.2), channel(TX.lidTexture(), 'body', { k: [0.8, 1, 0.9] }));
+  const lidTopMat = channel(TX.lidTexture(), 'body', { k: [0.8, 1, 0.9], transparent: true });
+  const lidTop = new Mesh(new PlaneGeometry(5.2, 5.2), lidTopMat);
   lidTop.rotation.x = -Math.PI / 2;
   lidTop.position.y = 0.3315;
-  R.add(substrate, lid, lidTop);
+  R.add(substrate, die, lid, lidTop);
   const parts = [
     [[0, 0.05, -3.25], [6.9, 0.1, 0.35]],
     [[0, 0.05, 3.25], [6.9, 0.1, 0.35]],
@@ -303,7 +275,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     [[-12.0, 0.27, 10], [2.0, 0.18, 2.2]],
     [[-15.0, 0.27, 10], [2.0, 0.18, 2.2]],
     [[18, 0.6, -18], [2.0, 1.2, 2.4]],
-    [[9.2, 0.25, 0], [3.4, 0.3, 19.5]], // SO-DIMMs lie flat in a laptop
+    [[9.2, 0.25, 0], [3.4, 0.3, 19.5]],
     [[13.2, 0.25, 0], [3.4, 0.3, 19.5]],
   ];
   for (let i = 0; i < 6; i++) parts.push([[-3.75 + i * 1.5, 0.35, -5.2], [1.1, 0.7, 1.1]]);
@@ -318,7 +290,6 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   ssd.position.set(-13, 0.12, 10);
   R.add(ssd);
 
-  // ambient pulses on the board traces (hero only)
   const pulseCount = mobile ? 120 : 240;
   const pulseGeo = new BufferGeometry();
   const pulsePos = new Float32Array(pulseCount * 3);
@@ -356,8 +327,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   }
   placePulses(0);
 
-  // laptop: open-topped shell around the board; the keyboard deck closes over it as we pull back
-  const shellMat = solid('body', { edge: 1.2 });
+  // laptop: open-topped shell around the board; deck and screen close over it when we pull out
   R.add(
     boxes(
       [
@@ -367,7 +337,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
         [[-32, 0.8, 0], [0.6, 2.8, 46]],
         [[32, 0.8, 0], [0.6, 2.8, 46]],
       ],
-      shellMat,
+      solid('body', { edge: 1.2 }),
     ),
   );
   const deckMat = channel(HX.keyboardTexture(), 'body', { c1: 'edge', c2: 'trace', k: [0.9, 1, 1], edge: 1.2, transparent: true });
@@ -375,7 +345,6 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   deck.rotation.x = -Math.PI / 2;
   deck.position.y = 2.22;
   R.add(deck);
-  // screen: hinged at the back edge, tilted 14° back
   const screen = new Group();
   screen.position.set(0, 2.2, -23);
   screen.rotation.x = -0.24;
@@ -387,8 +356,10 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   display.position.set(0, 21, 0.01);
   screen.add(screenBack, display);
   R.add(screen);
+  R.updateMatrixWorld(true);
+  const screenAt = (x, y) => display.localToWorld(new Vector3(x, y, 0));
+  const SCREEN = { c: screenAt(0, 0), corners: [screenAt(-30, 19), screenAt(30, 19), screenAt(30, -19), screenAt(-30, -19)] };
 
-  // desk, back wall and the window onto the city
   const desk = new Mesh(new PlaneGeometry(700, 340), channel(HX.deskTexture(), 'board', { c1: 'edge', k: [0.6, 0, 0] }));
   desk.rotation.x = -Math.PI / 2;
   desk.position.set(40, -1.02, -20);
@@ -412,7 +383,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     ),
   );
 
-  // Wi-Fi router on the desk, with three rings that roll out from it
+  // Wi-Fi router: skills come out of its antennas
   const ROUTER = [60, 0, -12];
   const router = new Group();
   router.position.set(...ROUTER);
@@ -420,20 +391,24 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   routerBody.position.y = 0.8;
   router.add(routerBody);
   const antennaMat = solid('body', { edge: 1 });
+  const antTips = [];
   [-8, 0, 8].forEach((x, i) => {
     const a = new Mesh(new CylinderGeometry(0.55, 0.7, 13, 10), antennaMat);
     a.position.set(x, 8.5, -5.6);
     a.rotation.z = (i - 1) * 0.16;
     router.add(a);
+    antTips.push(new Vector3(ROUTER[0] + x - Math.sin((i - 1) * 0.16) * 6.5, 15, ROUTER[2] - 5.6));
   });
   const ledMat = solid('trace', { edge: 0 });
-  ledMat.uniforms.uEmitAmt.value = 0;
-  const leds = boxes(
-    Array.from({ length: 6 }, (_, i) => [[-6 + i * 2.4, 1.2, 6.55], [0.9, 0.5, 0.1]]),
-    ledMat,
-  );
-  router.add(leds);
+  router.add(boxes(Array.from({ length: 6 }, (_, i) => [[-6 + i * 2.4, 1.2, 6.55], [0.9, 0.5, 0.1]]), ledMat));
   R.add(router);
+  const tipMat = new SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false });
+  const tips = antTips.map((p) => {
+    const s = new Sprite(tipMat.clone());
+    s.position.copy(p);
+    R.add(s);
+    return s;
+  });
   const ringMat = solid('trace', { edge: 0, transparent: true });
   ringMat.depthWrite = false;
   const rings = [0, 1, 2].map(() => {
@@ -444,180 +419,101 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     return m;
   });
 
-  /* ================================================================ DATA CENTRE */
-  const D = W.dc;
-  const floorTex = HX.floorTexture();
-  floorTex.repeat.set(16, 60);
-  const floor = new Mesh(new PlaneGeometry(80, 300), channel(floorTex, 'board', { c1: 'edge', k: [0.8, 0, 0] }));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.z = -110;
-  D.add(floor);
-  const RACKS = 40;
-  const rackZ = (i) => 10 - i * 6;
-  const PROJECT_RACK = [3, 8, 13, 18, 23];
-  const rackList = [];
-  [-1, 1].forEach((s) => {
-    for (let i = 0; i < RACKS; i++) rackList.push([[s * 8.2, 10, rackZ(i)], [6, 20, 5.6]]);
+  /* ================================================================ MEMORY */
+  // Two memory sticks, magnified. Each project comes out of one of the chips.
+  const Mm = W.mem;
+  const memBoard = new Mesh(new PlaneGeometry(TX.BOARD, TX.BOARD), channel(boardTex, 'board', { k: [1, 1, 0.55] }));
+  memBoard.rotation.x = -Math.PI / 2;
+  Mm.add(memBoard);
+  const DIMM_X = [8.5, 10];
+  const CHIP_Z = Array.from({ length: 8 }, (_, i) => -7.7 + i * 2.2);
+  const PROJECT_CHIP = [0, 2, 3, 5, 7];
+  const chipList = [];
+  DIMM_X.forEach((x) => [-1, 1].forEach((s) => CHIP_Z.forEach((z) => chipList.push([[x + s * 0.125, 2.7, z], [0.15, 1.2, 1.6]]))));
+  Mm.add(boxes([...chipList, [[8.5, 0.3, 0], [0.5, 0.6, 20.4]], [[10, 0.3, 0], [0.5, 0.6, 20.4]]], solid('body')));
+  const dimmMat = channel(TX.dimmTexture(), 'pcb', { c3: 'gold', edge: 0.7 });
+  DIMM_X.forEach((x) => {
+    const pcb = new Mesh(new BoxGeometry(0.1, 4.5, 19.5), dimmMat);
+    pcb.position.set(x, 2.6, 0);
+    Mm.add(pcb);
   });
-  D.add(boxes(rackList, solid('body', { edge: 1.3 })));
-  const rackDecalMat = new MeshBasicMaterial({ map: HX.rackDecal(), transparent: true, depthWrite: false, fog: true });
-  const decals = new InstancedMesh(new PlaneGeometry(4.6, 18.6), rackDecalMat, RACKS * 2);
-  let n = 0;
-  [-1, 1].forEach((s) => {
-    for (let i = 0; i < RACKS; i++) place(decals, n++, [s * 5.18, 10, rackZ(i)], [1, 1, 1], -s * (Math.PI / 2));
-  });
-  const decalLevel = new Float32Array(RACKS * 2);
+  const decalMat = new MeshBasicMaterial({ map: TX.dramDecal(), transparent: true, depthWrite: false, fog: true });
+  const decals = new InstancedMesh(new PlaneGeometry(1.42, 1.04), decalMat, 8);
+  CHIP_Z.forEach((z, i) => place(decals, i, [8.5 - 0.202, 2.7, z], [1, 1, 1], -Math.PI / 2));
   const decalCol = new Color();
-  function paintDecals() {
-    for (let i = 0; i < decalLevel.length; i++) {
-      decalCol.copy(U.trace.value).multiplyScalar(0.3 + 0.2 * U.glow.value).lerp(U.hot.value, clamp(decalLevel[i], 0, 1));
-      decals.setColorAt(i, decalCol);
-    }
-    decals.instanceColor.needsUpdate = true;
-  }
   decals.setColorAt(0, decalCol);
-  D.add(decals);
-  // overhead cable tray down the aisle
-  D.add(boxes([[[0, 23, -110], [3, 0.4, 260]], [[-8.2, 21.5, -110], [6, 1.2, 260]], [[8.2, 21.5, -110], [6, 1.2, 260]]], solid('metal', { edge: 0.8 })));
+  Mm.add(decals);
+  // the "plate" that lifts out of a chip as its project comes out
+  const plateMat = solid('hot', { edge: 0, transparent: true });
+  plateMat.uniforms.uEmitAmt.value = 0.5;
+  plateMat.depthWrite = false;
+  const plate = new Mesh(new BoxGeometry(0.05, 1.04, 1.42), plateMat);
+  Mm.add(plate);
+  const chipPos = (i) => new Vector3(OFF.mem + 8.5 - 0.25, 2.7, CHIP_Z[PROJECT_CHIP[i]]);
 
-  /* ================================================================ OCEAN */
-  const O = W.ocean;
-  const sandTex = HX.sandTexture();
-  sandTex.repeat.set(14, 5);
-  const seabed = new Mesh(new PlaneGeometry(700, 240), channel(sandTex, 'pcb', { c1: 'edge', k: [1.6, 0, 0] }));
-  seabed.rotation.x = -Math.PI / 2;
-  seabed.position.set(100, 0, -40);
-  O.add(seabed);
-  const cablePts = [];
-  for (let x = -160; x <= 380; x += 20) cablePts.push(new Vector3(x, 0.7 + 0.3 * Math.sin(x * 0.05), 3 * Math.sin(x * 0.021)));
-  const cableCurve = new CatmullRomCurve3(cablePts);
-  const cableMat = wireMaterial('body', 0.45);
-  cableMat.uniforms.uBand.value = 160;
-  const cable = new Mesh(new TubeGeometry(cableCurve, 400, 0.38, 8, false), cableMat);
-  O.add(cable);
-  const REP_X = [0, 42, 84, 126, 168];
-  const xToU = (x) => (x + 160) / 540; // the curve is near-uniform in x
-  const repMats = REP_X.map(() => solid('body', { edge: 1.4 }));
-  REP_X.forEach((x, i) => {
-    const m = new Mesh(new CylinderGeometry(0.85, 0.85, 4.2, 16), repMats[i]);
-    m.rotation.z = Math.PI / 2;
-    const p = cableCurve.getPointAt(xToU(x));
-    m.position.copy(p);
-    O.add(m);
+  /* ================================================================ TOWER */
+  // A tall stack of units. Each step of the career slides out of it like a drawer.
+  const Tw = W.tower;
+  const floorTex = HX.floorTexture();
+  floorTex.repeat.set(30, 30);
+  const floor = new Mesh(new PlaneGeometry(400, 400), channel(floorTex, 'board', { c1: 'edge', k: [0.8, 0, 0] }));
+  floor.rotation.x = -Math.PI / 2;
+  Tw.add(floor);
+  const UNITS = 26;
+  const UH = 2.4;
+  const unitY = (i) => 1.3 + i * UH;
+  const JOB_U = [3, 7, 11, 15, 19];
+  const units = [];
+  for (let i = 0; i < UNITS; i++) if (!JOB_U.includes(i)) units.push([[0, unitY(i), 0], [16, UH - 0.2, 10]]);
+  Tw.add(boxes(units, solid('body', { edge: 1.3 })));
+  const unitDecalTex = HX.unitDecal();
+  const unitDecals = new InstancedMesh(new PlaneGeometry(15.4, 2.0), new MeshBasicMaterial({ map: unitDecalTex, transparent: true, depthWrite: false, fog: true }), UNITS);
+  for (let i = 0; i < UNITS; i++) place(unitDecals, i, [0, unitY(i), JOB_U.includes(i) ? -99 : 5.02], JOB_U.includes(i) ? [0, 0, 0] : [1, 1, 1]);
+  unitDecals.setColorAt(0, decalCol);
+  Tw.add(unitDecals);
+  const drawerMats = JOB_U.map(() => solid('body', { edge: 1.6 }));
+  const drawerFrontMat = new MeshBasicMaterial({ map: unitDecalTex, transparent: true, depthWrite: false, fog: true });
+  const drawers = JOB_U.map((u, i) => {
+    const g = new Group();
+    g.position.set(0, unitY(u), 0);
+    g.add(new Mesh(new BoxGeometry(15.4, UH - 0.3, 10), drawerMats[i]));
+    const front = new Mesh(new PlaneGeometry(15, 1.9), drawerFrontMat.clone());
+    front.position.z = 5.02;
+    g.add(front);
+    g.userData.front = front;
+    Tw.add(g);
+    return g;
   });
-  // rocks on the sea floor, so there's something to pass
-  const rockR = TX.rng(23);
-  const rocks = new InstancedMesh(new SphereGeometry(1, 7, 5), solid('body', { edge: 0 }), 70);
-  for (let i = 0; i < 70; i++) {
-    const x = -120 + rockR() * 380;
-    const z = -50 + rockR() * 80;
-    if (Math.abs(z - 3 * Math.sin(x * 0.021)) < 4) {
-      i--;
-      continue;
-    }
-    const sc = 0.6 + rockR() * 2.4;
-    dummy.position.set(x, 0, z);
-    dummy.rotation.set(0, rockR() * 6, 0);
-    dummy.scale.set(sc * (1 + rockR()), sc * 0.55, sc);
-    dummy.updateMatrix();
-    rocks.setMatrixAt(i, dummy.matrix);
+  const TOP = unitY(UNITS - 1) + UH / 2;
+  const mast = new Mesh(new CylinderGeometry(0.3, 0.5, 9, 8), solid('metal', { edge: 0.6 }));
+  mast.position.set(0, TOP + 4.5, 0);
+  Tw.add(mast);
+  const beaconMat = new SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false });
+  const beacon = new Sprite(beaconMat);
+  beacon.position.set(0, TOP + 9.4, 0);
+  Tw.add(beacon);
+  // distant towers for depth as we rise
+  const farR = TX.rng(41);
+  const far = [];
+  for (let i = 0; i < 18; i++) {
+    const h = 20 + farR() * 70;
+    const x = (farR() < 0.5 ? -1 : 1) * (28 + farR() * 90);
+    far.push([[x, h / 2, -30 - farR() * 120], [8 + farR() * 10, h, 8 + farR() * 10]]);
   }
-  O.add(rocks);
-  // light from far above and a slow drift of particles
-  const shaftTex = HX.shaftTexture();
-  const shaftMat = new MeshBasicMaterial({ map: shaftTex, transparent: true, depthWrite: false, opacity: 0.22, blending: AdditiveBlending, fog: false, side: DoubleSide });
-  const shafts = new Group();
-  [-40, 10, 70, 130, 200].forEach((x, i) => {
-    const s = new Mesh(new PlaneGeometry(26, 90), shaftMat);
-    s.position.set(x, 40, -30 - i * 6);
-    s.rotation.z = -0.25;
-    shafts.add(s);
-  });
-  O.add(shafts);
-  const snowN = mobile ? 300 : 700;
-  const snowGeo = new BufferGeometry();
-  const snowPos = new Float32Array(snowN * 3);
-  const sr = TX.rng(17);
-  for (let i = 0; i < snowN; i++) {
-    snowPos[i * 3] = -120 + sr() * 360;
-    snowPos[i * 3 + 1] = sr() * 40;
-    snowPos[i * 3 + 2] = -60 + sr() * 90;
-  }
-  snowGeo.setAttribute('position', new BufferAttribute(snowPos, 3).setUsage(DynamicDrawUsage));
-  const snowMat = new PointsMaterial({ size: 0.35, map: glowTex, transparent: true, depthWrite: false, opacity: 0.5, blending: AdditiveBlending, fog: true });
-  const snow = new Points(snowGeo, snowMat);
-  O.add(snow);
+  Tw.add(boxes(far, solid('pcb', { edge: 1 })));
+  const drawerPos = (i) => new Vector3(OFF.tower, unitY(JOB_U[i]), 5.2 + level[`drawer${i}`] * 4.5);
+  const towerY = (idx) => {
+    // camera height for item idx: 0 heading (low), 1–5 jobs, 6 quotes (top)
+    const ys = [6, ...JOB_U.map(unitY), TOP + 6];
+    const i = clamp(Math.floor(idx), 0, ys.length - 2);
+    return lerp(ys[i], ys[i + 1], clamp(idx - i, 0, 1));
+  };
 
-  /* ================================================================ GLOBE */
-  const G = W.globe;
-  const GR = 20;
-  const globe = new Group(); // the planet, turned so Auckland faces us
-  G.add(globe);
-  globe.add(new Mesh(new SphereGeometry(GR * 0.985, 48, 32), solid('die', { edge: 0 })));
-  const latLon = (lat, lon, r = 1) => {
-    const a = MathUtils.degToRad(lat);
-    const o = MathUtils.degToRad(lon);
-    return new Vector3(Math.cos(a) * Math.cos(o) * r, Math.sin(a) * r, -Math.cos(a) * Math.sin(o) * r);
-  };
-  const landBits = Uint8Array.from(atob(LAND), (c) => c.charCodeAt(0));
-  const isLand = (lat, lon) => {
-    const x = clamp(Math.floor(lon + 180), 0, LAND_W - 1);
-    const y = clamp(Math.floor(90 - lat), 0, LAND_H - 1);
-    const i = y * LAND_W + x;
-    return (landBits[i >> 3] >> (i & 7)) & 1;
-  };
-  const dotN = mobile ? 9000 : 16000;
-  const land = [];
-  const sea = [];
-  for (let i = 0; i < dotN; i++) {
-    // Fibonacci sphere: even spacing
-    const y = 1 - (i / (dotN - 1)) * 2;
-    const lat = MathUtils.radToDeg(Math.asin(y));
-    const lon = ((MathUtils.radToDeg(i * 2.399963) % 360) + 540) % 360 - 180;
-    const v = latLon(lat, lon, GR);
-    if (isLand(lat, lon)) land.push(v.x, v.y, v.z);
-    else if (i % 4 === 0) sea.push(v.x, v.y, v.z);
-  }
-  const dotsOf = (arr, size, opacity) => {
-    const geo = new BufferGeometry();
-    geo.setAttribute('position', new Float32BufferAttribute(arr, 3));
-    const mat = new PointsMaterial({ size, transparent: true, opacity, depthWrite: false, fog: true });
-    globe.add(new Points(geo, mat));
-    return mat;
-  };
-  const dotMat = dotsOf(land, 0.42, 1);
-  const seaMat = dotsOf(sea, 0.16, 0.35);
-  const AKL = latLon(-36.85, 174.76).normalize();
-  {
-    // turn the planet so Auckland faces us (lower right) with north still up
-    const t = new Vector3(0.42, -0.24, 0.87).normalize();
-    const up = new Vector3(0, 1, 0);
-    const n1 = up.clone().sub(AKL.clone().multiplyScalar(up.dot(AKL))).normalize();
-    const n2 = up.clone().sub(t.clone().multiplyScalar(up.dot(t))).normalize();
-    const m1 = new Matrix4().makeBasis(AKL, n1, AKL.clone().cross(n1));
-    const m2 = new Matrix4().makeBasis(t, n2, t.clone().cross(n2));
-    globe.quaternion.setFromRotationMatrix(m2.multiply(m1.transpose()));
-  }
-  globe.updateMatrixWorld();
-  const aklPos = AKL.clone().multiplyScalar(GR * 1.01).applyQuaternion(globe.quaternion);
-  // the hello lifts off Auckland and comes out of the globe towards the viewer: to you
-  const YOU_POS = new Vector3(12, 15, 38);
-  const arcCurve = new QuadraticBezierCurve3(aklPos.clone(), aklPos.clone().multiplyScalar(1.45).add(new Vector3(-10, 16, 6)), YOU_POS.clone());
-  const arcMat = wireMaterial('trace', 0.35);
-  arcMat.uniforms.uBand.value = 9;
-  G.add(new Mesh(new TubeGeometry(arcCurve, 160, 0.14, 6, false), arcMat));
-  const markMat = new SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false });
-  const aklMark = new Sprite(markMat);
-  aklMark.position.copy(aklPos);
-  aklMark.scale.setScalar(2.4);
-  G.add(aklMark);
-
-  /* ================================================================ the hello itself */
+  /* ================================================================ guide spark + veil */
   const sparkMat = new SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending, fog: false });
   const spark = new Sprite(sparkMat);
   spark.renderOrder = 10;
   scene.add(spark);
-
   const veilMat = new ShaderMaterial({ uniforms: { uColor: U.bg, uOpacity: { value: 0 } }, vertexShader: VS_VEIL, fragmentShader: FS_VEIL, transparent: true, depthTest: false, depthWrite: false });
   const veil = new Mesh(new PlaneGeometry(2, 2), veilMat);
   veil.frustumCulled = false;
@@ -625,62 +521,46 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   scene.add(veil);
 
   /* ================================================================ camera rig */
-  // Station poses as a function of that station's local progress L (0..1).
-  const repAt = (pf) => {
-    const i = clamp(Math.floor(pf), 0, 3);
-    return lerp(REP_X[i], REP_X[i + 1], ease(sstep(0.2, 0.8, clamp(pf - i, 0, 1))));
-  };
-  const rackAt = (pf) => {
-    const i = clamp(Math.floor(pf), 0, 3);
-    return lerp(rackZ(PROJECT_RACK[i]), rackZ(PROJECT_RACK[i + 1]), ease(sstep(0.2, 0.8, clamp(pf - i, 0, 1))));
+  const memZ = (idx) => {
+    const zs = [CHIP_Z[0] - 2.2, ...PROJECT_CHIP.map((c) => CHIP_Z[c])];
+    const i = clamp(Math.floor(idx), 0, zs.length - 2);
+    return lerp(zs[i], zs[i + 1], clamp(idx - i, 0, 1));
   };
   const ST = [
     () => [[1.5, 21, 25], [0.5, 0, -1]],
-    (L) => [[lerp(-4, -1, L), lerp(40, 37, L), lerp(112, 104, L)], [2, 13, -8]],
-    (L) => [[lerp(43, 46, L), lerp(21, 19, L), lerp(46, 40, L)], [58, lerp(6, 7, L), -12]],
+    (L) => [[lerp(0.6, 0.3, L), lerp(6.4, 5.2, L), lerp(4.8, 3.8, L)], [0, 0.18, -0.1]],
+    (L) => [[lerp(42, 45, L), lerp(22, 20, L), lerp(50, 44, L)], [58, lerp(7, 8, L), -12]],
     (L) => {
-      const z = rackAt(L * 4);
-      return [at3('dc', 4.2, 11.5, z + 30), at3('dc', -5.5, 9, z - 2)];
+      const z = memZ(dwell(L, workN));
+      return [at3('mem', 2.6, 3.9, z - 1.8), at3('mem', 8.4, 2.6, z)];
     },
     (L) => {
-      const x = repAt(L * 4);
-      return [at3('ocean', x - 12, 13, 40), at3('ocean', x + 4, 0.5, -2)];
+      const y = towerY(dwell(L, expN));
+      return [at3('tower', 9, y + 3, 42), at3('tower', 0, y, 0)];
     },
-    (L) => [at3('globe', lerp(2, 1, L), lerp(5, 3.5, L), lerp(70, 63, L)), at3('globe', 0, 0, 0)],
+    (L) => [[0, lerp(36.5, 34.6, L), lerp(28, 20.5, L)], [SCREEN.c.x, SCREEN.c.y, SCREEN.c.z]],
   ];
   const at = (k, L) => ST[k](L);
-
-  // Seams between stations. Within the room the camera flies; across places it settles,
-  // the veil closes and opens, and it settles again on the other side.
   const SEAMS = [
-    [{ a: 0, b: 1, w: 'room', path: camPath([[1.5, 21, 25], [1.8, 27, 42], [-1, 35, 76], at(1, 0)[0]], [[0.5, 0, -1], [0.4, 2, -3], [1, 7, -6], at(1, 0)[1]]) }],
-    [{ a: 0, b: 1, w: 'room', path: camPath([at(1, 1)[0], [14, 34, 86], [32, 26, 60], at(2, 0)[0]], [at(1, 1)[1], [20, 11, -8], [44, 7, -11], at(2, 0)[1]]) }],
+    [{ a: 0, b: 1, w: 'room', path: camPath([[1.5, 21, 25], [1.4, 12, 14], [0.9, 8, 7.5], at(1, 0)[0]], [[0.5, 0, -1], [0.3, 0, -0.5], [0.05, 0.1, -0.2], at(1, 0)[1]]) }],
+    [{ a: 0, b: 1, w: 'room', path: camPath([at(1, 1)[0], [1.5, 11, 10], [10, 28, 52], [30, 26, 58], at(2, 0)[0]], [at(1, 1)[1], [0.5, 1, -1], [16, 8, -8], [44, 7, -11], at(2, 0)[1]]) }],
     [
-      { a: 0, b: 0.5, w: 'room', path: camPath([at(2, 1)[0], [47.5, 18.5, 37]], [at(2, 1)[1], [64, 9, -14]]) },
-      { a: 0.5, b: 1, w: 'dc', path: camPath([at3('dc', 2, 13, 56), at3('dc', 3, 11.5, 40), at(3, 0)[0]], [at3('dc', -3, 9, 6), at3('dc', -4.5, 8.8, 0), at(3, 0)[1]]) },
+      { a: 0, b: 0.5, w: 'room', path: camPath([at(2, 1)[0], [48, 19, 38]], [at(2, 1)[1], [62, 9, -14]]) },
+      { a: 0.5, b: 1, w: 'mem', path: camPath([at3('mem', 1, 9, -22), at3('mem', 2.6, 5.5, -16), at(3, 0)[0]], [at3('mem', 8, 1.5, -10), at3('mem', 8.3, 2.2, -10.5), at(3, 0)[1]]) },
     ],
     [
-      { a: 0, b: 0.5, w: 'dc', path: camPath([at(3, 1)[0], at3('dc', 3.5, 10.5, rackZ(PROJECT_RACK[4]) + 16)], [at(3, 1)[1], at3('dc', -5, 8.5, rackZ(PROJECT_RACK[4]) - 6)]) },
-      { a: 0.5, b: 1, w: 'ocean', path: camPath([at3('ocean', -40, 17, 52), at3('ocean', -26, 15, 45), at(4, 0)[0]], [at3('ocean', -22, 1, -2), at3('ocean', -14, 0.8, -2), at(4, 0)[1]]) },
+      { a: 0, b: 0.5, w: 'mem', path: camPath([at(3, 1)[0], at3('mem', 3.4, 4.2, CHIP_Z[7] + 1.5)], [at(3, 1)[1], at3('mem', 8.4, 2.8, CHIP_Z[7] + 3)]) },
+      { a: 0.5, b: 1, w: 'tower', path: camPath([at3('tower', 16, 2, 70), at3('tower', 12, 4, 54), at(4, 0)[0]], [at3('tower', 0, 10, 0), at3('tower', 0, 8, 0), at(4, 0)[1]]) },
     ],
     [
-      { a: 0, b: 0.5, w: 'ocean', path: camPath([at(4, 1)[0], at3('ocean', REP_X[4] + 2, 13, 40)], [at(4, 1)[1], at3('ocean', REP_X[4] + 18, 0.5, -2)]) },
-      { a: 0.5, b: 1, w: 'globe', path: camPath([at3('globe', 6, 9, 96), at3('globe', 3, 6, 80), at(5, 0)[0]], [at3('globe', 0, 0, 0), at3('globe', 0, 0, 0), at(5, 0)[1]]) },
+      { a: 0, b: 0.5, w: 'tower', path: camPath([at(4, 1)[0], at3('tower', 9, TOP + 14, 40)], [at(4, 1)[1], at3('tower', 0, TOP + 9, 0)]) },
+      { a: 0.5, b: 1, w: 'room', path: camPath([[8, 62, 96], [3, 48, 66], at(5, 0)[0]], [[0, 18, -28], [0, 21, -28], at(5, 0)[1]]) },
     ],
   ];
   const veilFor = (k, p) => (SEAMS[k] && SEAMS[k].length > 1 ? 1 - sstep(0.12, 0.2, Math.abs(p - 0.5)) : 0);
 
   /* ================================================================ state */
-  const S = {
-    T: 0, // eased
-    Tt: 0, // target from scroll
-    L: [0, 0, 0, 0, 0, 0],
-    Lt: [0, 0, 0, 0, 0, 0],
-    override: null, // send-back animation on the globe (0..1)
-    jump: null, // { phase, t, to }
-    jumpVeil: 0,
-    calm: still,
-  };
+  const S = { T: 0, Tt: 0, L: [0, 0, 0, 0, 0, 0], Lt: [0, 0, 0, 0, 0, 0], jump: null, jumpVeil: 0, calm: still, sendBack: null };
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
   const view = { w: 1, h: 1 };
   const P = new Vector3();
@@ -702,13 +582,12 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       const [a, b] = at(k, S.L[k]);
       outP.fromArray(a);
       outL.fromArray(b);
-      return { w: ['room', 'room', 'room', 'dc', 'ocean', 'globe'][k], veil: 0, k, p: 0 };
+      return { w: ['room', 'room', 'room', 'mem', 'tower', 'room'][k], veil: 0, k, p: 0 };
     }
     const phases = SEAMS[k];
     const ph = phases.find((x) => p >= x.a && p <= x.b) || phases[phases.length - 1];
     const lq = (p - ph.a) / (ph.b - ph.a);
     ph.path(lq, outP, outL);
-    // carry the stations' live local progress in and out of the seam (no jumps)
     if (ph === phases[0] && k >= 1) {
       const wgt = 1 - sstep(0, 0.5, lq);
       if (wgt > 0) {
@@ -726,48 +605,30 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     return { w: ph.w, veil: veilFor(k, p), k, p };
   }
 
-  /* ---------------- labels anchored in the scene (plain words only) ---------------- */
-  const tags = [];
-  function tag(text, w) {
-    if (!tagLayer) return null;
-    const el = document.createElement('span');
-    el.className = 'tag mono';
-    el.textContent = text;
-    tagLayer.appendChild(el);
-    const t = { el, pos: new Vector3(), alpha: 0, w, shown: -1 };
-    tags.push(t);
-    return t;
+  // world position of a named source
+  function sourcePos(name, out) {
+    if (name === 'die') return out.set(0, 0.25, 0);
+    if (name === 'router') return out.set(ROUTER[0], 6, ROUTER[2]);
+    if (name.startsWith('ant')) return out.copy(antTips[+name[3]]);
+    if (name === 'dimm') return out.set(OFF.mem + 8.5, 4.9, CHIP_Z[0]);
+    if (name.startsWith('chip')) return out.copy(chipPos(+name[4]));
+    if (name === 'tower') return out.set(OFF.tower, 4, 5.2);
+    if (name.startsWith('drawer')) return out.copy(drawerPos(+name[6]));
+    if (name === 'beacon') return out.copy(beacon.position).add(tmp2.set(OFF.tower, 0, 0));
+    if (name === 'screen') return out.copy(SCREEN.c);
+    return out.set(0, 0, 0);
   }
-  const TG = {
-    projects: projects.map((name, i) => {
-      const t = tag(name, 'dc');
-      t?.pos.set(...at3('dc', -5.4, 17.5, rackZ(PROJECT_RACK[i])));
-      return t;
-    }),
-    stops: stops.map((name, i) => {
-      const t = tag(name, 'ocean');
-      t?.pos.copy(cableCurve.getPointAt(xToU(REP_X[i]))).add(tmp.set(OFF.ocean, 2.2, 0));
-      return t;
-    }),
-    akl: tag('Auckland', 'globe'),
-    you: tag('You', 'globe'),
-  };
-  TG.akl?.pos.copy(aklPos).multiplyScalar(1.03).add(tmp.set(OFF.globe, 0, 0));
-  TG.you?.pos.copy(YOU_POS).add(tmp.set(OFF.globe, 0, 1.5));
-  const allTags = () => [...TG.projects, ...TG.stops, TG.akl, TG.you].filter(Boolean);
 
   /* ---------------- theme ---------------- */
   let dark = true;
   const themeOpts = { glowRest: 0.55, fogK: 1 };
   const theme = { t: 1, dur: 0.4, start: 0, from: null, to: null };
+  const additive = [sparkMat, pulseMat, beaconMat, ...tips.map((t) => t.material)];
   function applyBlend() {
-    const b = dark ? AdditiveBlending : NormalBlending;
-    [sparkMat, pulseMat, snowMat, shaftMat, markMat].forEach((m) => {
-      m.blending = b;
+    additive.forEach((m) => {
+      m.blending = dark ? AdditiveBlending : NormalBlending;
       m.needsUpdate = true;
     });
-    shaftMat.opacity = dark ? 0.22 : 0.12;
-    snowMat.opacity = dark ? 0.5 : 0.35;
   }
   function stepTheme(now) {
     if (!theme.to || theme.t >= 1) return;
@@ -775,7 +636,6 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     const e = ease(theme.t);
     KEYS.forEach((key) => U[key].value.copy(theme.from[key]).lerp(theme.to[key], e));
     U.edgeAmt.value = lerp(theme.edgeFrom, theme.edgeTo, e);
-    decals.userData.glow = -1;
     if (theme.t < 1) anim = Math.max(anim, 0.05);
   }
 
@@ -783,14 +643,12 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   const VMAX = 0.75; // stops per second, at most
   function follow(dt) {
     if (S.calm) {
-      // calm view: no flying at all; a fade to the nearest stop
       const goal = Math.min(5, Math.round(S.Tt));
       if (!S.jump && goal !== Math.round(S.T)) S.jump = { phase: 0, t: 0, to: goal };
-      S.L.forEach((_, i) => (S.L[i] = 0.5));
     } else if (!S.jump && Math.abs(S.Tt - S.T) > 1.6) {
-      // skipping more than one stop (nav, keyboard, a big drag): fade straight there
       S.jump = { phase: 0, t: 0, to: S.Tt };
     }
+    let moving = false;
     if (S.jump) {
       const j = S.jump;
       j.t += dt;
@@ -798,7 +656,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
         S.jumpVeil = Math.min(1, j.t / 0.28);
         if (S.jumpVeil >= 1) {
           S.T = S.calm ? j.to : S.Tt;
-          for (let i = 0; i < 6; i++) S.L[i] = S.calm ? 0.5 : S.Lt[i];
+          for (let i = 0; i < 6; i++) S.L[i] = S.Lt[i];
           j.phase = 1;
           j.t = 0;
         }
@@ -806,15 +664,16 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
         S.jumpVeil = Math.max(0, 1 - Math.max(0, j.t - 0.12) / 0.4);
         if (S.jumpVeil <= 0) S.jump = null;
       }
-      return true;
-    }
-    let moving = false;
-    const d = S.Tt - S.T;
-    if (Math.abs(d) > 1e-4) {
-      const step = d * (1 - Math.exp(-dt * 3.2));
-      S.T += clamp(step, -VMAX * dt, VMAX * dt);
       moving = true;
-    } else S.T = S.Tt;
+    } else {
+      const d = S.Tt - S.T;
+      if (Math.abs(d) > 1e-4) {
+        S.T += clamp(d * (1 - Math.exp(-dt * 3.2)), -VMAX * dt, VMAX * dt);
+        moving = true;
+      } else S.T = S.Tt;
+    }
+    // stop-local progress (which card is out) follows the scroll on its own clock, so in calm
+    // view the cards still come and go while the camera stays put
     for (let i = 0; i < 6; i++) {
       const e = S.Lt[i] - S.L[i];
       if (Math.abs(e) > 1e-4) {
@@ -838,166 +697,101 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     const pulsesOn = !S.calm && T < 0.9;
     pulseLayer.visible = pulsesOn && w === 'room';
     if (pulsesOn && dt > 0) placePulses(dt);
-    // the deck closes over the board and the screen lights as we pull out of the laptop
-    const out = T >= 1 ? 1 : sstep(0.3, 0.75, T);
+    // the lid lifts away as we dive into the chip, and is back once we've left
+    const lidA = T < 1.2 ? 1 - sstep(0.45, 0.8, T) : sstep(1.2, 1.45, T);
+    lidMat.uniforms.uOpacity.value = lidTopMat.uniforms.uOpacity.value = lidA;
+    lid.visible = lidTop.visible = lidA > 0.01;
+    lidMat.depthWrite = lidTopMat.depthWrite = lidA > 0.99;
+    dieMat.uniforms.uK.value.set(1 + level.die * 0.6, 1 + level.die, 0.8);
+    // the deck and screen close over the board once we're out of the laptop
+    const out = T < 1.1 ? 0 : sstep(1.1, 1.45, T);
     deckMat.uniforms.uOpacity.value = out;
     deck.visible = out > 0.01;
     deckMat.depthWrite = out > 0.99;
-    screenBackMat.uniforms.uOpacity.value = out;
-    displayMat.uniforms.uOpacity.value = out;
+    screenBackMat.uniforms.uOpacity.value = displayMat.uniforms.uOpacity.value = out;
+    // the screen clears while the contact card sits on it
+    displayMat.uniforms.uK.value.setScalar(0.9 * (1 - level.screen));
     screen.visible = out > 0.01;
     screenBackMat.depthWrite = displayMat.depthWrite = out > 0.99;
-    // Wi-Fi rings roll out while we're at the router
-    const atRouter = w === 'room' && T > 1.4;
+    // router: rings roll out, each antenna glows while a skill leaves it
+    const atRouter = w === 'room' && T > 1.4 && T < 2.6;
     ledMat.uniforms.uEmitAmt.value = atRouter ? 0.7 : 0.2;
     rings.forEach((m, i) => {
       m.visible = atRouter && !S.calm;
       if (!m.visible) return;
       const f = (clock * 0.35 + i / 3) % 1;
       m.scale.setScalar(1.5 + f * 9);
-      m.material.uniforms.uOpacity.value = (1 - f) * 0.7 * sstep(1.4, 1.8, T);
+      m.material.uniforms.uOpacity.value = (1 - f) * 0.6 * sstep(1.4, 1.8, T);
       m.lookAt(camera.position);
     });
     if (atRouter && !S.calm) anim = Math.max(anim, 0.05);
+    tips.forEach((s, i) => {
+      const v = level[`ant${i}`];
+      s.visible = atRouter;
+      s.material.opacity = 0.35 + 0.65 * v;
+      s.scale.setScalar(1.6 + v * 2.4);
+      s.material.color.copy(U.hot.value);
+    });
 
-    // ---------- data centre: the current project's rack is lit ----------
-    const pfW = S.L[3] * 4;
-    decalLevel.fill(0);
-    if (w === 'dc') {
-      PROJECT_RACK.forEach((r, i) => (decalLevel[r] = clamp(1 - Math.abs(pfW - i) * 1.6, 0, 1) * (k === 2 ? sstep(0.6, 1, p) : 1)));
+    // ---------- memory: the chip lights and a plate lifts out of it ----------
+    let plateOn = -1;
+    for (let i = 0; i < 8; i++) {
+      const pi = PROJECT_CHIP.indexOf(i);
+      const v = pi >= 0 ? level[`chip${pi}`] : 0;
+      if (v > 0.02 && (plateOn < 0 || v > level[`chip${plateOn}`])) plateOn = pi;
+      decalCol.copy(U.trace.value).multiplyScalar(0.35 + 0.25 * U.glow.value).lerp(U.hot.value, clamp(v, 0, 1));
+      decals.setColorAt(i, decalCol);
     }
-    let changed = false;
-    for (let i = 0; i < decalLevel.length; i++) if (Math.abs(decalLevel[i] - (decals.userData.prev?.[i] ?? -1)) > 1e-3) changed = true;
-    if (changed || decals.userData.glow !== U.glow.value) {
-      decals.userData.prev = Float32Array.from(decalLevel);
-      decals.userData.glow = U.glow.value;
-      paintDecals();
-    }
-
-    // ---------- ocean: drift ----------
-    const pfO = S.L[4] * 4;
-    repMats.forEach((m, i) => (m.uniforms.uEmitAmt.value = w === 'ocean' ? clamp(1 - Math.abs(pfO - i) * 1.6, 0, 1) * 0.6 : 0));
-    if (w === 'ocean' && !S.calm && dt > 0) {
-      for (let i = 0; i < snowN; i++) {
-        snowPos[i * 3 + 1] -= dt * (0.6 + (i % 5) * 0.12);
-        if (snowPos[i * 3 + 1] < 0) snowPos[i * 3 + 1] += 40;
-      }
-      snowGeo.attributes.position.needsUpdate = true;
-      anim = Math.max(anim, 0.05);
+    decals.instanceColor.needsUpdate = true;
+    plate.visible = plateOn >= 0 && !S.calm;
+    if (plate.visible) {
+      const v = level[`chip${plateOn}`];
+      plate.position.set(8.5 - 0.24, 2.7 + v * 2.6, CHIP_Z[PROJECT_CHIP[plateOn]]);
+      plateMat.uniforms.uOpacity.value = clamp(v * (1 - v) * 4, 0, 1) * 0.6;
     }
 
-    // ---------- the hello ----------
-    spark.visible = true;
-    let sparkScale = 1;
-    let sparkA = 1;
-    cableMat.uniforms.uS.value = -1;
-    arcMat.uniforms.uS.value = -1;
-    const roomSpark = (q, out) => {
-      // laptop (q=0) → router (q=1), arcing over the desk
-      const a = tmp.set(0, 9, 2);
-      const b = tmp2.set(ROUTER[0], 10, ROUTER[2]);
-      out.copy(a).lerp(b, q);
-      out.y += Math.sin(Math.PI * q) * 12;
-      return out;
-    };
-    if (S.override != null) {
-      // sending a reply: it rides the arc back to Auckland
-      const f = S.override;
-      spark.position.copy(arcCurve.getPointAt(1 - f)).add(tmp.set(OFF.globe, 0, 0));
-      arcMat.uniforms.uS.value = 1 - f;
-      sparkScale = 2.2;
-    } else if (k === 0) {
-      spark.position.set(0, lerp(0.5, 9, sstep(0.45, 1, p)), lerp(0, 2, sstep(0.45, 1, p)));
-      sparkA = sstep(0.35, 0.6, p);
-      sparkScale = lerp(0.8, 2.6, sstep(0.4, 1, p));
-    } else if (k === 1 && p === 0) {
-      spark.position.set(0, 9, 2);
-      sparkScale = 2.6;
-    } else if (k === 1) {
-      roomSpark(ease(sstep(0.1, 0.9, p)), spark.position);
-      sparkScale = 2.6;
-    } else if (k === 2 && p === 0) {
-      spark.position.set(ROUTER[0], 10, ROUTER[2]);
-      sparkScale = 2.2;
-    } else if (k === 2) {
-      if (p < 0.5) {
-        const f = sstep(0, 0.42, p);
-        spark.position.set(ROUTER[0] + f * 40, 10 + f * 22, ROUTER[2] - f * 50);
-        sparkA = 1 - sstep(0.25, 0.42, p);
-        sparkScale = 2.2;
-      } else {
-        const f = sstep(0.55, 1, p);
-        tmp.set(0, 23.5, lerp(40, rackZ(PROJECT_RACK[0]) + 2, f));
-        if (f > 0.7) tmp.lerp(tmp2.set(-5, 13, rackZ(PROJECT_RACK[0])), sstep(0.7, 1, f));
-        spark.position.copy(tmp).add(tmp2.set(OFF.dc, 0, 0));
-        sparkA = sstep(0.55, 0.7, p);
-        sparkScale = 1.4;
-      }
-    } else if (k === 3 && p === 0) {
-      // between racks, the hello rides the tray overhead
-      const i = clamp(Math.floor(pfW), 0, 3);
-      const f = ease(sstep(0.2, 0.8, clamp(pfW - i, 0, 1)));
-      const z = lerp(rackZ(PROJECT_RACK[i]), rackZ(PROJECT_RACK[i + 1]), f);
-      spark.position.set(OFF.dc - 5 + Math.sin(Math.PI * f) * 5, 13 + Math.sin(Math.PI * f) * 10, z);
-      sparkScale = 1.4;
-    } else if (k === 3) {
-      if (p < 0.5) {
-        const f = sstep(0, 0.42, p);
-        const z0 = rackZ(PROJECT_RACK[4]);
-        spark.position.set(OFF.dc - 5 + f * 5, 13 + f * 10, z0 - f * 60);
-        sparkA = 1 - sstep(0.25, 0.42, p);
-        sparkScale = 1.4;
-      } else {
-        const f = sstep(0.55, 1, p);
-        spark.position.copy(cableCurve.getPointAt(lerp(xToU(-60), xToU(REP_X[0]), f))).add(tmp.set(OFF.ocean, 0.9, 0));
-        cableMat.uniforms.uS.value = lerp(xToU(-60), xToU(REP_X[0]), f);
-        sparkA = sstep(0.55, 0.7, p);
-        sparkScale = 1.6;
-      }
-    } else if (k === 4 && p === 0) {
-      const u = xToU(repAt(pfO));
-      spark.position.copy(cableCurve.getPointAt(u)).add(tmp.set(OFF.ocean, 0.9, 0));
-      cableMat.uniforms.uS.value = u;
-      sparkScale = 1.6;
-    } else if (k === 4) {
-      if (p < 0.5) {
-        const u = lerp(xToU(REP_X[4]), xToU(REP_X[4] + 60), sstep(0, 0.42, p));
-        spark.position.copy(cableCurve.getPointAt(u)).add(tmp.set(OFF.ocean, 0.9, 0));
-        cableMat.uniforms.uS.value = u;
-        sparkA = 1 - sstep(0.3, 0.42, p);
-        sparkScale = 1.6;
-      } else {
-        // the signature moment: across the world, Auckland → you
-        const f = sstep(0.58, 1, p);
-        spark.position.copy(arcCurve.getPointAt(f)).add(tmp.set(OFF.globe, 0, 0));
-        arcMat.uniforms.uS.value = f;
-        sparkA = sstep(0.55, 0.65, p);
-        sparkScale = 2.2;
-      }
-    } else {
-      spark.position.copy(YOU_POS).add(tmp.set(OFF.globe, 0, 0));
-      arcMat.uniforms.uS.value = 1;
-      sparkScale = 2;
+    // ---------- tower: the drawer slides out ----------
+    drawers.forEach((g, i) => {
+      const v = level[`drawer${i}`];
+      g.position.z = v * 4.5;
+      drawerMats[i].uniforms.uEmitAmt.value = v * 0.3;
+      g.userData.front.material.color.copy(U.trace.value).multiplyScalar(0.4).lerp(U.hot.value, v);
+    });
+    for (let i = 0; i < UNITS; i++) {
+      decalCol.copy(U.trace.value).multiplyScalar(0.3 + 0.2 * U.glow.value);
+      unitDecals.setColorAt(i, decalCol);
     }
-    sparkMat.opacity = sparkA;
-    spark.visible = sparkA > 0.01;
+    unitDecals.instanceColor.needsUpdate = true;
+    beaconMat.color.copy(U.hot.value);
+    beacon.scale.setScalar(3 + level.beacon * 5);
+    beaconMat.opacity = 0.5 + 0.5 * level.beacon;
+
+    // ---------- the spark: it sits on whatever is giving out content right now ----------
+    let best = null;
+    let bv = 0.04;
+    SOURCES.forEach((s) => {
+      const v = level[s];
+      const glow = v * (1 - v) * 4; // brightest mid-way out
+      if (glow > bv) {
+        bv = glow;
+        best = s;
+      }
+    });
+    if (S.sendBack != null) {
+      // a sent message: out of the screen, back into the laptop
+      const f = S.sendBack;
+      spark.position.copy(SCREEN.c).lerp(tmp.set(0, 3, 0), ease(f));
+      sparkMat.opacity = Math.sin(Math.PI * f);
+      spark.scale.setScalar(3);
+      spark.visible = true;
+    } else if (best && !S.calm) {
+      sourcePos(best, spark.position);
+      sparkMat.opacity = bv;
+      spark.scale.setScalar(P.distanceTo(spark.position) * 0.06);
+      spark.visible = true;
+    } else spark.visible = false;
     sparkMat.color.copy(U.hot.value);
-    markMat.color.copy(U.hot.value);
-    dotMat.color.copy(U.trace.value);
-    seaMat.color.copy(U.silk.value);
     pulseMat.color.copy(U.trace.value);
-    snowMat.color.copy(U.silk.value);
-    shaftMat.color.copy(U.trace.value);
-
-    // ---------- labels ----------
-    allTags().forEach((t) => (t.alpha = 0));
-    if (w === 'dc' && k === 3 && p === 0) TG.projects[Math.round(pfW)] && (TG.projects[Math.round(pfW)].alpha = 1 - Math.min(1, Math.abs(pfW - Math.round(pfW)) * 3));
-    if (w === 'ocean' && k === 4 && p === 0) TG.stops[Math.round(pfO)] && (TG.stops[Math.round(pfO)].alpha = 1 - Math.min(1, Math.abs(pfO - Math.round(pfO)) * 3));
-    if (w === 'globe') {
-      const a = k >= 5 ? 1 : sstep(0.66, 0.8, p);
-      if (TG.akl) TG.akl.alpha = a;
-      if (TG.you) TG.you.alpha = k >= 5 || S.override != null ? 1 : sstep(0.9, 1, p);
-    }
 
     // ---------- camera ----------
     pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 4 || 1);
@@ -1007,51 +801,26 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     camera.position.copy(P);
     camera.lookAt(Lk);
     camera.updateMatrixWorld();
-    tmp.setFromMatrixColumn(camera.matrixWorld, 0).multiplyScalar(pointer.x * 0.025 * dist);
-    tmp2.setFromMatrixColumn(camera.matrixWorld, 1).multiplyScalar(-pointer.y * 0.018 * dist);
+    tmp.setFromMatrixColumn(camera.matrixWorld, 0).multiplyScalar(pointer.x * 0.02 * dist);
+    tmp2.setFromMatrixColumn(camera.matrixWorld, 1).multiplyScalar(-pointer.y * 0.015 * dist);
     camera.position.add(tmp).add(tmp2);
     camera.lookAt(Lk);
-    camera.near = Math.max(0.05, dist * 0.01);
+    camera.near = Math.max(0.02, dist * 0.01);
     camera.far = 3000;
-    // the subject sits right of the text column (desktop) / above the text (mobile)
-    const shift = T < 0.4 ? 0.24 : T < 0.92 ? lerp(0.24, 1, ease((T - 0.4) / 0.52)) : 1;
-    if (mobile) camera.setViewOffset(view.w, view.h, 0, view.h * 0.2 * shift, view.w, view.h);
-    else camera.setViewOffset(view.w, view.h, -view.w * 0.19 * shift, 0, view.w, view.h);
+    // hero: chip a little right of the name; after that the scene is centred (mobile: raised)
+    const heroShift = 1 - sstep(0.25, 0.85, T);
+    if (mobile) camera.setViewOffset(view.w, view.h, 0, view.h * 0.18 * (1 - heroShift), view.w, view.h);
+    else camera.setViewOffset(view.w, view.h, -view.w * 0.046 * heroShift, 0, view.w, view.h);
     camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
 
-    // fog per place
     const fk = themeOpts.fogK;
-    const fog = w === 'room' ? [dist * 1.2, dist * 4.2] : w === 'dc' ? [26, 150] : w === 'ocean' ? [18, 95] : [dist * 1.6, dist * 3];
+    const fog = w === 'room' ? [dist * 1.2, dist * 4.2] : w === 'mem' ? [dist * 0.9, dist * 3.2] : [32, 150];
     scene.fog.near = fog[0] * fk;
     scene.fog.far = fog[1] * fk;
     scene.fog.color.copy(U.bg.value);
-
     veilMat.uniforms.uOpacity.value = Math.max(cam.veil, S.jumpVeil);
     veil.visible = veilMat.uniforms.uOpacity.value > 0.001;
-    spark.scale.setScalar(sparkScale * (0.6 + 0.4 * sstep(0, 1, U.glow.value)));
-  }
-
-  function projectTags() {
-    if (!tagLayer) return;
-    for (const t of allTags()) {
-      let a = t.w === place_ ? t.alpha : 0;
-      if (a > 0.01) {
-        tmp.copy(t.pos).project(camera);
-        if (tmp.z > 1 || tmp.z < -1) a = 0;
-        else {
-          const x = (tmp.x * 0.5 + 0.5) * view.w;
-          const y = (-tmp.y * 0.5 + 0.5) * view.h;
-          if (x < 8 || x > view.w - 8 || y < 90 || y > (mobile ? view.h * 0.5 : view.h - 20)) a = 0;
-          t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-        }
-      }
-      a = Math.round(a * 100) / 100;
-      if (a !== t.shown) {
-        t.el.style.opacity = a;
-        t.el.style.visibility = a > 0.01 ? 'visible' : 'hidden';
-        t.shown = a;
-      }
-    }
   }
 
   /* ---------------- render loop (driven by gsap.ticker from main) ---------------- */
@@ -1072,8 +841,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     const dt = lastRender ? Math.min(0.05, (now - lastRender) / 1000) : 0;
     lastRender = now;
     if (follow(dt)) anim = Math.max(anim, 0.05);
-    const T = S.T;
-    const glowTarget = T < 0.45 ? 0.9 : themeOpts.glowRest + 0.15;
+    const glowTarget = S.T < 0.45 ? 0.9 : themeOpts.glowRest + 0.15;
     U.glow.value += (glowTarget - U.glow.value) * Math.min(1, dt * 6 || 1);
     if (Math.abs(glowTarget - U.glow.value) > 0.004) anim = Math.max(anim, 0.05);
     stepTheme(now);
@@ -1081,9 +849,8 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     const t0 = performance.now();
     renderer.render(scene, camera);
     const cost = performance.now() - t0;
-    projectTags();
-    // resolution governor: measures the draw itself (not idle gaps), steps down to 1× at most
-    // and back up when there's room again.
+    // resolution governor: measures the draw itself (not idle gaps), never below 1×, and
+    // steps back up when there's room again
     costs.push(cost);
     if (costs.length > 40) costs.shift();
     if (costs.length === 40) {
@@ -1099,17 +866,20 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
   }
 
   function tick(now) {
-    if (!running) return;
+    if (!running) return false;
     const ambient = !S.calm && S.T < 0.9 && place_ === 'room';
     if (dirty || anim > 0) {
       dirty = false;
       anim = Math.max(0, anim - (lastRender ? (now - lastRender) / 1000 : 0));
       render(now);
-    } else if (ambient && now - lastRender > 33) {
-      render(now);
-    } else if (lastRender && now - lastRender > 100) {
-      lastRender = 0;
+      return true;
     }
+    if (ambient && now - lastRender > 33) {
+      render(now);
+      return true;
+    }
+    if (lastRender && now - lastRender > 100) lastRender = 0;
+    return false;
   }
 
   canvas.addEventListener('webglcontextlost', (e) => {
@@ -1123,6 +893,7 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
     canvas.classList.add('is-on');
   });
 
+  const proj = new Vector3();
   /* ---------------- public API ---------------- */
   return {
     setT(T) {
@@ -1130,23 +901,53 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       S.Tt = T;
       dirty = true;
     },
-    // jump the eased state to the target (first frame, theme switch)
-    settle() {
-      S.T = S.calm ? Math.round(S.Tt) : S.Tt;
-      for (let i = 0; i < 6; i++) S.L[i] = S.calm ? 0.5 : S.Lt[i];
-      dirty = true;
-    },
     setLocal(k, v) {
       if (Math.abs(S.Lt[k] - v) < 1e-5) return;
       S.Lt[k] = v;
+      dirty = true;
+    },
+    settle() {
+      S.T = S.calm ? Math.round(S.Tt) : S.Tt;
+      for (let i = 0; i < 6; i++) S.L[i] = S.Lt[i];
+      dirty = true;
+    },
+    // the eased state the camera is drawn with, so content can move in step with it
+    state() {
+      return { T: S.T, L: S.L, place: place_, moving: Math.abs(S.Tt - S.T) > 1e-3 };
+    },
+    // screen position (CSS px) of a named source; visible = in front of the camera
+    project(name) {
+      sourcePos(name, proj).project(camera);
+      return { x: (proj.x * 0.5 + 0.5) * view.w, y: (-proj.y * 0.5 + 0.5) * view.h, visible: proj.z < 1 };
+    },
+    // the laptop screen's rectangle on the page, for the contact card
+    screenRect() {
+      let x0 = Infinity;
+      let y0 = Infinity;
+      let x1 = -Infinity;
+      let y1 = -Infinity;
+      SCREEN.corners.forEach((c) => {
+        proj.copy(c).project(camera);
+        const x = (proj.x * 0.5 + 0.5) * view.w;
+        const y = (-proj.y * 0.5 + 0.5) * view.h;
+        x0 = Math.min(x0, x);
+        x1 = Math.max(x1, x);
+        y0 = Math.min(y0, y);
+        y1 = Math.max(y1, y);
+      });
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    },
+    setLevel(name, v) {
+      if (Math.abs(level[name] - v) < 1e-4) return;
+      level[name] = v;
       dirty = true;
     },
     setCalm(on) {
       S.calm = on;
       dirty = true;
     },
-    setOverride(v) {
-      S.override = v;
+    setSendBack(v) {
+      S.sendBack = v;
       dirty = true;
     },
     setPointer(x, y) {
@@ -1175,7 +976,6 @@ export function createWorld(canvas, { mobile = false, still = false, tagLayer = 
       stepTheme(performance.now());
       dirty = true;
     },
-    // compile every place's shaders up front so the first visit to each doesn't hitch
     compileAll() {
       const vis = Object.values(W).map((g) => g.visible);
       Object.values(W).forEach((g) => (g.visible = true));

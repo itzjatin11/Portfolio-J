@@ -232,3 +232,28 @@ export function shaftTexture() {
   g.fillRect(0, 0, 64, 256);
   return new CanvasTexture(c);
 }
+
+// Front of one tower unit: vents, a row of status lights, a handle. White on transparent.
+export function unitDecal() {
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 96;
+  const g = c.getContext('2d');
+  const r = rng(31);
+  g.strokeStyle = 'rgba(255,255,255,0.6)';
+  g.lineWidth = 3;
+  g.strokeRect(4, 6, 504, 84);
+  g.globalAlpha = 0.35;
+  g.lineWidth = 2;
+  for (let x = 30; x < 300; x += 12) {
+    g.beginPath();
+    g.moveTo(x, 26);
+    g.lineTo(x, 70);
+    g.stroke();
+  }
+  g.globalAlpha = 1;
+  g.fillStyle = '#fff';
+  for (let i = 0; i < 7; i++) if (r() < 0.75) g.fillRect(330 + i * 18, 40, 10, 6);
+  g.fillRect(470, 30, 6, 36);
+  return new CanvasTexture(c);
+}
