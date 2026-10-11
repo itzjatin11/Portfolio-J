@@ -469,13 +469,3 @@ section[id], [id^='p-'] { scroll-margin-top: calc(var(--nav-h) + var(--s4)); }
 /* operations background: one line under each role */
 .earlier__desc { flex-basis: 100%; font-size: 15px; }
 
-/* notes: short LinkedIn posts */
-.notes { display: grid; gap: var(--gap); }
-@media (min-width: 760px) { .notes { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1100px) { .notes { grid-template-columns: repeat(3, 1fr); } }
-.note__link { display: flex; flex-direction: column; gap: var(--s2); height: 100%; padding: var(--s5); border: 1px solid var(--line); border-radius: var(--radius); color: inherit; text-decoration: none; transition: border-color var(--t-mid) var(--ease), transform var(--t-mid) var(--ease); }
-.note__when { color: var(--subtle); font-size: var(--t-mono); letter-spacing: 0.08em; text-transform: uppercase; }
-.note__title { font: 700 24px/1.15 var(--display); color: var(--fg); }
-.note__sum { color: var(--muted); line-height: var(--lh-body); }
-@media (hover: hover) { .note__link:hover { border-color: var(--line-ui); transform: translateY(-2px); } }
-.note__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
