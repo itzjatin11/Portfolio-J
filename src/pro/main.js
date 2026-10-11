@@ -54,7 +54,8 @@ import './pro.css';
           ? '<span>Used at work and at Source Infinity</span>'
           : '<span>Used in:</span>' + b.dataset.uses.split(' ').map(function (u) {
               return '<a class="tap" href="#p-' + u + '"><span>' + names[u] + '</span></a>';
-            }).join('<span aria-hidden="true">·</span>'));
+            }).join('<span aria-hidden="true">·</span>') +
+            (b.dataset.work ? '<span aria-hidden="true">·</span><span>' + b.dataset.work + '</span>' : ''));
         out.hidden = false; b.setAttribute('aria-expanded', 'true'); open = b;
       });
     });
