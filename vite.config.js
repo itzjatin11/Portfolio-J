@@ -1,7 +1,8 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
-// Two pages: the current site (index.html) and the "Hello from Auckland" concept (hello.html).
+// Pages: the current site (index.html), the 3D journey concept (hello.html) and the professional
+// page (pro.html).
 export default defineConfig({
   build: {
     // three.js alone is ~560 kB minified (~140 kB gzipped); it's loaded on demand after first paint
@@ -10,6 +11,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
         hello: resolve(import.meta.dirname, 'hello.html'),
+        pro: resolve(import.meta.dirname, 'pro.html'),
       },
       output: {
         // Libraries in their own chunks, so a change to the site's code doesn't change their file
