@@ -16,12 +16,27 @@
 <link rel="preload" href="/fonts/barlow-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
 <script>
   try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');
+  (function (r) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    r.classList.add('motion');
+    // the boot intro, unless the link points straight at a section
+    if (!location.hash && !/[?&]nointro/.test(location.search)) r.classList.add('booting');
+    // safety net: if the page script never runs, show the page as it is
+    setTimeout(function () { if (!window.__pro) r.classList.remove('motion', 'booting'); }, 5000);
+  })(document.documentElement);
 </script>
 <script type="module" src="/src/pro/main.js"></script>
 </head>
 <body>
 <a class="skip" href="#about">Skip to content</a>
+
+<!-- The boot intro (see src/pro/boot.js). Decorative: it plays over the page and then removes itself. -->
+<div class="boot" data-boot>
+  <svg class="boot__svg" data-boot-svg viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"></svg>
+  <ol class="boot__log mono caps" data-boot-log aria-hidden="true"></ol>
+  <p class="boot__pct mono" data-boot-pct aria-hidden="true">000%</p>
+  <button class="boot__skip mono caps" type="button" data-boot-skip>Skip intro <span aria-hidden="true">→</span></button>
+</div>
 
 <header class="nav">
   <div class="wrap nav__in">
@@ -94,6 +109,7 @@
         </div>
       </div>
     </div>
+    <p class="hero__cue mono caps" aria-hidden="true"><span>Scroll</span><i></i></p>
   </section>
 
   <!-- At a glance: the 5-second read, directly under the hero -->

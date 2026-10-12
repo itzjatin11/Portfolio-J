@@ -88,7 +88,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); }
-@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (prefers-reduced-motion: no-preference) { html:not(.motion) { scroll-behavior: smooth; } }
 body {
   background: var(--bg);
   color: var(--fg);
@@ -386,19 +386,20 @@ section[id], [id^='p-'] { scroll-margin-top: calc(var(--nav-h) + var(--s4)); }
 @keyframes rise { to { transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rise2 { to { opacity: 1; transform: none; } }
-.motion .hero__line .ch { transform: translateY(105%); animation: rise .48s var(--ease) forwards; animation-delay: calc(var(--i) * 28ms + 80ms); }
-.motion .hero__fadein { opacity: 0; animation: fade .3s ease-out .5s forwards; }
-.motion .glance__in > div { opacity: 0; transform: translateY(8px); animation: rise2 .3s var(--ease) forwards; animation-delay: calc(.7s + var(--k, 0) * 60ms); }
-/* reveals: opacity + 8px, 260ms, once */
-.motion .rv { opacity: 0; transform: translateY(8px); transition: opacity .26s var(--ease), transform .26s var(--ease); transition-delay: calc(var(--k, 0) * 60ms); }
-.motion .rv.in { opacity: 1; transform: none; }
+/* the hero's own opening waits for the boot intro to open onto it (.hero-in) */
+.motion .hero__line .ch { transform: translateY(105%); }
+.motion .hero__fadein { opacity: 0; }
+.motion .glance__in > div { opacity: 0; transform: translateY(8px); }
+.motion.hero-in .hero__line .ch { animation: rise .7s var(--ease) forwards; animation-delay: calc(var(--i) * 32ms + 120ms); }
+.motion.hero-in .hero__fadein { animation: rise2 .6s var(--ease) .75s forwards; transform: translateY(12px); }
+.motion.hero-in .glance__in > div { animation: rise2 .5s var(--ease) forwards; animation-delay: calc(1s + var(--k, 0) * 80ms); }
 /* kicker trace grows from the via when the heading arrives */
 .motion .kicker::before { clip-path: inset(0 0 100% 0); transition: clip-path var(--t-slow) var(--ease) .1s; }
 .motion .in .kicker::before { clip-path: inset(0 0 -2px 0); }
 .motion .hero__copy, .motion .hero__art { will-change: opacity, transform; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .motion .rv, .motion .glance__in > div, .motion .hero__fadein { opacity: 1 !important; transform: none !important; }
+  .motion .glance__in > div, .motion .hero__fadein { opacity: 1 !important; transform: none !important; }
   .motion .hero__line .ch { transform: none !important; }
   .motion .kicker::before { clip-path: none; }
 }
@@ -449,6 +450,7 @@ section[id], [id^='p-'] { scroll-margin-top: calc(var(--nav-h) + var(--s4)); }
 /* keep the name readable over the board: the fade sits above the scene */
 .hero__fade { z-index: 1; }
 @media (max-width: 599px) {
+  .hero__canvas { height: 46%; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
   .hero__poster { object-position: 60% 58%; height: 46%; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
 }
 /* the hero's text sits over a busy board: keep it on its own dark halo, and short enough to stay left */
@@ -469,3 +471,168 @@ section[id], [id^='p-'] { scroll-margin-top: calc(var(--nav-h) + var(--s4)); }
 /* operations background: one line under each role */
 .earlier__desc { flex-basis: 100%; font-size: 15px; }
 
+
+
+/* =====================================================================================
+   THE BOOT INTRO
+   ===================================================================================== */
+.boot { display: none; }
+.booting { overflow: hidden; }
+.booting .boot {
+  --r: 0px;
+  display: block; position: fixed; inset: 0; z-index: 200; background: #050505; color: #f2f0eb;
+  /* the hole the page appears through, opened from the chip's die */
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1px));
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1px));
+}
+.boot__svg { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; opacity: 0; }
+.boot__scene { will-change: transform; }
+.boot__trace { fill: none; stroke: rgba(59, 232, 216, 0.28); stroke-width: 1.4; transition: stroke .5s ease; }
+.boot__trace.on { stroke: rgba(59, 232, 216, 0.75); }
+.boot__via { fill: #050505; stroke: rgba(59, 232, 216, 0.5); stroke-width: 1.2; }
+.boot__pulse { opacity: 0; }
+.boot__pulse.on { opacity: 1; }
+.boot__pulse-halo { fill: rgba(59, 232, 216, 0.22); }
+.boot__pulse-dot { fill: #c9fff9; }
+.boot__body { fill: #0c1113; stroke: rgba(242, 240, 235, 0.35); stroke-width: 1.2; }
+.boot__die { fill: none; stroke: rgba(59, 232, 216, 0.6); stroke-width: 1.2; }
+.boot__cell { fill: rgba(59, 232, 216, 0.06); stroke: rgba(59, 232, 216, 0.25); stroke-width: .8; transition: fill .3s ease, stroke .3s ease; }
+.boot__cell.on { fill: rgba(59, 232, 216, 0.55); stroke: #3be8d8; }
+.boot__chip.on .boot__cell { fill: #ff4d2e; stroke: #ff8a6e; }
+.boot__chip.on .boot__core { filter: drop-shadow(0 0 14px rgba(255, 77, 46, 0.85)); }
+.boot__ring { fill: none; stroke: #ff4d2e; stroke-width: 2; opacity: 0; }
+.boot__pin { fill: #6b5626; transition: fill .25s ease; }
+.boot__pin.on { fill: #ffc04d; }
+.boot__silk { fill: #8a8780; font: 500 9px var(--mono); letter-spacing: .14em; }
+.boot__chip.on .boot__silk { fill: #f2f0eb; }
+.boot__log {
+  position: absolute; left: var(--gutter); bottom: calc(var(--s7) + env(safe-area-inset-bottom)); display: grid; gap: 6px;
+  color: #a3a19b; min-height: calc(5 * 1.6em);
+}
+.boot__log li { opacity: .55; white-space: nowrap; }
+.boot__log li.on::before { content: '> '; color: #3be8d8; }
+.boot__log li:last-child { color: #f2f0eb; opacity: 1; }
+.boot__pct {
+  position: absolute; right: var(--gutter); top: calc(var(--s6) + env(safe-area-inset-top));
+  font: 800 clamp(40px, 7vw, 96px)/1 var(--display); letter-spacing: 0; color: #f2f0eb; font-variant-numeric: tabular-nums;
+}
+.boot__skip {
+  position: absolute; right: var(--gutter); bottom: calc(var(--s6) + env(safe-area-inset-bottom)); min-height: var(--tap); padding: 0 var(--s4);
+  background: transparent; color: #a3a19b; border: 1px solid rgba(242, 240, 235, 0.25); border-radius: 999px; cursor: pointer;
+  transition: color var(--t-mid), border-color var(--t-mid);
+}
+.boot__skip:hover, .boot__skip:focus-visible { color: #f2f0eb; border-color: #f2f0eb; }
+@media (max-width: 599px) {
+  .boot__log { bottom: calc(var(--s10) + env(safe-area-inset-bottom)); font-size: 11px; }
+  .boot__skip { left: var(--gutter); right: auto; }
+}
+/* the nav slides in as the page is revealed */
+.motion .nav { transition: transform .7s var(--ease) .5s, opacity .7s var(--ease) .5s; }
+.booting:not(.boot-revealing) .nav { transform: translateY(-100%); opacity: 0; }
+.booting.boot-revealing .nav { transition-delay: .2s; }
+
+/* scroll cue at the foot of the hero */
+.hero__cue { display: none; }
+.motion .hero__cue {
+  position: absolute; right: var(--gutter); bottom: var(--s6); z-index: 2; display: flex; align-items: center; gap: var(--s3); color: var(--muted);
+  opacity: 0;
+}
+.motion.hero-in .hero__cue { animation: fade .6s ease 1.6s forwards; }
+.hero__cue i { position: relative; width: 1px; height: 44px; background: var(--line-strong); overflow: hidden; }
+.hero__cue i::after { content: ''; position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: var(--accent); animation: cue 1.8s var(--ease) infinite; }
+@keyframes cue { to { top: 100%; } }
+@media (max-width: 599px) { .motion .hero__cue { display: none; } }
+
+/* =====================================================================================
+   THE STORY: rail, chapters, stacks
+   ===================================================================================== */
+html.lenis, html.lenis body { height: auto; }
+.lenis-smooth { scroll-behavior: auto !important; }
+.lenis-stopped { overflow: hidden; }
+
+/* the progress trace along the bottom of the nav (every screen) */
+.motion .nav::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent);
+  transform-origin: 0 50%; transform: scaleX(var(--p, 0));
+}
+/* the rail: the page as a trace down the left edge, with a via per chapter (wide screens) */
+.rail { display: none; }
+@media (min-width: 1240px) {
+  .motion .rail {
+    display: block; position: fixed; z-index: 40; left: 22px; top: calc(var(--nav-h) + 40px); bottom: 40px; width: 1px;
+  }
+  .booting .rail { opacity: 0; }
+}
+.rail__track { position: absolute; inset: 0; background: var(--line-strong); }
+.rail__fill { position: absolute; left: 0; top: 0; width: 1px; height: 100%; background: var(--accent); transform-origin: 50% 0; transform: scaleY(var(--p, 0)); }
+.rail__head {
+  position: absolute; left: -3px; top: calc(var(--p, 0) * 100%); width: 7px; height: 7px; margin-top: -3px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 18px var(--accent);
+}
+.rail__dot {
+  position: absolute; left: -4px; top: calc(var(--y, 0) * 100%); width: 9px; height: 9px; margin-top: -4px; border-radius: 50%;
+  border: 1px solid var(--line-ui); background: var(--bg); transition: background-color var(--t-mid), border-color var(--t-mid);
+}
+.rail__dot.is-past, .rail__dot.is-on { background: var(--accent); border-color: var(--accent); }
+.rail__dot span {
+  position: absolute; left: 18px; top: 50%; transform: translate(-6px, -50%); white-space: nowrap; color: var(--fg);
+  opacity: 0; transition: opacity var(--t-slow) var(--ease), transform var(--t-slow) var(--ease); pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 80%, transparent); padding: 2px 6px; border-radius: 4px;
+}
+.rail__dot:hover span { opacity: 1; transform: translate(0, -50%); }
+/* the current chapter's name sits beside its via where there's room for it */
+@media (min-width: 1400px) { .rail__dot.is-on span { opacity: 1; transform: translate(0, -50%); } }
+
+/* the statement: each word lights up as it's read */
+.statement.is-split .statement__body p + p { color: var(--fg); }
+.statement.is-split .statement__body p + p .sw { color: var(--muted); }
+.sw { display: inline; }
+
+/* chapter heads: words come up out of a slot */
+.wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.wi { display: inline-block; will-change: transform; }
+
+/* work: the cards stack as you scroll */
+.projects.stack { display: flex; flex-direction: column; gap: var(--s6); }
+.projects.stack .card {
+  position: sticky; top: calc(var(--nav-h) + 20px + var(--k, 0) * 14px); transform-origin: 50% 0;
+  background: var(--surface); box-shadow: 0 -12px 40px -16px rgba(0, 0, 0, 0.55), var(--shadow);
+}
+.projects.stack .card:hover { transform: none; }
+.projects.stack .card::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; background: var(--bg); opacity: var(--dim, 0); pointer-events: none;
+}
+.card.is-target { border-color: var(--accent); }
+@media (min-width: 760px) {
+  .projects.stack .card { display: grid; grid-template-columns: 7fr 5fr; column-gap: var(--s2); min-height: 340px; }
+  .projects.stack .card .plate { aspect-ratio: auto; min-height: 300px; }
+  .projects.stack .card .card__body { justify-content: center; padding: var(--s6); }
+}
+
+/* experience: the line between roles fills as you pass it; each via lights when reached */
+.role:not(:last-child)::after {
+  background: linear-gradient(var(--accent) 0 calc(var(--fill, 0) * 100%), var(--line-strong) 0);
+}
+.role.lit::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); transition: box-shadow var(--t-slow), background-color var(--t-mid); }
+
+/* the hook at every chapter's end */
+.next {
+  grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: end; column-gap: var(--s5); row-gap: var(--s2);
+  margin-top: var(--s8); padding-top: var(--s5); border-top: 1px dashed var(--line-strong); color: var(--fg);
+}
+.next__k { grid-column: 1; color: var(--accent-text); }
+.next__h { grid-column: 1; font: 500 var(--t-lead)/1.3 var(--body); color: var(--muted); transition: color var(--t-mid); text-wrap: balance; }
+.next__a {
+  grid-column: 2; grid-row: 1 / span 2; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  border: 1px solid var(--line-ui); font-size: 20px; transition: background-color var(--t-mid), color var(--t-mid), border-color var(--t-mid);
+}
+.next:hover .next__h, .next:focus-visible .next__h { color: var(--fg); }
+.next:hover .next__a { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.motion .next__a { animation: nudge 2.4s var(--ease) infinite; }
+@keyframes nudge { 0%, 60%, 100% { transform: none; } 30% { transform: translateY(6px); } }
+.contact .next { display: none; }
+@media (max-width: 599px) { .next { margin-top: var(--s7); } .next__a { width: 44px; height: 44px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .booting .boot, .rail, .hero__cue { display: none !important; }
+}

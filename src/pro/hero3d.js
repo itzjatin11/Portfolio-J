@@ -256,6 +256,7 @@ export function createHero(canvas, { poster = false } = {}) {
   const L = new Vector3();
   const tmp = new Vector3();
   let intro = poster ? 1 : 0; // 0 → 1 over the opening
+  let held = !poster; // the opening waits for play(), so it lands as the boot intro opens onto it
   let lean = 0; // 0 → 1 as the hero scrolls away
   let running = false;
   let last = 0;
@@ -304,8 +305,9 @@ export function createHero(canvas, { poster = false } = {}) {
     if (!running) return;
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
     // the opening plays at full rate; after that, ambient signals at ~30 fps are plenty
-    if (intro < 1 || now - last > 32 || !last) {
-      if (intro < 1) intro = Math.min(1, intro + dt / 2.4);
+    const opening = !held && intro < 1;
+    if (opening || now - last > 32 || !last) {
+      if (opening) intro = Math.min(1, intro + dt / 2.4);
       last = now;
       frame(dt);
     }
@@ -329,6 +331,10 @@ export function createHero(canvas, { poster = false } = {}) {
       running = false;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
+    },
+    // run the opening: the camera settles onto the board and it powers on
+    play() {
+      held = false;
     },
     setLean(v) {
       lean = clamp(v, 0, 1);

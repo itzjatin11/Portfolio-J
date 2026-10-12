@@ -1,4 +1,8 @@
 import './pro.css';
+import { runBoot } from './boot.js';
+import { initStory } from './story.js';
+
+window.__pro = 1; // tells the head script's safety net that the page script is running
 
   var d = document, root = d.documentElement, motion = root.classList.contains('motion');
   var $$ = function (s, c) { return [].slice.call((c || d).querySelectorAll(s)); };
@@ -121,6 +125,36 @@ import './pro.css';
   if (ro) plates.forEach(function (p) { ro.observe(p); });
 
 
+/* ---------------------------------------------------------------- "next" at the end of each chapter */
+// Each chapter ends by naming the one after it, so there's always a reason to keep going.
+(function nextLines() {
+  var order = $$('main > section[id]');
+  order.forEach(function (sec, i) {
+    var to = order[i + 1];
+    if (!to || !to.querySelector('.kicker')) return;
+    var a = d.createElement('a');
+    a.className = 'next';
+    a.href = '#' + to.id;
+    a.innerHTML = '<span class="next__k mono caps">Next · ' + to.querySelector('.kicker').textContent.trim().replace(/\s+/, ' ') + '</span>' +
+      '<span class="next__h">' + to.querySelector('.h2').textContent + '</span>' +
+      '<span class="next__a" aria-hidden="true">↓</span>';
+    sec.querySelector('.wrap').appendChild(a);
+  });
+})();
+
+/* ---------------------------------------------------------------- the opening */
+// With motion: the boot intro plays, then opens onto the hero, and the hero's name and board
+// play their own opening at that moment (not before, unseen under the intro).
+var booting = root.classList.contains('booting');
+var revealed = !booting, onReveal = [];
+function whenRevealed(fn) { revealed ? fn() : onReveal.push(fn); }
+function revealHero() {
+  if (revealed && root.classList.contains('hero-in')) return;
+  revealed = true;
+  root.classList.add('hero-in');
+  onReveal.splice(0).forEach(function (fn) { fn(); });
+}
+
 /* ---------------------------------------------------------------- the hero's board */
 // Capable screens get the live 3D board; phones, reduced motion and weaker devices get a still of
 // it (the same frame), so the page stays light where it matters.
@@ -129,7 +163,6 @@ import './pro.css';
   var canvas = d.querySelector('[data-hero-canvas]');
   var poster = d.querySelector('[data-hero-poster]');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var wide = matchMedia('(min-width: 760px)').matches;
   var capable = (function () {
     try {
       if ((navigator.deviceMemory || 8) <= 2) return false;
@@ -142,17 +175,19 @@ import './pro.css';
     poster.src = import.meta.env.BASE_URL + 'hero-poster.jpg';
     poster.decode ? poster.decode().then(function () { heroEl.classList.add('has-poster'); }, function () {}) : heroEl.classList.add('has-poster');
   }
-  if (reduce || !wide || !capable) return showPoster();
+  if (reduce || !capable) return showPoster();
 
   var idle = function (fn) { 'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 800 }) : setTimeout(fn, 120); };
+  // while the intro plays there's time to build the board, so start straight away
   (d.fonts ? d.fonts.ready : Promise.resolve()).then(function () {
-    idle(function () {
+    (booting ? function (fn) { fn(); } : idle)(function () {
       import('./hero3d.js').then(function (mod) {
         canvas.hidden = false;
         var h = mod.createHero(canvas);
         return h.prepare().then(function () {
           h.renderNow();
           heroEl.classList.add('has-3d');
+          whenRevealed(function () { h.play(); });
           // only draw while the hero is on screen and the tab is visible
           var onScreen = true;
           var sync = function () { onScreen && !d.hidden ? h.start() : h.stop(); };
@@ -171,54 +206,33 @@ import './pro.css';
 })();
 
 if (motion) motionFx();
+else revealHero();
 
 function motionFx() {
 
-  /* hero: letters rise once */
+  /* hero: letters rise once, when the hero is revealed */
   var n = 0;
   $$('[data-chars]').forEach(function (line) {
     var text = line.textContent; line.textContent = '';
     for (var k = 0; k < text.length; k++) {
       var s = d.createElement('span');
       s.className = 'ch'; s.setAttribute('aria-hidden', 'true');
-      s.textContent = text[k] === ' ' ? ' ' : text[k];
+      s.textContent = text[k] === ' ' ? '\u00a0' : text[k];
       s.style.setProperty('--i', n++);
       line.appendChild(s);
     }
   });
   $$('.glance__in > div').forEach(function (c, k) { c.style.setProperty('--k', k); });
 
-  /* reveals: once; cards on one row stagger by 60ms */
-  $$('.projects .card:not(.card--feature)').forEach(function (c, k) { c.style.setProperty('--k', k % 2); });
-  $$('.quotes .quote').forEach(function (c, k) { c.style.setProperty('--k', k); });
-  var io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { rootMargin: '0px 0px -8% 0px' });
-  $$('.rv').forEach(function (x) { io.observe(x); });
+  var story = initStory({ plates: plates, pulse: pulse });
 
-  /* data runs through each plate once on arrival; replays on hover/focus, at most every 2s */
-  var pio = new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting) { setTimeout(function () { pulse(e.target); }, 300); pio.unobserve(e.target); } });
-  }, { threshold: 0.6 });
+  /* data runs through a plate again on hover/focus, at most every 2s */
   plates.forEach(function (p) {
-    pio.observe(p);
     var c = p.closest('.card');
     c.addEventListener('mouseenter', function () { pulse(p); });
     c.addEventListener('focusin', function () { pulse(p); });
   });
 
-  /* the hero gives way, gently: at most -20px and 0.7 opacity. Reads scrollY only, writes transform/opacity */
-  var hero = d.querySelector('.hero'), hc = d.querySelector('.hero__copy'), ha = d.querySelector('.hero__art'), heroOn = true, raf = 0;
-  function give() {
-    if (!heroOn || raf) return;
-    raf = requestAnimationFrame(function () {
-      raf = 0;
-      var h = Math.min(1, scrollY / (innerHeight * 0.9));
-      hc.style.transform = 'translate3d(0,' + (-20 * h).toFixed(1) + 'px,0)';
-      hc.style.opacity = (1 - 0.3 * h).toFixed(3);
-      ha.style.opacity = (1 - 0.3 * h).toFixed(3);
-    });
-  }
-  new IntersectionObserver(function (es) { heroOn = es[0].isIntersecting; give(); }).observe(hero);
-  addEventListener('scroll', give, { passive: true });
+  if (!booting) { revealHero(); return; }
+  runBoot({ onReveal: revealHero }).then(function () { story.start(); });
 }
