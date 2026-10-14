@@ -317,22 +317,37 @@ section[id], [id^='p-'] { scroll-margin-top: calc(var(--nav-h) + var(--s4)); }
 .proj__desc { font-size: var(--t-lead); line-height: var(--lh-lead); max-width: 34ch; }
 .proj__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; column-gap: var(--s4); margin-top: var(--s2); border-top: 1px solid var(--line); }
 .proj__stack { color: var(--subtle); }
-.plate--inline { margin-bottom: var(--s3); }
+.proj__media { display: grid; gap: var(--s2); margin-bottom: var(--s3); }
+
+/* the builds, as they really look: a browser window, a phone, a desktop app window */
+.shot { position: relative; overflow: hidden; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--hero-bg); box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8); }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top center; }
+.shot__bar { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 var(--s3); background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.shot__bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+.shot__bar span { margin-left: var(--s3); font: 500 11px/1 var(--mono); letter-spacing: 0.04em; color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shot--app img { object-fit: contain; background: #f2f2f2; }
+/* the phone sits on its own little plate, in a device outline */
+.shot--phone { display: grid; place-items: center; aspect-ratio: 16 / 10.6; background-image: linear-gradient(var(--hero-grid) 1px, transparent 1px), linear-gradient(90deg, var(--hero-grid) 1px, transparent 1px); background-size: 32px 32px; }
+.shot--phone img { width: auto; height: 88%; aspect-ratio: 390 / 844; border: 6px solid #1b1f23; border-radius: 26px; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9); }
+
+/* the data flow, as a slim strip under the screenshot */
+.plate--strip { aspect-ratio: auto; min-height: 0; padding: 36px var(--s4) var(--s4); }
+.plate--strip .plate__label { top: var(--s3); }
+
 .work__stage { display: none; }
 @media (min-width: 1024px) {
-  .work.is-live { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--s6); }
+  .work.is-live { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--s7); }
   .work.is-live .projects { grid-column: 1 / span 5; grid-row: 1; gap: 0; }
-  .work.is-live .proj { min-height: 72svh; align-content: center; padding-block: var(--s7); opacity: .25; transition: opacity .7s var(--ease); }
+  .work.is-live .proj { min-height: 70svh; align-content: center; padding-block: var(--s7); opacity: .25; transition: opacity .7s var(--ease); }
   .work.is-live .proj.is-on { opacity: 1; }
-  .work.is-live .plate--inline { display: none; }
+  .work.is-live .proj__media { display: none; }
   .work.is-live .work__stage {
     display: block; grid-column: 6 / -1; grid-row: 1; align-self: start;
-    position: sticky; top: calc(var(--nav-h) + 12svh); height: min(60svh, 520px);
+    position: sticky; top: calc(var(--nav-h) + 8svh);
   }
-  .work__board { position: relative; height: 100%; }
-  .work__board .plate { position: absolute; inset: 0; aspect-ratio: auto; opacity: 0; transform: translateY(12px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
-  .work__board .plate.is-on { opacity: 1; transform: none; }
-  .work__board .plate svg { width: min(100%, 560px); }
+  .work__board { display: grid; }
+  .work__item { grid-area: 1 / 1; display: grid; gap: var(--s2); align-content: start; opacity: 0; transform: translateY(16px) scale(.985); transition: opacity .6s var(--ease), transform .8s var(--ease); pointer-events: none; }
+  .work__item.is-on { opacity: 1; transform: none; }
 }
 .more { margin-top: var(--s7); color: var(--muted); }
 
@@ -537,11 +552,11 @@ section[id], [id^='p-'] { scroll-margin-top: calc(var(--nav-h) + var(--s4)); }
 .booting:not(.boot-revealing) .nav { transform: translateY(-100%); opacity: 0; }
 .booting.boot-revealing .nav { transition-delay: .2s; }
 
-/* the curtain: the hero holds still and the page is drawn up over it */
-.curtain .hero { position: sticky; top: var(--stick, 0px); z-index: 0; }
-.curtain .hero::after { content: ''; position: absolute; inset: 0; z-index: 3; background: #000; opacity: var(--veil, 0); pointer-events: none; }
-.curtain main > :not(.hero) { position: relative; z-index: 1; background: var(--bg); }
-.curtain .glance { box-shadow: 0 -1px 0 var(--line), 0 -30px 60px -30px rgba(0, 0, 0, 0.7); }
+/* the dive: at the bottom of the fall into the chip, the screen fades into the page */
+:root { --page: var(--bg); }
+.hero::after { content: ''; position: absolute; inset: 0; z-index: 3; background: var(--page); opacity: var(--veil, 0); pointer-events: none; }
+.hero__poster { transform-origin: 63% 44%; will-change: transform; }
+@media (max-width: 599px) { .hero__poster { transform-origin: 58% 62%; } }
 
 /* headings: words rise out of a slot */
 .wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }

@@ -246,17 +246,35 @@
         <!-- wide screens: one board that shows the data flow of the build you're reading -->
         <div class="work__stage" aria-hidden="true">
           <div class="work__board">
-            <div class="plate" data-plate data-for="p-cv"><p class="plate__label">U1 · CV-Analyzer · Data flow</p></div>
-            <div class="plate" data-plate data-for="p-tasks"><p class="plate__label">U2 · Tasks-Android · Data flow</p></div>
-            <div class="plate" data-plate data-for="p-booking"><p class="plate__label">U3 · Booking-site · Data flow</p></div>
-            <div class="plate" data-plate data-for="p-spec"><p class="plate__label">U4 · SpecTacular · Request flow</p></div>
-            <div class="plate" data-plate data-for="p-femina"><p class="plate__label">U5 · Femina-POS · Data flow</p></div>
+            <div class="work__item" data-for="p-cv">
+              <figure class="shot shot--web"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>cv-analyzer · upload</span></div><img src="/work/cv-analyzer.jpg" alt="" width="1280" height="800" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate data-for="p-cv"><p class="plate__label">U1 · CV-Analyzer · Data flow</p></div>
+            </div>
+            <div class="work__item" data-for="p-tasks">
+              <figure class="shot shot--phone"><img src="/work/tasks-android.jpg" alt="" width="390" height="844" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate data-for="p-tasks"><p class="plate__label">U2 · Tasks-Android · Data flow</p></div>
+            </div>
+            <div class="work__item" data-for="p-booking">
+              <figure class="shot shot--web"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>soulscriptbykai.com</span></div><img src="/work/booking-site.jpg" alt="" width="1280" height="800" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate data-for="p-booking"><p class="plate__label">U3 · Booking-site · Data flow</p></div>
+            </div>
+            <div class="work__item" data-for="p-spec">
+              <figure class="shot shot--web"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>spectacular · home</span></div><img src="/work/spectacular.jpg" alt="" width="1280" height="800" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate data-for="p-spec"><p class="plate__label">U4 · SpecTacular · Request flow</p></div>
+            </div>
+            <div class="work__item" data-for="p-femina">
+              <figure class="shot shot--app"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>Femina</span></div><img src="/work/femina-salon.jpg" alt="" width="800" height="600" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate data-for="p-femina"><p class="plate__label">U5 · Femina-POS · Data flow</p></div>
+            </div>
           </div>
         </div>
 
         <div class="projects">
           <article id="p-cv" data-p="cv" class="proj">
-            <div class="plate plate--inline" data-plate aria-hidden="true"><p class="plate__label">U1 · CV-Analyzer · Data flow</p></div>
+            <div class="proj__media">
+              <figure class="shot shot--web"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>cv-analyzer · upload</span></div><img src="/work/cv-analyzer.jpg" alt="CV Analyzer: the Upload Candidate CVs screen" width="1280" height="800" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate aria-hidden="true"><p class="plate__label">U1 · CV-Analyzer · Data flow</p></div>
+            </div>
             <p class="proj__meta mono caps"><span>2025</span><span>ASP.NET Core</span></p>
             <h3 class="proj__name">CV Analyzer</h3>
             <p class="proj__desc">Turns a pile of résumés into a shortlist grouped by shared skills, then exports it to Excel.</p>
@@ -268,7 +286,10 @@
           </article>
 
           <article id="p-tasks" data-p="tasks" class="proj">
-            <div class="plate plate--inline" data-plate aria-hidden="true"><p class="plate__label">U2 · Tasks-Android · Data flow</p></div>
+            <div class="proj__media">
+              <figure class="shot shot--phone"><img src="/work/tasks-android.jpg" alt="Tasks for Android: the app’s home screen background" width="390" height="844" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate aria-hidden="true"><p class="plate__label">U2 · Tasks-Android · Data flow</p></div>
+            </div>
             <p class="proj__meta mono caps"><span>2025</span><span>Android + .NET 8</span></p>
             <h3 class="proj__name">Tasks for Android</h3>
             <p class="proj__desc">Your tasks stay put when you change phones, because they sync through my own .NET 8 API and SQL Server.</p>
@@ -280,7 +301,10 @@
           </article>
 
           <article id="p-booking" data-p="booking" class="proj">
-            <div class="plate plate--inline" data-plate aria-hidden="true"><p class="plate__label">U3 · Booking-site · Data flow</p></div>
+            <div class="proj__media">
+              <figure class="shot shot--web"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>soulscriptbykai.com</span></div><img src="/work/booking-site.jpg" alt="The live booking site’s home page" width="1280" height="800" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate aria-hidden="true"><p class="plate__label">U3 · Booking-site · Data flow</p></div>
+            </div>
             <p class="proj__meta mono caps"><span class="live">Live · client site</span><span>Static + Formspree</span></p>
             <h3 class="proj__name">Booking site</h3>
             <p class="proj__desc">A live booking site for a self-employed client. Bookings go straight to their inbox with no subscription to pay.</p>
@@ -292,7 +316,10 @@
           </article>
 
           <article id="p-spec" data-p="spec" class="proj">
-            <div class="plate plate--inline" data-plate aria-hidden="true"><p class="plate__label">U4 · SpecTacular · Request flow</p></div>
+            <div class="proj__media">
+              <figure class="shot shot--web"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>spectacular · home</span></div><img src="/work/spectacular.jpg" alt="SpecTacular: the store’s home page" width="1280" height="800" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate aria-hidden="true"><p class="plate__label">U4 · SpecTacular · Request flow</p></div>
+            </div>
             <p class="proj__meta mono caps"><span>2025</span><span>ASP.NET Core MVC</span></p>
             <h3 class="proj__name">SpecTacular</h3>
             <p class="proj__desc">A working eyewear store with a cart, an admin dashboard and separate logins for customers and staff.</p>
@@ -304,7 +331,10 @@
           </article>
 
           <article id="p-femina" data-p="femina" class="proj">
-            <div class="plate plate--inline" data-plate aria-hidden="true"><p class="plate__label">U5 · Femina-POS · Data flow</p></div>
+            <div class="proj__media">
+              <figure class="shot shot--app"><div class="shot__bar" aria-hidden="true"><i></i><i></i><i></i><span>Femina</span></div><img src="/work/femina-salon.jpg" alt="Femina Salon: the app’s main window" width="800" height="600" loading="lazy" decoding="async" /></figure>
+              <div class="plate plate--strip" data-plate aria-hidden="true"><p class="plate__label">U5 · Femina-POS · Data flow</p></div>
+            </div>
             <p class="proj__meta mono caps"><span>2024</span><span>Desktop app</span></p>
             <h3 class="proj__name">Femina Salon</h3>
             <p class="proj__desc">Replaced pen and paper at a salon. Members get 10/15/20% off automatically, and every sale prints a receipt.</p>

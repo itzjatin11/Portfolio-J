@@ -3,7 +3,7 @@
 // (phones, reduced motion and devices without WebGL 2 get a still image instead; see main.js).
 //
 // On load the camera settles onto the board as the name rises. Afterwards it drifts a little
-// with the pointer, and as the hero scrolls away it leans in towards the chip.
+// with the pointer, and scrolling the hero dives the camera down into the chip.
 import {
   WebGLRenderer,
   Scene,
@@ -160,7 +160,8 @@ U.edgeAmt.value = 0.6;
 
 const HOME = { p: new Vector3(1.5, 21, 25), l: new Vector3(0.5, 0, -1) }; // the opening view
 const START = { p: new Vector3(2.4, 31, 37), l: new Vector3(0.6, 0, -2) }; // a little further out, before it settles
-const LEAN = { p: new Vector3(0.9, 11, 12.5), l: new Vector3(0.2, 0, -0.4) }; // where it heads as the hero scrolls away
+const DIVE = { p: new Vector3(0.1, 2.5, 0.5), l: new Vector3(0, 0.33, 0) }; // right over the chip's lid, where the scroll dive ends
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
 export function createHero(canvas, { poster = false } = {}) {
   const dpr = Math.min(window.devicePixelRatio || 1, poster ? 2 : 1.5);
@@ -257,7 +258,8 @@ export function createHero(canvas, { poster = false } = {}) {
   const tmp = new Vector3();
   let intro = poster ? 1 : 0; // 0 → 1 over the opening
   let held = !poster; // the opening waits for play(), so it lands as the boot intro opens onto it
-  let lean = 0; // 0 → 1 as the hero scrolls away
+  let dive = 0; // 0 → 1 as you scroll down into the chip (eased towards diveTo)
+  let diveTo = 0;
   let running = false;
   let last = 0;
   let raf = 0;
@@ -278,20 +280,23 @@ export function createHero(canvas, { poster = false } = {}) {
 
   function frame(dt) {
     const e = easeOut(clamp(intro, 0, 1));
-    P.lerpVectors(START.p, HOME.p, e).lerp(LEAN.p, lean * 0.55);
-    L.lerpVectors(START.l, HOME.l, e).lerp(LEAN.l, lean * 0.55);
+    dive += (diveTo - dive) * (dt > 0 ? Math.min(1, dt * 7) : 1);
+    const k = easeInOut(dive);
+    P.lerpVectors(START.p, HOME.p, e).lerp(DIVE.p, k);
+    L.lerpVectors(START.l, HOME.l, e).lerp(DIVE.l, k);
     pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 3);
     pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 3);
     camera.position.copy(P);
     camera.lookAt(L);
     camera.updateMatrixWorld();
-    const dist = P.distanceTo(L);
+    const dist = P.distanceTo(L) * (1 - k);
     tmp.setFromMatrixColumn(camera.matrixWorld, 0).multiplyScalar(pointer.x * 0.03 * dist);
     camera.position.add(tmp);
     tmp.setFromMatrixColumn(camera.matrixWorld, 1).multiplyScalar(-pointer.y * 0.02 * dist);
     camera.position.add(tmp);
     camera.lookAt(L);
-    camera.setViewOffset(view.w, view.h, view.w * view.side, 0, view.w, view.h);
+    // the chip sits beside the name, and comes to the centre as you dive in
+    camera.setViewOffset(view.w, view.h, view.w * view.side * (1 - k), 0, view.w, view.h);
     camera.updateProjectionMatrix();
     // the board powers on: signals fade in, the chip's marking brightens
     pulseMat.opacity = clamp((intro - 0.25) / 0.6, 0, 1);
@@ -306,7 +311,9 @@ export function createHero(canvas, { poster = false } = {}) {
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
     // the opening plays at full rate; after that, ambient signals at ~30 fps are plenty
     const opening = !held && intro < 1;
-    if (opening || now - last > 32 || !last) {
+    // the opening and the dive play at full rate; otherwise ambient signals at ~30 fps are plenty
+    const diving = Math.abs(diveTo - dive) > 0.0005;
+    if (opening || diving || now - last > 32 || !last) {
       if (opening) intro = Math.min(1, intro + dt / 2.4);
       last = now;
       frame(dt);
@@ -336,8 +343,8 @@ export function createHero(canvas, { poster = false } = {}) {
     play() {
       held = false;
     },
-    setLean(v) {
-      lean = clamp(v, 0, 1);
+    setDive(v) {
+      diveTo = clamp(v, 0, 1);
     },
     setPointer(x, y) {
       pointer.tx = clamp(x, -1, 1);

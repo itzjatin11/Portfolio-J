@@ -178,10 +178,8 @@ function revealHero() {
           new IntersectionObserver(function (es) { onScreen = es[0].isIntersecting; sync(); }).observe(heroEl);
           d.addEventListener('visibilitychange', sync);
           sync();
-          // as the page is drawn up over the hero, the camera leans in towards the chip
-          addEventListener('scroll', function () { if (onScreen) h.setLean(scrollY / heroEl.offsetHeight); }, { passive: true });
-          // the hero stays put while the page covers it, so stop drawing once it's covered
-          addEventListener('hero:covered', function (e) { onScreen = !e.detail; sync(); });
+          // scrolling the hero dives the camera down into the chip (see story.js)
+          addEventListener('hero:dive', function (e) { h.setDive(e.detail); });
           addEventListener('pointermove', function (e) { if (onScreen) h.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1); }, { passive: true });
           var rt = 0;
           addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { h.resize(); h.renderNow(); }, 120); });

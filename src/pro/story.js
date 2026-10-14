@@ -1,7 +1,7 @@
 // How the page reads after the intro. One motion language, used the same way everywhere:
 // headings rise word by word out of a slot, blocks fade up once as they arrive, and nothing
 // moves while you're reading it. Three set pieces carry the story:
-//   - the page is drawn up over the hero like a curtain (the hero stays still, and dims),
+//   - scrolling the hero dives you into the chip, and you come out into the page,
 //   - the road here: the year sticks beside its chapter and ticks over to the next one,
 //   - the work: one board shows the data flow of whichever build you're reading.
 // Only runs with motion allowed; without it the page is the same content, still.
@@ -52,6 +52,8 @@ export function initStory({ plates, pulse }) {
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   if (d.documentElement.classList.contains('booting')) lenis.stop();
 
+  const mm = gsap.matchMedia();
+
   /* ---------------------------------------------------------------- in-page links glide */
   function go(id, immediate) {
     const t = id && d.getElementById(id);
@@ -73,28 +75,31 @@ export function initStory({ plates, pulse }) {
     }
   });
 
-  /* ---------------------------------------------------------------- the curtain */
-  // The hero holds still; the rest of the page is drawn up over it and it dims underneath.
+  /* ---------------------------------------------------------------- the dive */
+  // The hero holds while you scroll: the words lift away, the camera falls into the chip, and
+  // the screen fades into the page as you arrive inside it. (Phones without the live board get
+  // the same dive on the still image.)
   const hero = d.querySelector('.hero');
-  const after = d.querySelector('.glance');
-  d.body.classList.add('curtain');
-  const pin = () => hero.style.setProperty('--stick', Math.min(navH(), innerHeight - hero.offsetHeight) + 'px');
-  pin();
-  addEventListener('resize', pin);
-  gsap.fromTo(hero, { '--veil': 0 }, {
-    '--veil': 0.85,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: after,
-      start: 'top bottom',
-      endTrigger: '#about',
-      end: 'top top',
-      scrub: true,
-      onLeave: () => dispatchEvent(new CustomEvent('hero:covered', { detail: true })),
-      onEnterBack: () => dispatchEvent(new CustomEvent('hero:covered', { detail: false })),
-    },
+  const copy = hero.querySelector('.hero__copy');
+  const still = hero.querySelector('.hero__poster');
+  mm.add('(min-height: 520px)', () => {
+    const fits = hero.offsetHeight <= innerHeight - navH() + 2;
+    if (!fits) return;
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: hero,
+        start: () => `top ${navH()}`,
+        end: '+=130%',
+        pin: true,
+        scrub: 0.4,
+        onUpdate: (st) => dispatchEvent(new CustomEvent('hero:dive', { detail: Math.min(1, st.progress / 0.85) })),
+      },
+    });
+    tl.to(copy, { y: -60, opacity: 0, duration: 0.3, ease: 'power1.in' }, 0)
+      .fromTo(still, { scale: 1 }, { scale: 4.5, duration: 0.85, ease: 'power2.in' }, 0)
+      .fromTo(hero, { '--veil': 0 }, { '--veil': 1, duration: 0.2 }, 0.8);
   });
-
   /* ---------------------------------------------------------------- headings rise word by word */
   $$('.section .head').forEach((head) => {
     const words = slotWords(head.querySelector('.h2'));
@@ -140,13 +145,13 @@ export function initStory({ plates, pulse }) {
   /* ---------------------------------------------------------------- the work */
   const stage = d.querySelector('.work__stage');
   const board = {};
-  $$('[data-for]', stage).forEach((p) => (board[p.dataset.for] = p));
+  $$('.work__item', stage).forEach((it) => (board[it.dataset.for] = it));
   const projs = $$('.proj');
   const setActive = (proj) => {
     projs.forEach((x) => x.classList.toggle('is-on', x === proj));
     Object.entries(board).forEach(([id, p]) => p.classList.toggle('is-on', id === proj.id));
     const wide = getComputedStyle(stage).display !== 'none';
-    pulse(wide ? board[proj.id] : proj.querySelector('[data-plate]'));
+    pulse((wide ? board[proj.id] : proj).querySelector('[data-plate]'));
   };
   projs.forEach((proj) => {
     ScrollTrigger.create({ trigger: proj, start: 'top 55%', end: 'bottom 55%', onToggle: (s) => s.isActive && setActive(proj) });
