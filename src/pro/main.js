@@ -39,7 +39,7 @@ window.__pro = 1; // tells the head script's safety net that the page script is 
 
   /* skills: inline "Used in" disclosures, one open at a time */
   var names = {};
-  $$('[data-p]').forEach(function (c) { names[c.dataset.p] = c.querySelector('.card__name').textContent; });
+  $$('[data-p]').forEach(function (c) { names[c.dataset.p] = c.querySelector('.proj__name').textContent; });
   var open = null;
   function close() {
     if (!open) return;
@@ -118,29 +118,13 @@ window.__pro = 1; // tells the head script's safety net that the page script is 
   }
   var plates = $$('[data-plate]');
   plates.forEach(function (p) {
-    p._items = $$('.flow span', p.closest('.card')).map(function (s) { return s.textContent; });
+    var proj = p.dataset.for ? d.getElementById(p.dataset.for) : p.closest('.proj');
+    p._items = $$('.flow span', proj).map(function (s) { return s.textContent; });
     draw(p);
   });
   var ro = 'ResizeObserver' in window ? new ResizeObserver(function (es) { es.forEach(function (e) { draw(e.target); }); }) : null;
   if (ro) plates.forEach(function (p) { ro.observe(p); });
 
-
-/* ---------------------------------------------------------------- "next" at the end of each chapter */
-// Each chapter ends by naming the one after it, so there's always a reason to keep going.
-(function nextLines() {
-  var order = $$('main > section[id]');
-  order.forEach(function (sec, i) {
-    var to = order[i + 1];
-    if (!to || !to.querySelector('.kicker')) return;
-    var a = d.createElement('a');
-    a.className = 'next';
-    a.href = '#' + to.id;
-    a.innerHTML = '<span class="next__k mono caps">Next · ' + to.querySelector('.kicker').textContent.trim().replace(/\s+/, ' ') + '</span>' +
-      '<span class="next__h">' + to.querySelector('.h2').textContent + '</span>' +
-      '<span class="next__a" aria-hidden="true">↓</span>';
-    sec.querySelector('.wrap').appendChild(a);
-  });
-})();
 
 /* ---------------------------------------------------------------- the opening */
 // With motion: the boot intro plays, then opens onto the hero, and the hero's name and board
@@ -194,8 +178,10 @@ function revealHero() {
           new IntersectionObserver(function (es) { onScreen = es[0].isIntersecting; sync(); }).observe(heroEl);
           d.addEventListener('visibilitychange', sync);
           sync();
-          // as the hero scrolls away, the camera leans in towards the chip
+          // as the page is drawn up over the hero, the camera leans in towards the chip
           addEventListener('scroll', function () { if (onScreen) h.setLean(scrollY / heroEl.offsetHeight); }, { passive: true });
+          // the hero stays put while the page covers it, so stop drawing once it's covered
+          addEventListener('hero:covered', function (e) { onScreen = !e.detail; sync(); });
           addEventListener('pointermove', function (e) { if (onScreen) h.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1); }, { passive: true });
           var rt = 0;
           addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { h.resize(); h.renderNow(); }, 120); });
@@ -226,12 +212,6 @@ function motionFx() {
 
   var story = initStory({ plates: plates, pulse: pulse });
 
-  /* data runs through a plate again on hover/focus, at most every 2s */
-  plates.forEach(function (p) {
-    var c = p.closest('.card');
-    c.addEventListener('mouseenter', function () { pulse(p); });
-    c.addEventListener('focusin', function () { pulse(p); });
-  });
 
   if (!booting) { revealHero(); return; }
   runBoot({ onReveal: revealHero }).then(function () { story.start(); });
